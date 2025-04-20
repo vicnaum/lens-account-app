@@ -40,10 +40,10 @@ We will follow an incremental development approach, building and verifying core 
     - [x] Update the _other_ input field's state based on the successful result from `useReadContract`.
   - [x] **Integrate Form:** Place `DiscoveryForm.tsx` onto the root page (`app/page.tsx`).
 - **Verification:**
-  - [ ] Typing a known Lens username (e.g., `stani.lens`) correctly populates the Account Address field.
-  - [ ] Typing/pasting a known Lens Account address correctly populates the Lens Username field (if one exists).
-  - [ ] Invalid inputs show no result or subtle error indication.
-  - [ ] Check browser developer console for any Wagmi/Viem errors related to contract reads. Network tab should show RPC calls to the Lens Chain RPC URL.
+  - [x] Typing a known Lens username (e.g., `stani`) correctly populates the Account Address field.
+  - [x] Typing/pasting a known Lens Account address correctly populates the Lens Username field (if one exists).
+  - [x] Invalid inputs show no result or subtle error indication.
+  - [x] Check browser developer console for any Wagmi/Viem errors related to contract reads. Network tab should show RPC calls to the Lens Chain RPC URL.
 
 ### Stage 2: Owner EOA Connection & Verification
 
