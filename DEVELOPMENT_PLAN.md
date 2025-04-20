@@ -50,14 +50,14 @@ We will follow an incremental development approach, building and verifying core 
 **Goal:** Integrate the "Connect Wallet" functionality, fetch the Lens Account owner, verify it against the connected EOA, handle chain switching, and navigate to the dashboard.
 
 - **Tasks:**
-  - [ ] **Add Owner ABI:** Include the `owner()` function signature in the `LENS_ACCOUNT_ABI` within `lib/constants.ts`.
-  - [ ] **Create Connect Button:** Build `components/ConnectOwnerButton.tsx`. Use ConnectKit's `<ConnectKitButton />` or its underlying hooks (`useModal`, etc.) for the UI.
-  - [ ] **Fetch Expected Owner:**
+  - [x] **Add Owner ABI:** Include the `owner()` function signature in the `LENS_ACCOUNT_ABI` within `lib/constants.ts`.
+  - [x] **Create Connect Button:** Build `components/ConnectOwnerButton.tsx`. Use ConnectKit's `<ConnectKitButton />` or its underlying hooks (`useModal`, etc.) for the UI.
+  - [x] **Fetch Expected Owner:**
     - In `app/page.tsx`, once a valid Lens Account address is determined (from Stage 1 state), use `useReadContract` to call `owner()` on the Lens Account address.
     - Pass `chainId: LENS_CHAIN_ID`.
     - Store the result in state (`expectedOwner`).
-  - [ ] **Display Expected Owner:** Show the `expectedOwner` address clearly near the `ConnectOwnerButton`.
-  - [ ] **Integrate Connect Button:** Add `ConnectOwnerButton` to `app/page.tsx`, potentially disabling it until `expectedOwner` is fetched.
+  - [x] **Display Expected Owner:** Show the `expectedOwner` address clearly near the `ConnectOwnerButton`.
+  - [x] **Integrate Connect Button:** Add `ConnectOwnerButton` to `app/page.tsx`, potentially disabling it until `expectedOwner` is fetched.
   - [ ] **Implement Verification Logic:**
     - In `app/page.tsx`, use `useAccount` (Wagmi) to get the connected EOA's `address` and `chainId`.
     - Use `useEffect` to monitor changes in the connected `address`, `chainId`, and the `expectedOwner`.

@@ -19,26 +19,22 @@ export const lensChain = defineChain({
 });
 
 // --- Contract Addresses ---
-// IMPORTANT: Replace with the actual deployed address on Lens Chain
 export const LENS_GLOBAL_NAMESPACE_ADDRESS =
-  "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615"; // Example, Replace Me!
+  "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615";
 
-// --- ABIs (Minimal for Stage 1) ---
-// Removed 'as const'
+// --- ABIs ---
 export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
   "function accountOf(string calldata name) view returns (address)",
   "function usernameOf(address user) view returns (string)",
 ]);
 
-// Removed 'as const'
+// Added owner() function
 export const LENS_ACCOUNT_ABI = parseAbi([
   "function owner() view returns (address)",
   "function executeTransaction(address target, uint256 value, bytes calldata data)",
 ]);
 
-// Removed 'as const'
-// IMPORTANT: Replace with the actual WGHO address on Lens Chain
-export const WGHO_TOKEN_ADDRESS = "0xYOUR_WGHO_TOKEN_ADDRESS"; // Example, Replace Me!
+export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
 export const ERC20_ABI = parseAbi([
   "function balanceOf(address owner) view returns (uint256)",
 ]);

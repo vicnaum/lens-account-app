@@ -50,6 +50,7 @@ src/
     page.tsx
     providers.tsx
   components/
+    ConnectOwnerButton.tsx
     DiscoveryForm.tsx
   hooks/
     useDebounce.ts
@@ -73,22 +74,92 @@ tsconfig.json
 <files>
 This section contains the contents of the repository's files.
 
-<file path="src/app/page.tsx">
+<file path="src/components/ConnectOwnerButton.tsx">
+// components/ConnectOwnerButton.tsx
 "use client";
 
-import { DiscoveryForm } from "@/components/DiscoveryForm"; // Adjust path if needed
-import { useState } from "react";
+import { ConnectKitButton } from "connectkit";
+
+export function ConnectOwnerButton() {
+  return (
+    <div className="flex justify-center">
+      <ConnectKitButton />
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/page.tsx">
+// app/page.tsx
+"use client";
+
+import { DiscoveryForm } from "@/components/DiscoveryForm";
+import { ConnectOwnerButton } from "@/components/ConnectOwnerButton"; // Import the button
+import { useState, useEffect } from "react";
+import { useReadContract } from "wagmi"; // Import useReadContract
+import { type Address, isAddress } from "viem"; // Import Address type and isAddress
+import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants"; // Import ABI and Chain ID
 
 export default function Home() {
-  // State type allows empty string
-  const [lensAccountAddress, setLensAccountAddress] = useState<
-    `0x${string}` | ""
-  >("");
+  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">(
+    ""
+  );
+  const [expectedOwner, setExpectedOwner] = useState<Address | null>(null); // State for the expected owner
+  const [ownerFetchError, setOwnerFetchError] = useState<string | null>(null); // State for owner fetch error
 
-  const handleAccountFound = (address: `0x${string}` | "") => {
+  // Handler from DiscoveryForm
+  const handleAccountFound = (address: Address | "") => {
     console.log("Account Address Updated in Parent:", address);
     setLensAccountAddress(address);
+    // Reset expected owner when the lens account changes
+    setExpectedOwner(null);
+    setOwnerFetchError(null);
   };
+
+  // Hook to fetch the owner of the identified Lens Account
+  const {
+    data: ownerData,
+    error: ownerError,
+    isLoading: isLoadingOwner,
+    refetch: refetchOwner, // Added refetch in case address changes
+  } = useReadContract({
+    address: lensAccountAddress || undefined, // Pass address only if it's valid
+    abi: LENS_ACCOUNT_ABI,
+    functionName: "owner",
+    chainId: LENS_CHAIN_ID,
+    query: {
+      // Only run the query if lensAccountAddress is a valid address
+      enabled: isAddress(lensAccountAddress),
+    },
+  });
+
+  // Effect to update expectedOwner state when ownerData changes
+  useEffect(() => {
+    if (ownerData) {
+      setExpectedOwner(ownerData);
+      setOwnerFetchError(null); // Clear error on success
+      console.log("Fetched Expected Owner:", ownerData);
+    } else {
+      // Don't reset expectedOwner here immediately, wait for error or loading state change
+      // setExpectedOwner(null);
+    }
+  }, [ownerData]);
+
+  // Effect to handle owner fetch errors
+  useEffect(() => {
+    if (ownerError) {
+      console.error("Error fetching owner:", ownerError);
+      setOwnerFetchError(
+        "Could not fetch account owner. Ensure the address is correct and on Lens Chain."
+      );
+      setExpectedOwner(null); // Clear owner on error
+    } else {
+      // Clear error if the query is re-enabled and potentially succeeds later
+      if (isAddress(lensAccountAddress)) {
+        setOwnerFetchError(null);
+      }
+    }
+  }, [ownerError, lensAccountAddress]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
@@ -100,21 +171,46 @@ export default function Home() {
           Find your Lens Account by username or address.
         </p>
 
-        {/* Pass the handler */}
         <DiscoveryForm onAccountAddressFound={handleAccountFound} />
 
-        {/* Placeholder for Stage 2 - Connect Button will go here */}
-        <div className="mt-6">
-          {lensAccountAddress ? (
-            <p className="text-center text-green-600">
-              Account identified: {lensAccountAddress}
-            </p>
-          ) : (
-            <p className="text-center text-gray-500">
-              Enter username or address above.
+        {/* Section for Owner Info & Connect Button */}
+        <div className="mt-6 text-center space-y-3">
+          {/* Display loading state for owner fetch */}
+          {isAddress(lensAccountAddress) && isLoadingOwner && (
+            <p className="text-gray-500">Fetching owner...</p>
+          )}
+
+          {/* Display owner fetch error */}
+          {ownerFetchError && <p className="text-red-600">{ownerFetchError}</p>}
+
+          {/* Display expected owner if found */}
+          {expectedOwner && !isLoadingOwner && !ownerFetchError && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm font-medium text-blue-800">
+                Identified Account Owner:
+              </p>
+              <p className="text-xs text-blue-700 break-words font-mono">
+                {expectedOwner}
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                Connect this wallet to proceed.
+              </p>
+            </div>
+          )}
+
+          {/* Conditionally render the Connect Button */}
+          {expectedOwner && !isLoadingOwner && !ownerFetchError && (
+            <div className="pt-2">
+              <ConnectOwnerButton />
+            </div>
+          )}
+
+          {/* Show initial prompt if no valid address is entered yet */}
+          {!isAddress(lensAccountAddress) && (
+            <p className="text-sm text-gray-500">
+              Enter a Lens username or account address above to find the owner.
             </p>
           )}
-          {/* Connect Button will be added here in Stage 2 */}
         </div>
       </div>
     </main>
@@ -442,26 +538,22 @@ export const lensChain = defineChain({
 });
 
 // --- Contract Addresses ---
-// IMPORTANT: Replace with the actual deployed address on Lens Chain
 export const LENS_GLOBAL_NAMESPACE_ADDRESS =
-  "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615"; // Example, Replace Me!
+  "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615";
 
-// --- ABIs (Minimal for Stage 1) ---
-// Removed 'as const'
+// --- ABIs ---
 export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
   "function accountOf(string calldata name) view returns (address)",
   "function usernameOf(address user) view returns (string)",
 ]);
 
-// Removed 'as const'
+// Added owner() function
 export const LENS_ACCOUNT_ABI = parseAbi([
   "function owner() view returns (address)",
   "function executeTransaction(address target, uint256 value, bytes calldata data)",
 ]);
 
-// Removed 'as const'
-// IMPORTANT: Replace with the actual WGHO address on Lens Chain
-export const WGHO_TOKEN_ADDRESS = "0xYOUR_WGHO_TOKEN_ADDRESS"; // Example, Replace Me!
+export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
 export const ERC20_ABI = parseAbi([
   "function balanceOf(address owner) view returns (uint256)",
 ]);
@@ -617,48 +709,6 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-</file>
-
-<file path="package.json">
-{
-  "name": "lens-account-interface4",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "prepare": "husky",
-    "generate-llms": "repomix --include \"*.*,src\" -o llms.txt"
-  },
-  "dependencies": {
-    "@reown/walletkit": "^1.2.3",
-    "@tanstack/react-query": "^5.74.4",
-    "@walletconnect/core": "^2.20.0",
-    "@walletconnect/utils": "^2.20.0",
-    "connectkit": "^1.9.0",
-    "next": "15.3.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "viem": "^2.27.2",
-    "wagmi": "^2.14.16"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/webpack": "^5.28.5",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.1",
-    "husky": "^9.1.7",
-    "repomix": "^0.3.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
-}
 </file>
 
 <file path="postcss.config.mjs">
@@ -1078,14 +1128,14 @@ We will follow an incremental development approach, building and verifying core 
 **Goal:** Integrate the "Connect Wallet" functionality, fetch the Lens Account owner, verify it against the connected EOA, handle chain switching, and navigate to the dashboard.
 
 - **Tasks:**
-  - [ ] **Add Owner ABI:** Include the `owner()` function signature in the `LENS_ACCOUNT_ABI` within `lib/constants.ts`.
-  - [ ] **Create Connect Button:** Build `components/ConnectOwnerButton.tsx`. Use ConnectKit's `<ConnectKitButton />` or its underlying hooks (`useModal`, etc.) for the UI.
-  - [ ] **Fetch Expected Owner:**
+  - [x] **Add Owner ABI:** Include the `owner()` function signature in the `LENS_ACCOUNT_ABI` within `lib/constants.ts`.
+  - [x] **Create Connect Button:** Build `components/ConnectOwnerButton.tsx`. Use ConnectKit's `<ConnectKitButton />` or its underlying hooks (`useModal`, etc.) for the UI.
+  - [x] **Fetch Expected Owner:**
     - In `app/page.tsx`, once a valid Lens Account address is determined (from Stage 1 state), use `useReadContract` to call `owner()` on the Lens Account address.
     - Pass `chainId: LENS_CHAIN_ID`.
     - Store the result in state (`expectedOwner`).
-  - [ ] **Display Expected Owner:** Show the `expectedOwner` address clearly near the `ConnectOwnerButton`.
-  - [ ] **Integrate Connect Button:** Add `ConnectOwnerButton` to `app/page.tsx`, potentially disabling it until `expectedOwner` is fetched.
+  - [x] **Display Expected Owner:** Show the `expectedOwner` address clearly near the `ConnectOwnerButton`.
+  - [x] **Integrate Connect Button:** Add `ConnectOwnerButton` to `app/page.tsx`, potentially disabling it until `expectedOwner` is fetched.
   - [ ] **Implement Verification Logic:**
     - In `app/page.tsx`, use `useAccount` (Wagmi) to get the connected EOA's `address` and `chainId`.
     - Use `useEffect` to monitor changes in the connected `address`, `chainId`, and the `expectedOwner`.
@@ -1205,6 +1255,48 @@ We will follow an incremental development approach, building and verifying core 
 - Enhance error messages and user feedback.
 - Refine UI/UX, add loading states more granularly.
 - Mobile responsiveness.
+</file>
+
+<file path="package.json">
+{
+  "name": "lens-account-interface4",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prepare": "husky",
+    "generate-llms": "repomix --include \"*.*,src\" -o llms.txt"
+  },
+  "dependencies": {
+    "@reown/walletkit": "^1.2.3",
+    "@tanstack/react-query": "^5.74.4",
+    "@walletconnect/core": "^2.20.0",
+    "@walletconnect/utils": "^2.20.0",
+    "connectkit": "^1.9.0",
+    "next": "15.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.27.2",
+    "wagmi": "^2.14.16"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/webpack": "^5.28.5",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "husky": "^9.1.7",
+    "repomix": "^0.3.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
 </file>
 
 <file path="Spec.technical.md">
