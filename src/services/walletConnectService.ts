@@ -7,10 +7,7 @@ import EventEmitter from "events";
 
 // Define the events that the service will emit
 export interface WalletConnectServiceEvents {
-  pair_status: (
-    status: "pairing" | "paired" | "error",
-    message?: string
-  ) => void;
+  pair_status: (status: "pairing" | "paired" | "error", message?: string) => void;
   session_proposal: (proposal: WalletKitTypes.SessionProposal) => void;
   session_connect: (session: SessionTypes.Struct) => void;
   session_delete: (topic: string) => void;
@@ -64,47 +61,27 @@ export class WalletConnectService extends EventEmitter {
       return;
     }
     if (!this.walletKit.engine?.signClient?.events) {
-      console.error(
-        "SignClient or its events emitter not available on engine."
-      );
+      console.error("SignClient or its events emitter not available on engine.");
       return;
     }
 
     console.log("Setting up WalletKit event listeners...");
 
-    this.walletKit.on(
-      "session_proposal",
-      (proposal: WalletKitTypes.SessionProposal) => {
-        console.log(
-          "WalletConnectService received session_proposal:",
-          proposal
-        );
-        this.emit("session_proposal", proposal);
-      }
-    );
+    this.walletKit.on("session_proposal", (proposal: WalletKitTypes.SessionProposal) => {
+      console.log("WalletConnectService received session_proposal:", proposal);
+      this.emit("session_proposal", proposal);
+    });
 
-    this.walletKit.on(
-      "session_delete",
-      (event: { id: number; topic: string }) => {
-        console.log("WalletConnectService received session_delete:", event);
-        console.log(
-          ">>> Service: Received session_delete from WalletKit:",
-          event
-        ); // <-- ADD LOG
-        this.emit("session_delete", event.topic);
-      }
-    );
+    this.walletKit.on("session_delete", (event: { id: number; topic: string }) => {
+      console.log("WalletConnectService received session_delete:", event);
+      console.log(">>> Service: Received session_delete from WalletKit:", event); // <-- ADD LOG
+      this.emit("session_delete", event.topic);
+    });
 
-    this.walletKit.engine.signClient.events.on(
-      "session_connect",
-      (sessionArgs: SignClientTypes.EventArguments["session_connect"]) => {
-        console.log(
-          "WalletConnectService received session_connect from SignClient:",
-          sessionArgs
-        );
-        this.emit("session_connect", sessionArgs.session);
-      }
-    );
+    this.walletKit.engine.signClient.events.on("session_connect", (sessionArgs: SignClientTypes.EventArguments["session_connect"]) => {
+      console.log("WalletConnectService received session_connect from SignClient:", sessionArgs);
+      this.emit("session_connect", sessionArgs.session);
+    });
   }
 
   async pair(uri: string) {
@@ -118,19 +95,12 @@ export class WalletConnectService extends EventEmitter {
       console.log("Pairing initiated for URI:", uri);
     } catch (error: unknown) {
       console.error("Pairing failed:", error);
-      this.emit(
-        "pair_status",
-        "error",
-        (error as Error).message || "Pairing failed"
-      );
+      this.emit("pair_status", "error", (error as Error).message || "Pairing failed");
       throw error;
     }
   }
 
-  async approveSession(
-    proposal: WalletKitTypes.SessionProposal,
-    approvedNamespaces: SessionTypes.Namespaces
-  ): Promise<SessionTypes.Struct> {
+  async approveSession(proposal: WalletKitTypes.SessionProposal, approvedNamespaces: SessionTypes.Namespaces): Promise<SessionTypes.Struct> {
     if (!this.walletKit) {
       throw new Error("WalletKit is not initialized.");
     }
@@ -148,10 +118,7 @@ export class WalletConnectService extends EventEmitter {
     }
   }
 
-  async rejectSession(
-    proposal: WalletKitTypes.SessionProposal,
-    reason: ErrorResponse
-  ) {
+  async rejectSession(proposal: WalletKitTypes.SessionProposal, reason: ErrorResponse) {
     if (!this.walletKit) {
       throw new Error("WalletKit is not initialized.");
     }
@@ -186,42 +153,27 @@ export class WalletConnectService extends EventEmitter {
   }
 
   // Typed EventEmitter methods
-  on<E extends keyof WalletConnectServiceEvents>(
-    event: E,
-    listener: WalletConnectServiceEvents[E]
-  ): this {
+  on<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return super.on(event, listener as (...args: any[]) => void);
   }
 
-  once<E extends keyof WalletConnectServiceEvents>(
-    event: E,
-    listener: WalletConnectServiceEvents[E]
-  ): this {
+  once<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return super.once(event, listener as (...args: any[]) => void);
   }
 
-  off<E extends keyof WalletConnectServiceEvents>(
-    event: E,
-    listener: WalletConnectServiceEvents[E]
-  ): this {
+  off<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return super.off(event, listener as (...args: any[]) => void);
   }
 
-  removeListener<E extends keyof WalletConnectServiceEvents>(
-    event: E,
-    listener: WalletConnectServiceEvents[E]
-  ): this {
+  removeListener<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return super.removeListener(event, listener as (...args: any[]) => void);
   }
 
-  emit<E extends keyof WalletConnectServiceEvents>(
-    event: E,
-    ...args: Parameters<WalletConnectServiceEvents[E]>
-  ): boolean {
+  emit<E extends keyof WalletConnectServiceEvents>(event: E, ...args: Parameters<WalletConnectServiceEvents[E]>): boolean {
     return super.emit(event, ...args);
   }
 

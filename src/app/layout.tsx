@@ -28,9 +28,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}>
         {/* Wrap children with Providers */}
         <Providers /*initialState={initialState}*/>{children}</Providers>
       </body>

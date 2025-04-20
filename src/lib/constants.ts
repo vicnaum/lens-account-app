@@ -19,8 +19,7 @@ export const lensChain = defineChain({
 });
 
 // --- Contract Addresses ---
-export const LENS_GLOBAL_NAMESPACE_ADDRESS =
-  "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615";
+export const LENS_GLOBAL_NAMESPACE_ADDRESS = "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615";
 
 // --- ABIs ---
 export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
@@ -35,6 +34,4 @@ export const LENS_ACCOUNT_ABI = parseAbi([
 ]);
 
 export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
-export const ERC20_ABI = parseAbi([
-  "function balanceOf(address owner) view returns (uint256)",
-]);
+export const ERC20_ABI = parseAbi(["function balanceOf(address owner) view returns (uint256)"]);

@@ -6,9 +6,7 @@ import { lensChain } from "./constants";
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 
 if (!projectId) {
-  throw new Error(
-    "NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set in .env.local"
-  );
+  throw new Error("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set in .env.local");
 }
 
 export const config = createConfig(
@@ -21,10 +19,7 @@ export const config = createConfig(
     // Required App Info
     appName: "Lens Account Interface",
     appDescription: "Interact with your Lens Account",
-    appUrl:
-      typeof window !== "undefined"
-        ? window.location.origin
-        : "https://example.com",
+    appUrl: typeof window !== "undefined" ? window.location.origin : "https://example.com",
     appIcon: "/favicon.ico",
 
     // Chains to support
@@ -36,7 +31,7 @@ export const config = createConfig(
     },
 
     // ssr: true, // Keep commented unless SSR hydration with cookies is needed
-  })
+  }),
 );
 
 // Optional: Register config for global type inference

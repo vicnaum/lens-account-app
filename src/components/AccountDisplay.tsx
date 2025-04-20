@@ -53,12 +53,7 @@ export function AccountDisplay() {
   // Format balances safely
   const formattedNativeBalance =
     nativeBalanceData?.value !== undefined
-      ? parseFloat(
-          formatUnits(
-            nativeBalanceData.value,
-            lensChain.nativeCurrency.decimals
-          )
-        ).toFixed(4)
+      ? parseFloat(formatUnits(nativeBalanceData.value, lensChain.nativeCurrency.decimals)).toFixed(4)
       : "0.0000";
 
   const formattedWghoBalance =
@@ -70,58 +65,39 @@ export function AccountDisplay() {
 
   return (
     <div className="p-4 border rounded-md bg-gray-50">
-      <h2 className="text-lg font-semibold mb-3 text-gray-700">
-        Account Balances
-      </h2>
-      {isLoading && (
-        <p className="text-gray-500 text-sm">Loading balances...</p>
-      )}
+      <h2 className="text-lg font-semibold mb-3 text-gray-700">Account Balances</h2>
+      {isLoading && <p className="text-gray-500 text-sm">Loading balances...</p>}
 
       {/* Native GHO Balance */}
       <div className="mb-2">
         {nativeBalanceError && !isLoadingNativeBalance && (
           <p className="text-red-600 text-sm">
-            Error loading GHO balance:{" "}
-            {(nativeBalanceError as BaseError).shortMessage ||
-              nativeBalanceError.message}
+            Error loading GHO balance: {(nativeBalanceError as BaseError).shortMessage || nativeBalanceError.message}
           </p>
         )}
-        {!nativeBalanceError &&
-          !isLoadingNativeBalance &&
-          lensAccountAddress && (
-            <p className="text-gray-800">
-              <span className="font-medium">Native GHO:</span>{" "}
-              <span className="font-mono text-lg">
-                {formattedNativeBalance}
-              </span>{" "}
-              {lensChain.nativeCurrency.symbol}
-            </p>
-          )}
+        {!nativeBalanceError && !isLoadingNativeBalance && lensAccountAddress && (
+          <p className="text-gray-800">
+            <span className="font-medium">Native GHO:</span> <span className="font-mono text-lg">{formattedNativeBalance}</span>{" "}
+            {lensChain.nativeCurrency.symbol}
+          </p>
+        )}
       </div>
 
       {/* WGHO Balance */}
       <div>
         {wghoBalanceError && !isLoadingWghoBalance && (
           <p className="text-red-600 text-sm">
-            Error loading WGHO balance:{" "}
-            {(wghoBalanceError as BaseError).shortMessage ||
-              wghoBalanceError.message}
+            Error loading WGHO balance: {(wghoBalanceError as BaseError).shortMessage || wghoBalanceError.message}
           </p>
         )}
         {!wghoBalanceError && !isLoadingWghoBalance && lensAccountAddress && (
           <p className="text-gray-800">
-            <span className="font-medium">WGHO Token:</span>{" "}
-            <span className="font-mono text-lg">{formattedWghoBalance}</span>{" "}
-            GHO
+            <span className="font-medium">WGHO Token:</span> <span className="font-mono text-lg">{formattedWghoBalance}</span> GHO
           </p>
         )}
       </div>
 
-      {!lensAccountAddress && !isLoading && (
-        <p className="text-gray-500 text-sm mt-2">
-          Cannot fetch balances without Lens Account address.
-        </p>
-      )}
+      {!lensAccountAddress && !isLoading && <p className="text-gray-500 text-sm mt-2">Cannot fetch balances without Lens Account address.</p>}
     </div>
   );
 }

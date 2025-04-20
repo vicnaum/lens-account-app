@@ -11,24 +11,17 @@ interface LensAccountState {
   clearAccount: () => void;
 }
 
-const LensAccountContext = createContext<LensAccountState | undefined>(
-  undefined
-);
+const LensAccountContext = createContext<LensAccountState | undefined>(undefined);
 
 interface LensAccountProviderProps {
   children: ReactNode;
 }
 
 export function LensAccountProvider({ children }: LensAccountProviderProps) {
-  const [lensAccountAddress, setLensAccountAddress] = useState<Address | null>(
-    null
-  );
+  const [lensAccountAddress, setLensAccountAddress] = useState<Address | null>(null);
   const [ownerAddress, setOwnerAddress] = useState<Address | null>(null);
 
-  const setVerifiedAccount = (
-    lensAddress: Address,
-    verifiedOwnerAddress: Address
-  ) => {
+  const setVerifiedAccount = (lensAddress: Address, verifiedOwnerAddress: Address) => {
     setLensAccountAddress(lensAddress);
     setOwnerAddress(verifiedOwnerAddress);
     console.log("Context Updated: Lens Account Set ->", lensAddress);
@@ -48,11 +41,7 @@ export function LensAccountProvider({ children }: LensAccountProviderProps) {
     clearAccount,
   };
 
-  return (
-    <LensAccountContext.Provider value={value}>
-      {children}
-    </LensAccountContext.Provider>
-  );
+  return <LensAccountContext.Provider value={value}>{children}</LensAccountContext.Provider>;
 }
 
 // Custom hook to use the context

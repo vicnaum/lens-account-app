@@ -213,7 +213,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
         // Error is handled by handlePairStatus listener
       }
     },
-    [walletConnectService, isInitialized] // Add isInitialized dependency
+    [walletConnectService, isInitialized], // Add isInitialized dependency
   );
 
   const disconnect = useCallback(
@@ -232,7 +232,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
         setError((e as Error).message || "Failed to disconnect");
       }
     },
-    [walletConnectService, isInitialized] // Add isInitialized dependency
+    [walletConnectService, isInitialized], // Add isInitialized dependency
   );
 
   const contextValue = useMemo(
@@ -248,7 +248,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
       error,
       isInitialized, // Expose initialization status
     }),
-    [walletConnectService, walletKitInstance, activeSessions, pair, disconnect, isInitializing, isPairing, error, isInitialized]
+    [walletConnectService, walletKitInstance, activeSessions, pair, disconnect, isInitializing, isPairing, error, isInitialized],
   );
 
   return <WalletConnectContext.Provider value={contextValue}>{children}</WalletConnectContext.Provider>;

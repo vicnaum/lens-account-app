@@ -51,20 +51,12 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold mb-4 text-center">Dashboard</h1>
         <div className="space-y-6">
           <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
-            <p className="text-sm font-medium text-gray-700">
-              Connected Owner Wallet:
-            </p>
-            <p className="text-xs text-gray-600 break-words font-mono">
-              {ownerAddress}
-            </p>
+            <p className="text-sm font-medium text-gray-700">Connected Owner Wallet:</p>
+            <p className="text-xs text-gray-600 break-words font-mono">{ownerAddress}</p>
           </div>
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-sm font-medium text-blue-800">
-              Managing Lens Account:
-            </p>
-            <p className="text-xs text-blue-700 break-words font-mono">
-              {lensAccountAddress}
-            </p>
+            <p className="text-sm font-medium text-blue-800">Managing Lens Account:</p>
+            <p className="text-xs text-blue-700 break-words font-mono">{lensAccountAddress}</p>
           </div>
 
           <AccountDisplay />
@@ -74,9 +66,7 @@ export default function Dashboard() {
 
           {/* Placeholder for Stage 5 content (WC Requests) */}
           <div className="p-4 border rounded-md bg-gray-50">
-            <p className="text-gray-600">
-              WalletConnect request display will appear here (Stage 5).
-            </p>
+            <p className="text-gray-600">WalletConnect request display will appear here (Stage 5).</p>
           </div>
         </div>
       </div>

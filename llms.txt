@@ -85,12 +85,6 @@ tsconfig.json
 <files>
 This section contains the contents of the repository's files.
 
-<file path=".prettierrc">
-{
-  "printWidth": 150
-}
-</file>
-
 <file path="src/app/dashboard/layout.tsx">
 // src/app/dashboard/layout.tsx
 "use client"; // Context providers require client components
@@ -99,11 +93,7 @@ import { WalletConnectProvider } from "@/contexts/WalletConnectProvider";
 
 // This layout wraps the content of `/dashboard/page.tsx` and any other
 // potential pages under the /dashboard route (e.g., /dashboard/settings).
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   // We assume LensAccountProvider is already wrapping the RootLayout
   // in src/app/layout.tsx via src/app/providers.tsx.
   // Therefore, we only need to add the WalletConnectProvider here.
@@ -126,308 +116,6 @@ export function ConnectOwnerButton() {
 }
 </file>
 
-<file path="src/components/DiscoveryForm.tsx">
-// components/DiscoveryForm.tsx
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { useReadContract } from "wagmi";
-import { isAddress } from "viem";
-import { useDebounce } from "@/hooks/useDebounce";
-import { LENS_CHAIN_ID, LENS_GLOBAL_NAMESPACE_ADDRESS, LENS_GLOBAL_NAMESPACE_ABI } from "@/lib/constants";
-
-interface DiscoveryFormProps {
-  // Allow empty string or null when no valid address is found
-  onAccountAddressFound: (address: `0x${string}` | "") => void; // Changed type
-  initialUsername?: string;
-  initialAddress?: string;
-}
-
-export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", initialAddress = "" }: DiscoveryFormProps) {
-  const [username, setUsername] = useState(initialUsername);
-  const [address, setAddress] = useState(initialAddress);
-  const [lookupError, setLookupError] = useState<string | null>(null);
-
-  const [lastEdited, setLastEdited] = useState<"username" | "address" | null>(initialUsername ? "username" : initialAddress ? "address" : null);
-
-  const debouncedUsername = useDebounce(username, 500);
-  const debouncedAddress = useDebounce(address, 500);
-
-  const {
-    data: addressFromUsername,
-    isLoading: isLoadingAddress,
-    error: addressError,
-    refetch: refetchAddress,
-  } = useReadContract({
-    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
-    abi: LENS_GLOBAL_NAMESPACE_ABI,
-    functionName: "accountOf",
-    args: [debouncedUsername || ""],
-    chainId: LENS_CHAIN_ID,
-    query: {
-      enabled: false,
-    },
-  });
-
-  const {
-    data: usernameFromAddress,
-    isLoading: isLoadingUsername,
-    error: usernameError,
-    refetch: refetchUsername,
-  } = useReadContract({
-    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
-    abi: LENS_GLOBAL_NAMESPACE_ABI,
-    functionName: "usernameOf",
-    args: [debouncedAddress as `0x${string}`],
-    chainId: LENS_CHAIN_ID,
-    query: {
-      enabled: false,
-    },
-  });
-
-  useEffect(() => {
-    if (debouncedUsername && lastEdited === "username") {
-      setLookupError(null);
-      console.log(`Looking up address for username: ${debouncedUsername}`);
-      refetchAddress();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedUsername, lastEdited]);
-
-  useEffect(() => {
-    if (debouncedAddress && isAddress(debouncedAddress) && lastEdited === "address") {
-      setLookupError(null);
-      console.log(`Looking up username for address: ${debouncedAddress}`);
-      refetchUsername();
-    } else if (debouncedAddress && !isAddress(debouncedAddress) && lastEdited === "address") {
-      setLookupError("Invalid address format");
-      onAccountAddressFound(""); // Use empty string
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedAddress, lastEdited]);
-
-  useEffect(() => {
-    if (addressFromUsername && isAddress(addressFromUsername) && lastEdited === "username") {
-      if (addressFromUsername === "0x0000000000000000000000000000000000000000") {
-        setLookupError(`No account found for username "${debouncedUsername}"`);
-        setAddress("");
-        onAccountAddressFound(""); // Use empty string
-      } else {
-        console.log(`Found address: ${addressFromUsername}`);
-        setAddress(addressFromUsername);
-        onAccountAddressFound(addressFromUsername);
-        setLookupError(null);
-      }
-    } else if (addressError && lastEdited === "username") {
-      console.error("Error fetching address:", addressError);
-      setLookupError("Error fetching address. Check console.");
-      onAccountAddressFound(""); // Use empty string
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addressFromUsername, addressError, lastEdited]);
-
-  useEffect(() => {
-    if (usernameFromAddress && lastEdited === "address") {
-      console.log(`Found username: ${usernameFromAddress}`);
-      setUsername(usernameFromAddress);
-      if (isAddress(debouncedAddress)) {
-        // Ensure address is still valid
-        onAccountAddressFound(debouncedAddress as `0x${string}`);
-      }
-      setLookupError(null);
-    } else if (usernameError && lastEdited === "address") {
-      console.log("No primary username found for address or error:", usernameError.message);
-      setUsername("");
-      if (isAddress(debouncedAddress)) {
-        onAccountAddressFound(debouncedAddress as `0x${string}`);
-      }
-      setLookupError(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [usernameFromAddress, usernameError, lastEdited, debouncedAddress]);
-
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-    setLastEdited("username");
-    if (lastEdited !== "address") setAddress("");
-    onAccountAddressFound(""); // Use empty string
-    setLookupError(null);
-  };
-
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setAddress(value);
-    setLastEdited("address");
-    if (lastEdited !== "username") setUsername("");
-    if (!isAddress(value) && value !== "") {
-      setLookupError("Invalid address format");
-      onAccountAddressFound(""); // Use empty string
-    } else {
-      setLookupError(null);
-      if (isAddress(value)) {
-        onAccountAddressFound(value as `0x${string}`);
-      } else {
-        onAccountAddressFound(""); // Use empty string
-      }
-    }
-  };
-
-  const isLoading = isLoadingAddress || isLoadingUsername;
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-          Lens Username
-        </label>
-        <input
-          id="username"
-          name="username"
-          type="text"
-          value={username}
-          onChange={handleUsernameChange}
-          placeholder="e.g. stani"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          aria-describedby="username-status"
-          disabled={isLoading && lastEdited === "address"}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-          Account Address
-        </label>
-        <input
-          id="address"
-          name="address"
-          type="text"
-          value={address}
-          onChange={handleAddressChange}
-          placeholder="0x..."
-          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-            !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-300"
-          }`}
-          aria-describedby="address-status"
-          disabled={isLoading && lastEdited === "username"}
-        />
-      </div>
-      <div id="username-status" aria-live="polite" className="text-sm h-5">
-        {isLoading && lastEdited === "username" && <span className="text-gray-500">Checking username...</span>}
-      </div>
-      <div id="address-status" aria-live="polite" className="text-sm h-5">
-        {isLoading && lastEdited === "address" && <span className="text-gray-500">Checking address...</span>}
-        {lookupError && <span className="text-red-600">{lookupError}</span>}
-        {!lookupError && isAddress(address) && lastEdited !== "username" && <span className="text-green-600">Valid Address</span>}
-      </div>
-    </div>
-  );
-}
-</file>
-
-<file path="src/components/WcConnect.tsx">
-// src/components/WcConnect.tsx
-"use client";
-
-import React, { useState } from "react";
-import { useWalletConnect } from "@/contexts/WalletConnectProvider"; // Ensure correct path
-import Image from "next/image";
-
-export function WcConnect() {
-  // Destructure necessary state values including isInitialized and specific loading states
-  const { activeSessions, pair, disconnect, isLoading, isInitializing, isPairing, error, isInitialized } = useWalletConnect();
-  const [uri, setUri] = useState("");
-
-  const handleConnect = () => {
-    if (!uri || !isInitialized) return; // Check initialization
-    pair(uri);
-  };
-
-  const activeSessionTopic = Object.keys(activeSessions)[0];
-  const connectedSession = activeSessionTopic ? activeSessions[activeSessionTopic] : null;
-
-  const handleDisconnect = () => {
-    if (connectedSession && isInitialized) {
-      // Check initialization
-      disconnect(connectedSession.topic);
-    }
-  };
-
-  // Determine overall busy state
-  const isBusy = isLoading || isInitializing || isPairing;
-
-  return (
-    <div className="p-4 border rounded-md bg-gray-50 space-y-4">
-      <h3 className="text-md font-semibold text-gray-700">Connect to dApp (via Lens Account)</h3>
-
-      {connectedSession ? (
-        // Display connected dApp info
-        <div className="space-y-3 p-3 bg-green-50 border border-green-200 rounded-md">
-          <p className="text-green-800 font-medium">Connected to:</p>
-          <div className="flex items-center space-x-3">
-            {connectedSession.peer.metadata.icons?.[0] && (
-              <Image
-                src={connectedSession.peer.metadata.icons[0]}
-                alt={`${connectedSession.peer.metadata.name} icon`}
-                width={40}
-                height={40}
-                className="rounded-full"
-                unoptimized
-              />
-            )}
-            <div>
-              <p className="text-sm font-semibold text-gray-900">{connectedSession.peer.metadata.name}</p>
-              <p className="text-xs text-gray-600 break-all">{connectedSession.peer.metadata.url}</p>
-            </div>
-          </div>
-          <p className="text-xs text-gray-500">
-            Topic: <span className="font-mono break-all">{connectedSession.topic}</span>
-          </p>
-          <button
-            onClick={handleDisconnect}
-            disabled={isBusy || !isInitialized} // Use combined busy state
-            className="w-full px-4 py-2 mt-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            {isBusy ? "Working..." : "Disconnect"}
-          </button>
-        </div>
-      ) : (
-        // Display connection form
-        <div className="space-y-2">
-          <label htmlFor="wc-uri" className="block text-sm font-medium text-gray-700">
-            Paste WalletConnect URI
-          </label>
-          <div className="flex space-x-2">
-            <input
-              id="wc-uri"
-              name="wc-uri"
-              type="text"
-              value={uri}
-              onChange={(e) => setUri(e.target.value)}
-              placeholder="wc:..."
-              className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100"
-              disabled={isBusy || !isInitialized} // Use combined busy state
-            />
-            <button
-              onClick={handleConnect}
-              disabled={!uri || isBusy || !isInitialized} // Use combined busy state
-              className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-            >
-              {isPairing ? "Pairing..." : isInitializing ? "Initializing..." : "Connect"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Display appropriate status/error messages */}
-      {error && !isBusy && <p className="text-red-600 text-sm mt-2">Error: {error}</p>}
-      {isPairing && <p className="text-indigo-600 text-sm mt-2">Pairing initiated, check your wallet...</p>}
-      {!isInitialized && !isInitializing && !error && <p className="text-orange-600 text-sm mt-2">WalletConnect service not ready.</p>}
-      {isInitializing && <p className="text-gray-500 text-sm mt-2">Initializing WalletConnect...</p>}
-    </div>
-  );
-}
-</file>
-
 <file path="src/contexts/LensAccountContext.tsx">
 // contexts/LensAccountContext.tsx
 "use client";
@@ -442,24 +130,17 @@ interface LensAccountState {
   clearAccount: () => void;
 }
 
-const LensAccountContext = createContext<LensAccountState | undefined>(
-  undefined
-);
+const LensAccountContext = createContext<LensAccountState | undefined>(undefined);
 
 interface LensAccountProviderProps {
   children: ReactNode;
 }
 
 export function LensAccountProvider({ children }: LensAccountProviderProps) {
-  const [lensAccountAddress, setLensAccountAddress] = useState<Address | null>(
-    null
-  );
+  const [lensAccountAddress, setLensAccountAddress] = useState<Address | null>(null);
   const [ownerAddress, setOwnerAddress] = useState<Address | null>(null);
 
-  const setVerifiedAccount = (
-    lensAddress: Address,
-    verifiedOwnerAddress: Address
-  ) => {
+  const setVerifiedAccount = (lensAddress: Address, verifiedOwnerAddress: Address) => {
     setLensAccountAddress(lensAddress);
     setOwnerAddress(verifiedOwnerAddress);
     console.log("Context Updated: Lens Account Set ->", lensAddress);
@@ -479,11 +160,7 @@ export function LensAccountProvider({ children }: LensAccountProviderProps) {
     clearAccount,
   };
 
-  return (
-    <LensAccountContext.Provider value={value}>
-      {children}
-    </LensAccountContext.Provider>
-  );
+  return <LensAccountContext.Provider value={value}>{children}</LensAccountContext.Provider>;
 }
 
 // Custom hook to use the context
@@ -491,273 +168,6 @@ export function useLensAccount() {
   const context = useContext(LensAccountContext);
   if (context === undefined) {
     throw new Error("useLensAccount must be used within a LensAccountProvider");
-  }
-  return context;
-}
-</file>
-
-<file path="src/contexts/WalletConnectProvider.tsx">
-// src/contexts/WalletConnectProvider.tsx
-"use client";
-
-import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback, useMemo } from "react";
-import { WalletConnectService } from "@/services/walletConnectService";
-import { SessionTypes } from "@walletconnect/types";
-import { IWalletKit, WalletKitTypes } from "@reown/walletkit";
-import { buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
-import { useLensAccount } from "./LensAccountContext";
-import { LENS_CHAIN_ID } from "@/lib/constants";
-
-// Define the state including initialization status
-interface WalletConnectContextState {
-  walletConnectService: WalletConnectService | null;
-  walletKitInstance: IWalletKit | null;
-  activeSessions: Record<string, SessionTypes.Struct>;
-  pair: (uri: string) => Promise<void>;
-  disconnect: (topic: string) => Promise<void>;
-  isLoading: boolean; // General loading/busy state
-  isInitializing: boolean; // Specific initialization state
-  isPairing: boolean; // Specific pairing state
-  error: string | null;
-  isInitialized: boolean; // Track service readiness
-}
-
-const WalletConnectContext = createContext<WalletConnectContextState | undefined>(undefined);
-
-interface WalletConnectProviderProps {
-  children: ReactNode;
-}
-
-const DAPP_METADATA: WalletKitTypes.Metadata = {
-  name: "Lens Account Interface",
-  description: "Interface for managing Lens Account via WalletConnect",
-  url: typeof window !== "undefined" ? window.location.origin : "http://localhost:3000",
-  icons: ["/favicon.ico"],
-};
-
-export function WalletConnectProvider({ children }: WalletConnectProviderProps) {
-  const [walletConnectService, setWalletConnectService] = useState<WalletConnectService | null>(null);
-  const [walletKitInstance, setWalletKitInstance] = useState<IWalletKit | null>(null);
-  const [activeSessions, setActiveSessions] = useState<Record<string, SessionTypes.Struct>>({});
-  const [isInitializing, setIsInitializing] = useState(true); // Start initializing
-  const [isPairing, setIsPairing] = useState(false); // Track pairing status separately
-  const [error, setError] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false); // Track service readiness
-
-  const { lensAccountAddress } = useLensAccount();
-  const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
-
-  // --- Initialization Effect ---
-  useEffect(() => {
-    if (!projectId) {
-      console.error("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set!");
-      setError("WalletConnect Project ID is missing.");
-      setIsInitializing(false);
-      setIsInitialized(false); // Mark as not initialized
-      return;
-    }
-
-    // Only run initialization once
-    if (!walletConnectService && !isInitialized && isInitializing) {
-      console.log("Creating and initializing WalletConnectService...");
-      const service = new WalletConnectService(projectId, DAPP_METADATA);
-      setWalletConnectService(service); // Set service instance immediately
-
-      service
-        .init() // init now returns the instance or undefined
-        .then((instance) => {
-          if (instance) {
-            setWalletKitInstance(instance);
-            setActiveSessions(instance.getActiveSessions() || {});
-            setIsInitialized(true); // Mark as initialized *after* successful init
-            console.log("WalletConnectService initialized successfully in Provider.");
-          } else {
-            setError("Failed to initialize WalletKit instance.");
-            setIsInitialized(false);
-          }
-        })
-        .catch((initError: unknown) => {
-          console.error("Initialization failed:", initError);
-          setError(`Initialization failed: ${(initError as Error).message}`);
-          setIsInitialized(false);
-        })
-        .finally(() => {
-          setIsInitializing(false); // Stop initializing state regardless of outcome
-        });
-    }
-    // Only depend on projectId. service instance is set inside.
-    // isInitialized and isInitializing prevent re-running.
-  }, [projectId, walletConnectService, isInitialized, isInitializing]);
-
-  // --- Event Listener Effect ---
-  useEffect(() => {
-    // Crucially, only attach listeners *after* the service is fully initialized
-    if (!walletConnectService || !isInitialized) {
-      console.log(">>> Provider: Skipping listener setup - service not initialized yet.");
-      return;
-    }
-
-    console.log(">>> Provider: Setting up event listeners (service initialized).");
-
-    const handlePairStatus = (status: string, message?: string) => {
-      console.log(">>> Provider: handlePairStatus:", status, message);
-      setIsPairing(status === "pairing");
-      if (status === "error") {
-        setError(message || "Pairing failed");
-      } else if (status === "paired") {
-        // Optional: can clear pairing status here, but session_connect is better indicator
-        // setIsPairing(false);
-      } else {
-        setError(null); // Clear error on non-error status
-      }
-    };
-
-    const handleSessionProposal = (proposal: WalletKitTypes.SessionProposal) => {
-      console.log(">>> Provider: handleSessionProposal received:", proposal.id);
-      if (!lensAccountAddress) {
-        setError("Cannot approve session: Lens Account Address missing.");
-        walletConnectService
-          .rejectSession(proposal, getSdkError("USER_REJECTED"))
-          .catch((rejectError) => console.error("Failed to reject session:", rejectError));
-        return;
-      }
-      try {
-        const approvedNamespaces = buildApprovedNamespaces({
-          proposal: proposal.params,
-          supportedNamespaces: {
-            eip155: {
-              chains: [`eip155:${LENS_CHAIN_ID}`],
-              methods: ["eth_sendTransaction", "personal_sign", "eth_signTypedData", "eth_signTypedData_v4"],
-              events: ["chainChanged", "accountsChanged"],
-              accounts: [`eip155:${LENS_CHAIN_ID}:${lensAccountAddress}`],
-            },
-          },
-        });
-        console.log(">>> Provider: Approving session:", proposal.id);
-        walletConnectService
-          .approveSession(proposal, approvedNamespaces)
-          .then((session) => {
-            console.log(">>> Provider: Session approved and acknowledged:", session.topic);
-            // session_connect handler below updates state
-          })
-          .catch((approveError: unknown) => {
-            console.error(">>> Provider: Failed to approve session:", approveError);
-            setError(`Failed to approve session: ${(approveError as Error).message}`);
-            walletConnectService
-              .rejectSession(proposal, getSdkError("USER_REJECTED"))
-              .catch((rejectError) => console.error(">>> Provider: Failed to reject session after approve error:", rejectError));
-          });
-      } catch (error: unknown) {
-        console.error(">>> Provider: Error building namespaces/approving:", error);
-        setError(`Error during session approval: ${(error as Error).message}`);
-        walletConnectService
-          .rejectSession(proposal, getSdkError("USER_REJECTED"))
-          .catch((rejectError) => console.error(">>> Provider: Failed to reject session after catch:", rejectError));
-      }
-    };
-
-    const handleSessionConnect = (session: SessionTypes.Struct) => {
-      console.log(">>> Provider: handleSessionConnect called:", session.topic);
-      setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
-      setIsPairing(false); // Pairing process is complete
-      setError(null);
-    };
-
-    const handleSessionDelete = (topic: string) => {
-      console.log(">>> Provider: handleSessionDelete called:", topic);
-      setActiveSessions((prev) => {
-        const newSessions = { ...prev };
-        delete newSessions[topic];
-        return newSessions;
-      });
-      setIsPairing(false); // Ensure pairing state is reset on disconnect
-    };
-
-    // Attach listeners
-    console.log(">>> Provider: Attaching listeners.");
-    walletConnectService.on("pair_status", handlePairStatus);
-    walletConnectService.on("session_proposal", handleSessionProposal);
-    walletConnectService.on("session_connect", handleSessionConnect);
-    walletConnectService.on("session_delete", handleSessionDelete);
-
-    // Cleanup function
-    return () => {
-      console.log(">>> Provider: Cleaning up event listeners.");
-      if (walletConnectService) {
-        walletConnectService.off("pair_status", handlePairStatus);
-        walletConnectService.off("session_proposal", handleSessionProposal);
-        walletConnectService.off("session_connect", handleSessionConnect);
-        walletConnectService.off("session_delete", handleSessionDelete);
-      }
-    };
-    // Rerun ONLY when service initialization status changes or lensAccountAddress changes
-  }, [walletConnectService, isInitialized, lensAccountAddress]);
-
-  // --- Exposed Context Functions ---
-  const pair = useCallback(
-    async (uri: string) => {
-      if (!walletConnectService || !isInitialized) {
-        // Check initialization status
-        setError("WalletConnect Service not ready for pairing.");
-        console.error("Attempted to pair before service was initialized.");
-        return;
-      }
-      setIsPairing(true); // Set specific pairing state
-      setError(null);
-      try {
-        await walletConnectService.pair(uri);
-        // Let handlePairStatus and handleSessionConnect manage loading/error state
-      } catch (e: unknown) {
-        console.error("Pairing failed in provider callback:", e);
-        // Error is handled by handlePairStatus listener
-      }
-    },
-    [walletConnectService, isInitialized] // Add isInitialized dependency
-  );
-
-  const disconnect = useCallback(
-    async (topic: string) => {
-      if (!walletConnectService || !isInitialized) {
-        // Check initialization
-        setError("WalletConnect Service not ready for disconnecting.");
-        return;
-      }
-      // Don't set isLoading/isPairing here, let session_delete handle UI
-      setError(null);
-      try {
-        await walletConnectService.disconnectSession(topic, getSdkError("USER_DISCONNECTED"));
-        // State update happens via session_delete listener
-      } catch (e: unknown) {
-        setError((e as Error).message || "Failed to disconnect");
-      }
-    },
-    [walletConnectService, isInitialized] // Add isInitialized dependency
-  );
-
-  const contextValue = useMemo(
-    () => ({
-      walletConnectService,
-      walletKitInstance,
-      activeSessions,
-      pair,
-      disconnect,
-      isLoading: isInitializing || isPairing, // Use combined loading state
-      isInitializing, // Expose specific initializing state
-      isPairing, // Expose specific pairing state
-      error,
-      isInitialized, // Expose initialization status
-    }),
-    [walletConnectService, walletKitInstance, activeSessions, pair, disconnect, isInitializing, isPairing, error, isInitialized]
-  );
-
-  return <WalletConnectContext.Provider value={contextValue}>{children}</WalletConnectContext.Provider>;
-}
-
-// Custom hook to use the context
-export function useWalletConnect() {
-  const context = useContext(WalletConnectContext);
-  if (context === undefined) {
-    throw new Error("useWalletConnect must be used within a WalletConnectProvider");
   }
   return context;
 }
@@ -795,9 +205,7 @@ import { lensChain } from "./constants";
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 
 if (!projectId) {
-  throw new Error(
-    "NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set in .env.local"
-  );
+  throw new Error("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set in .env.local");
 }
 
 export const config = createConfig(
@@ -810,10 +218,7 @@ export const config = createConfig(
     // Required App Info
     appName: "Lens Account Interface",
     appDescription: "Interact with your Lens Account",
-    appUrl:
-      typeof window !== "undefined"
-        ? window.location.origin
-        : "https://example.com",
+    appUrl: typeof window !== "undefined" ? window.location.origin : "https://example.com",
     appIcon: "/favicon.ico",
 
     // Chains to support
@@ -825,7 +230,7 @@ export const config = createConfig(
     },
 
     // ssr: true, // Keep commented unless SSR hydration with cookies is needed
-  })
+  }),
 );
 
 // Optional: Register config for global type inference
@@ -834,245 +239,6 @@ export const config = createConfig(
 //     config: typeof config
 //   }
 // }
-</file>
-
-<file path="src/services/walletConnectService.ts">
-// src/services/walletConnectService.ts
-import { WalletKit, IWalletKit, WalletKitTypes } from "@reown/walletkit";
-import { Core } from "@walletconnect/core";
-import { ICore, SessionTypes, SignClientTypes } from "@walletconnect/types";
-import { ErrorResponse } from "@walletconnect/jsonrpc-utils";
-import EventEmitter from "events";
-
-// Define the events that the service will emit
-export interface WalletConnectServiceEvents {
-  pair_status: (
-    status: "pairing" | "paired" | "error",
-    message?: string
-  ) => void;
-  session_proposal: (proposal: WalletKitTypes.SessionProposal) => void;
-  session_connect: (session: SessionTypes.Struct) => void;
-  session_delete: (topic: string) => void;
-}
-
-export class WalletConnectService extends EventEmitter {
-  private core: ICore | undefined;
-  private walletKit: IWalletKit | undefined;
-  private projectId: string;
-  private metadata: WalletKitTypes.Metadata;
-  private isInitialized = false;
-
-  constructor(projectId: string, metadata: WalletKitTypes.Metadata) {
-    super();
-    this.projectId = projectId;
-    this.metadata = JSON.parse(JSON.stringify(metadata));
-  }
-
-  async init(): Promise<IWalletKit | undefined> {
-    if (this.isInitialized) {
-      console.log("WalletConnectService already initialized");
-      return this.walletKit;
-    }
-    if (!this.projectId) {
-      throw new Error("Project ID is not defined for WalletConnectService");
-    }
-
-    try {
-      console.log("Initializing WalletConnect Core...");
-      this.core = new Core({ projectId: this.projectId });
-
-      console.log("Initializing WalletKit...");
-      this.walletKit = await WalletKit.init({
-        core: this.core,
-        metadata: this.metadata,
-      });
-
-      this.setupEventListeners();
-      this.isInitialized = true;
-      console.log("WalletConnectService initialized successfully");
-      return this.walletKit;
-    } catch (error: unknown) {
-      console.error("Failed to initialize WalletConnectService:", error);
-      throw error;
-    }
-  }
-
-  private setupEventListeners() {
-    if (!this.walletKit) {
-      console.error("WalletKit not initialized when setting up listeners.");
-      return;
-    }
-    if (!this.walletKit.engine?.signClient?.events) {
-      console.error(
-        "SignClient or its events emitter not available on engine."
-      );
-      return;
-    }
-
-    console.log("Setting up WalletKit event listeners...");
-
-    this.walletKit.on(
-      "session_proposal",
-      (proposal: WalletKitTypes.SessionProposal) => {
-        console.log(
-          "WalletConnectService received session_proposal:",
-          proposal
-        );
-        this.emit("session_proposal", proposal);
-      }
-    );
-
-    this.walletKit.on(
-      "session_delete",
-      (event: { id: number; topic: string }) => {
-        console.log("WalletConnectService received session_delete:", event);
-        console.log(
-          ">>> Service: Received session_delete from WalletKit:",
-          event
-        ); // <-- ADD LOG
-        this.emit("session_delete", event.topic);
-      }
-    );
-
-    this.walletKit.engine.signClient.events.on(
-      "session_connect",
-      (sessionArgs: SignClientTypes.EventArguments["session_connect"]) => {
-        console.log(
-          "WalletConnectService received session_connect from SignClient:",
-          sessionArgs
-        );
-        this.emit("session_connect", sessionArgs.session);
-      }
-    );
-  }
-
-  async pair(uri: string) {
-    if (!this.walletKit) {
-      throw new Error("WalletKit is not initialized.");
-    }
-    try {
-      console.log("Attempting to pair with URI:", uri);
-      this.emit("pair_status", "pairing");
-      await this.walletKit.core.pairing.pair({ uri });
-      console.log("Pairing initiated for URI:", uri);
-    } catch (error: unknown) {
-      console.error("Pairing failed:", error);
-      this.emit(
-        "pair_status",
-        "error",
-        (error as Error).message || "Pairing failed"
-      );
-      throw error;
-    }
-  }
-
-  async approveSession(
-    proposal: WalletKitTypes.SessionProposal,
-    approvedNamespaces: SessionTypes.Namespaces
-  ): Promise<SessionTypes.Struct> {
-    if (!this.walletKit) {
-      throw new Error("WalletKit is not initialized.");
-    }
-    try {
-      console.log("Approving session:", proposal.id, approvedNamespaces);
-      const session = await this.walletKit.approveSession({
-        id: proposal.id,
-        namespaces: approvedNamespaces,
-      });
-      console.log("Session approved and acknowledged:", session);
-      return session;
-    } catch (error: unknown) {
-      console.error("Failed to approve session:", error);
-      throw error;
-    }
-  }
-
-  async rejectSession(
-    proposal: WalletKitTypes.SessionProposal,
-    reason: ErrorResponse
-  ) {
-    if (!this.walletKit) {
-      throw new Error("WalletKit is not initialized.");
-    }
-    try {
-      console.log("Rejecting session:", proposal.id, reason);
-      await this.walletKit.rejectSession({
-        id: proposal.id,
-        reason: reason,
-      });
-      console.log("Session rejected:", proposal.id);
-    } catch (error: unknown) {
-      console.error("Failed to reject session:", error);
-      throw error;
-    }
-  }
-
-  async disconnectSession(topic: string, reason: ErrorResponse) {
-    if (!this.walletKit) {
-      throw new Error("WalletKit is not initialized.");
-    }
-    try {
-      console.log("Disconnecting session:", topic, reason);
-      await this.walletKit.disconnectSession({
-        topic: topic,
-        reason: reason,
-      });
-      console.log("Session disconnected:", topic);
-    } catch (error: unknown) {
-      console.error("Failed to disconnect session:", error);
-      throw error;
-    }
-  }
-
-  // Typed EventEmitter methods
-  on<E extends keyof WalletConnectServiceEvents>(
-    event: E,
-    listener: WalletConnectServiceEvents[E]
-  ): this {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return super.on(event, listener as (...args: any[]) => void);
-  }
-
-  once<E extends keyof WalletConnectServiceEvents>(
-    event: E,
-    listener: WalletConnectServiceEvents[E]
-  ): this {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return super.once(event, listener as (...args: any[]) => void);
-  }
-
-  off<E extends keyof WalletConnectServiceEvents>(
-    event: E,
-    listener: WalletConnectServiceEvents[E]
-  ): this {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return super.off(event, listener as (...args: any[]) => void);
-  }
-
-  removeListener<E extends keyof WalletConnectServiceEvents>(
-    event: E,
-    listener: WalletConnectServiceEvents[E]
-  ): this {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return super.removeListener(event, listener as (...args: any[]) => void);
-  }
-
-  emit<E extends keyof WalletConnectServiceEvents>(
-    event: E,
-    ...args: Parameters<WalletConnectServiceEvents[E]>
-  ): boolean {
-    return super.emit(event, ...args);
-  }
-
-  getWalletKitInstance(): IWalletKit | undefined {
-    return this.walletKit;
-  }
-
-  getActiveSessions(): Record<string, SessionTypes.Struct> {
-    if (!this.walletKit) return {};
-    return this.walletKit.getActiveSessions() || {};
-  }
-}
 </file>
 
 <file path="src/styles/globals.css">
@@ -1146,6 +312,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+</file>
+
+<file path=".prettierrc">
+{
+  "printWidth": 150
+}
 </file>
 
 <file path="eslint.config.mjs">
@@ -1530,9 +702,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}>
         {/* Wrap children with Providers */}
         <Providers /*initialState={initialState}*/>{children}</Providers>
       </body>
@@ -1597,12 +767,7 @@ export function AccountDisplay() {
   // Format balances safely
   const formattedNativeBalance =
     nativeBalanceData?.value !== undefined
-      ? parseFloat(
-          formatUnits(
-            nativeBalanceData.value,
-            lensChain.nativeCurrency.decimals
-          )
-        ).toFixed(4)
+      ? parseFloat(formatUnits(nativeBalanceData.value, lensChain.nativeCurrency.decimals)).toFixed(4)
       : "0.0000";
 
   const formattedWghoBalance =
@@ -1614,60 +779,610 @@ export function AccountDisplay() {
 
   return (
     <div className="p-4 border rounded-md bg-gray-50">
-      <h2 className="text-lg font-semibold mb-3 text-gray-700">
-        Account Balances
-      </h2>
-      {isLoading && (
-        <p className="text-gray-500 text-sm">Loading balances...</p>
-      )}
+      <h2 className="text-lg font-semibold mb-3 text-gray-700">Account Balances</h2>
+      {isLoading && <p className="text-gray-500 text-sm">Loading balances...</p>}
 
       {/* Native GHO Balance */}
       <div className="mb-2">
         {nativeBalanceError && !isLoadingNativeBalance && (
           <p className="text-red-600 text-sm">
-            Error loading GHO balance:{" "}
-            {(nativeBalanceError as BaseError).shortMessage ||
-              nativeBalanceError.message}
+            Error loading GHO balance: {(nativeBalanceError as BaseError).shortMessage || nativeBalanceError.message}
           </p>
         )}
-        {!nativeBalanceError &&
-          !isLoadingNativeBalance &&
-          lensAccountAddress && (
-            <p className="text-gray-800">
-              <span className="font-medium">Native GHO:</span>{" "}
-              <span className="font-mono text-lg">
-                {formattedNativeBalance}
-              </span>{" "}
-              {lensChain.nativeCurrency.symbol}
-            </p>
-          )}
+        {!nativeBalanceError && !isLoadingNativeBalance && lensAccountAddress && (
+          <p className="text-gray-800">
+            <span className="font-medium">Native GHO:</span> <span className="font-mono text-lg">{formattedNativeBalance}</span>{" "}
+            {lensChain.nativeCurrency.symbol}
+          </p>
+        )}
       </div>
 
       {/* WGHO Balance */}
       <div>
         {wghoBalanceError && !isLoadingWghoBalance && (
           <p className="text-red-600 text-sm">
-            Error loading WGHO balance:{" "}
-            {(wghoBalanceError as BaseError).shortMessage ||
-              wghoBalanceError.message}
+            Error loading WGHO balance: {(wghoBalanceError as BaseError).shortMessage || wghoBalanceError.message}
           </p>
         )}
         {!wghoBalanceError && !isLoadingWghoBalance && lensAccountAddress && (
           <p className="text-gray-800">
-            <span className="font-medium">WGHO Token:</span>{" "}
-            <span className="font-mono text-lg">{formattedWghoBalance}</span>{" "}
-            GHO
+            <span className="font-medium">WGHO Token:</span> <span className="font-mono text-lg">{formattedWghoBalance}</span> GHO
           </p>
         )}
       </div>
 
-      {!lensAccountAddress && !isLoading && (
-        <p className="text-gray-500 text-sm mt-2">
-          Cannot fetch balances without Lens Account address.
-        </p>
-      )}
+      {!lensAccountAddress && !isLoading && <p className="text-gray-500 text-sm mt-2">Cannot fetch balances without Lens Account address.</p>}
     </div>
   );
+}
+</file>
+
+<file path="src/components/DiscoveryForm.tsx">
+// components/DiscoveryForm.tsx
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useReadContract } from "wagmi";
+import { isAddress } from "viem";
+import { useDebounce } from "@/hooks/useDebounce";
+import { LENS_CHAIN_ID, LENS_GLOBAL_NAMESPACE_ADDRESS, LENS_GLOBAL_NAMESPACE_ABI } from "@/lib/constants";
+
+interface DiscoveryFormProps {
+  // Allow empty string or null when no valid address is found
+  onAccountAddressFound: (address: `0x${string}` | "") => void; // Changed type
+  initialUsername?: string;
+  initialAddress?: string;
+}
+
+export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", initialAddress = "" }: DiscoveryFormProps) {
+  const [username, setUsername] = useState(initialUsername);
+  const [address, setAddress] = useState(initialAddress);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+
+  const [lastEdited, setLastEdited] = useState<"username" | "address" | null>(initialUsername ? "username" : initialAddress ? "address" : null);
+
+  const debouncedUsername = useDebounce(username, 500);
+  const debouncedAddress = useDebounce(address, 500);
+
+  const {
+    data: addressFromUsername,
+    isLoading: isLoadingAddress,
+    error: addressError,
+    refetch: refetchAddress,
+  } = useReadContract({
+    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
+    abi: LENS_GLOBAL_NAMESPACE_ABI,
+    functionName: "accountOf",
+    args: [debouncedUsername || ""],
+    chainId: LENS_CHAIN_ID,
+    query: {
+      enabled: false,
+    },
+  });
+
+  const {
+    data: usernameFromAddress,
+    isLoading: isLoadingUsername,
+    error: usernameError,
+    refetch: refetchUsername,
+  } = useReadContract({
+    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
+    abi: LENS_GLOBAL_NAMESPACE_ABI,
+    functionName: "usernameOf",
+    args: [debouncedAddress as `0x${string}`],
+    chainId: LENS_CHAIN_ID,
+    query: {
+      enabled: false,
+    },
+  });
+
+  useEffect(() => {
+    if (debouncedUsername && lastEdited === "username") {
+      setLookupError(null);
+      console.log(`Looking up address for username: ${debouncedUsername}`);
+      refetchAddress();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedUsername, lastEdited]);
+
+  useEffect(() => {
+    if (debouncedAddress && isAddress(debouncedAddress) && lastEdited === "address") {
+      setLookupError(null);
+      console.log(`Looking up username for address: ${debouncedAddress}`);
+      refetchUsername();
+    } else if (debouncedAddress && !isAddress(debouncedAddress) && lastEdited === "address") {
+      setLookupError("Invalid address format");
+      onAccountAddressFound(""); // Use empty string
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedAddress, lastEdited]);
+
+  useEffect(() => {
+    if (addressFromUsername && isAddress(addressFromUsername) && lastEdited === "username") {
+      if (addressFromUsername === "0x0000000000000000000000000000000000000000") {
+        setLookupError(`No account found for username "${debouncedUsername}"`);
+        setAddress("");
+        onAccountAddressFound(""); // Use empty string
+      } else {
+        console.log(`Found address: ${addressFromUsername}`);
+        setAddress(addressFromUsername);
+        onAccountAddressFound(addressFromUsername);
+        setLookupError(null);
+      }
+    } else if (addressError && lastEdited === "username") {
+      console.error("Error fetching address:", addressError);
+      setLookupError("Error fetching address. Check console.");
+      onAccountAddressFound(""); // Use empty string
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addressFromUsername, addressError, lastEdited]);
+
+  useEffect(() => {
+    if (usernameFromAddress && lastEdited === "address") {
+      console.log(`Found username: ${usernameFromAddress}`);
+      setUsername(usernameFromAddress);
+      if (isAddress(debouncedAddress)) {
+        // Ensure address is still valid
+        onAccountAddressFound(debouncedAddress as `0x${string}`);
+      }
+      setLookupError(null);
+    } else if (usernameError && lastEdited === "address") {
+      console.log("No primary username found for address or error:", usernameError.message);
+      setUsername("");
+      if (isAddress(debouncedAddress)) {
+        onAccountAddressFound(debouncedAddress as `0x${string}`);
+      }
+      setLookupError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usernameFromAddress, usernameError, lastEdited, debouncedAddress]);
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value);
+    setLastEdited("username");
+    if (lastEdited !== "address") setAddress("");
+    onAccountAddressFound(""); // Use empty string
+    setLookupError(null);
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAddress(value);
+    setLastEdited("address");
+    if (lastEdited !== "username") setUsername("");
+    if (!isAddress(value) && value !== "") {
+      setLookupError("Invalid address format");
+      onAccountAddressFound(""); // Use empty string
+    } else {
+      setLookupError(null);
+      if (isAddress(value)) {
+        onAccountAddressFound(value as `0x${string}`);
+      } else {
+        onAccountAddressFound(""); // Use empty string
+      }
+    }
+  };
+
+  const isLoading = isLoadingAddress || isLoadingUsername;
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+          Lens Username
+        </label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          value={username}
+          onChange={handleUsernameChange}
+          placeholder="e.g. stani"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          aria-describedby="username-status"
+          disabled={isLoading && lastEdited === "address"}
+        />
+      </div>
+
+      <div>
+        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+          Account Address
+        </label>
+        <input
+          id="address"
+          name="address"
+          type="text"
+          value={address}
+          onChange={handleAddressChange}
+          placeholder="0x..."
+          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+            !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-300"
+          }`}
+          aria-describedby="address-status"
+          disabled={isLoading && lastEdited === "username"}
+        />
+      </div>
+      <div id="username-status" aria-live="polite" className="text-sm h-5">
+        {isLoading && lastEdited === "username" && <span className="text-gray-500">Checking username...</span>}
+      </div>
+      <div id="address-status" aria-live="polite" className="text-sm h-5">
+        {isLoading && lastEdited === "address" && <span className="text-gray-500">Checking address...</span>}
+        {lookupError && <span className="text-red-600">{lookupError}</span>}
+        {!lookupError && isAddress(address) && lastEdited !== "username" && <span className="text-green-600">Valid Address</span>}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/WcConnect.tsx">
+// src/components/WcConnect.tsx
+"use client";
+
+import React, { useState } from "react";
+import { useWalletConnect } from "@/contexts/WalletConnectProvider"; // Ensure correct path
+import Image from "next/image";
+
+export function WcConnect() {
+  // Destructure necessary state values including isInitialized and specific loading states
+  const { activeSessions, pair, disconnect, isLoading, isInitializing, isPairing, error, isInitialized } = useWalletConnect();
+  const [uri, setUri] = useState("");
+
+  const handleConnect = () => {
+    if (!uri || !isInitialized) return; // Check initialization
+    pair(uri);
+  };
+
+  const activeSessionTopic = Object.keys(activeSessions)[0];
+  const connectedSession = activeSessionTopic ? activeSessions[activeSessionTopic] : null;
+
+  const handleDisconnect = () => {
+    if (connectedSession && isInitialized) {
+      // Check initialization
+      disconnect(connectedSession.topic);
+    }
+  };
+
+  // Determine overall busy state
+  const isBusy = isLoading || isInitializing || isPairing;
+
+  return (
+    <div className="p-4 border rounded-md bg-gray-50 space-y-4">
+      <h3 className="text-md font-semibold text-gray-700">Connect to dApp (via Lens Account)</h3>
+
+      {connectedSession ? (
+        // Display connected dApp info
+        <div className="space-y-3 p-3 bg-green-50 border border-green-200 rounded-md">
+          <p className="text-green-800 font-medium">Connected to:</p>
+          <div className="flex items-center space-x-3">
+            {connectedSession.peer.metadata.icons?.[0] && (
+              <Image
+                src={connectedSession.peer.metadata.icons[0]}
+                alt={`${connectedSession.peer.metadata.name} icon`}
+                width={40}
+                height={40}
+                className="rounded-full"
+                unoptimized
+              />
+            )}
+            <div>
+              <p className="text-sm font-semibold text-gray-900">{connectedSession.peer.metadata.name}</p>
+              <p className="text-xs text-gray-600 break-all">{connectedSession.peer.metadata.url}</p>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500">
+            Topic: <span className="font-mono break-all">{connectedSession.topic}</span>
+          </p>
+          <button
+            onClick={handleDisconnect}
+            disabled={isBusy || !isInitialized} // Use combined busy state
+            className="w-full px-4 py-2 mt-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+          >
+            {isBusy ? "Working..." : "Disconnect"}
+          </button>
+        </div>
+      ) : (
+        // Display connection form
+        <div className="space-y-2">
+          <label htmlFor="wc-uri" className="block text-sm font-medium text-gray-700">
+            Paste WalletConnect URI
+          </label>
+          <div className="flex space-x-2">
+            <input
+              id="wc-uri"
+              name="wc-uri"
+              type="text"
+              value={uri}
+              onChange={(e) => setUri(e.target.value)}
+              placeholder="wc:..."
+              className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100"
+              disabled={isBusy || !isInitialized} // Use combined busy state
+            />
+            <button
+              onClick={handleConnect}
+              disabled={!uri || isBusy || !isInitialized} // Use combined busy state
+              className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+            >
+              {isPairing ? "Pairing..." : isInitializing ? "Initializing..." : "Connect"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Display appropriate status/error messages */}
+      {error && !isBusy && <p className="text-red-600 text-sm mt-2">Error: {error}</p>}
+      {isPairing && <p className="text-indigo-600 text-sm mt-2">Pairing initiated, check your wallet...</p>}
+      {!isInitialized && !isInitializing && !error && <p className="text-orange-600 text-sm mt-2">WalletConnect service not ready.</p>}
+      {isInitializing && <p className="text-gray-500 text-sm mt-2">Initializing WalletConnect...</p>}
+    </div>
+  );
+}
+</file>
+
+<file path="src/contexts/WalletConnectProvider.tsx">
+// src/contexts/WalletConnectProvider.tsx
+"use client";
+
+import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback, useMemo } from "react";
+import { WalletConnectService } from "@/services/walletConnectService";
+import { SessionTypes } from "@walletconnect/types";
+import { IWalletKit, WalletKitTypes } from "@reown/walletkit";
+import { buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
+import { useLensAccount } from "./LensAccountContext";
+import { LENS_CHAIN_ID } from "@/lib/constants";
+
+// Define the state including initialization status
+interface WalletConnectContextState {
+  walletConnectService: WalletConnectService | null;
+  walletKitInstance: IWalletKit | null;
+  activeSessions: Record<string, SessionTypes.Struct>;
+  pair: (uri: string) => Promise<void>;
+  disconnect: (topic: string) => Promise<void>;
+  isLoading: boolean; // General loading/busy state
+  isInitializing: boolean; // Specific initialization state
+  isPairing: boolean; // Specific pairing state
+  error: string | null;
+  isInitialized: boolean; // Track service readiness
+}
+
+const WalletConnectContext = createContext<WalletConnectContextState | undefined>(undefined);
+
+interface WalletConnectProviderProps {
+  children: ReactNode;
+}
+
+const DAPP_METADATA: WalletKitTypes.Metadata = {
+  name: "Lens Account Interface",
+  description: "Interface for managing Lens Account via WalletConnect",
+  url: typeof window !== "undefined" ? window.location.origin : "http://localhost:3000",
+  icons: ["/favicon.ico"],
+};
+
+export function WalletConnectProvider({ children }: WalletConnectProviderProps) {
+  const [walletConnectService, setWalletConnectService] = useState<WalletConnectService | null>(null);
+  const [walletKitInstance, setWalletKitInstance] = useState<IWalletKit | null>(null);
+  const [activeSessions, setActiveSessions] = useState<Record<string, SessionTypes.Struct>>({});
+  const [isInitializing, setIsInitializing] = useState(true); // Start initializing
+  const [isPairing, setIsPairing] = useState(false); // Track pairing status separately
+  const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false); // Track service readiness
+
+  const { lensAccountAddress } = useLensAccount();
+  const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
+
+  // --- Initialization Effect ---
+  useEffect(() => {
+    if (!projectId) {
+      console.error("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set!");
+      setError("WalletConnect Project ID is missing.");
+      setIsInitializing(false);
+      setIsInitialized(false); // Mark as not initialized
+      return;
+    }
+
+    // Only run initialization once
+    if (!walletConnectService && !isInitialized && isInitializing) {
+      console.log("Creating and initializing WalletConnectService...");
+      const service = new WalletConnectService(projectId, DAPP_METADATA);
+      setWalletConnectService(service); // Set service instance immediately
+
+      service
+        .init() // init now returns the instance or undefined
+        .then((instance) => {
+          if (instance) {
+            setWalletKitInstance(instance);
+            setActiveSessions(instance.getActiveSessions() || {});
+            setIsInitialized(true); // Mark as initialized *after* successful init
+            console.log("WalletConnectService initialized successfully in Provider.");
+          } else {
+            setError("Failed to initialize WalletKit instance.");
+            setIsInitialized(false);
+          }
+        })
+        .catch((initError: unknown) => {
+          console.error("Initialization failed:", initError);
+          setError(`Initialization failed: ${(initError as Error).message}`);
+          setIsInitialized(false);
+        })
+        .finally(() => {
+          setIsInitializing(false); // Stop initializing state regardless of outcome
+        });
+    }
+    // Only depend on projectId. service instance is set inside.
+    // isInitialized and isInitializing prevent re-running.
+  }, [projectId, walletConnectService, isInitialized, isInitializing]);
+
+  // --- Event Listener Effect ---
+  useEffect(() => {
+    // Crucially, only attach listeners *after* the service is fully initialized
+    if (!walletConnectService || !isInitialized) {
+      console.log(">>> Provider: Skipping listener setup - service not initialized yet.");
+      return;
+    }
+
+    console.log(">>> Provider: Setting up event listeners (service initialized).");
+
+    const handlePairStatus = (status: string, message?: string) => {
+      console.log(">>> Provider: handlePairStatus:", status, message);
+      setIsPairing(status === "pairing");
+      if (status === "error") {
+        setError(message || "Pairing failed");
+      } else if (status === "paired") {
+        // Optional: can clear pairing status here, but session_connect is better indicator
+        // setIsPairing(false);
+      } else {
+        setError(null); // Clear error on non-error status
+      }
+    };
+
+    const handleSessionProposal = (proposal: WalletKitTypes.SessionProposal) => {
+      console.log(">>> Provider: handleSessionProposal received:", proposal.id);
+      if (!lensAccountAddress) {
+        setError("Cannot approve session: Lens Account Address missing.");
+        walletConnectService
+          .rejectSession(proposal, getSdkError("USER_REJECTED"))
+          .catch((rejectError) => console.error("Failed to reject session:", rejectError));
+        return;
+      }
+      try {
+        const approvedNamespaces = buildApprovedNamespaces({
+          proposal: proposal.params,
+          supportedNamespaces: {
+            eip155: {
+              chains: [`eip155:${LENS_CHAIN_ID}`],
+              methods: ["eth_sendTransaction", "personal_sign", "eth_signTypedData", "eth_signTypedData_v4"],
+              events: ["chainChanged", "accountsChanged"],
+              accounts: [`eip155:${LENS_CHAIN_ID}:${lensAccountAddress}`],
+            },
+          },
+        });
+        console.log(">>> Provider: Approving session:", proposal.id);
+        walletConnectService
+          .approveSession(proposal, approvedNamespaces)
+          .then((session) => {
+            console.log(">>> Provider: Session approved and acknowledged:", session.topic);
+            // session_connect handler below updates state
+          })
+          .catch((approveError: unknown) => {
+            console.error(">>> Provider: Failed to approve session:", approveError);
+            setError(`Failed to approve session: ${(approveError as Error).message}`);
+            walletConnectService
+              .rejectSession(proposal, getSdkError("USER_REJECTED"))
+              .catch((rejectError) => console.error(">>> Provider: Failed to reject session after approve error:", rejectError));
+          });
+      } catch (error: unknown) {
+        console.error(">>> Provider: Error building namespaces/approving:", error);
+        setError(`Error during session approval: ${(error as Error).message}`);
+        walletConnectService
+          .rejectSession(proposal, getSdkError("USER_REJECTED"))
+          .catch((rejectError) => console.error(">>> Provider: Failed to reject session after catch:", rejectError));
+      }
+    };
+
+    const handleSessionConnect = (session: SessionTypes.Struct) => {
+      console.log(">>> Provider: handleSessionConnect called:", session.topic);
+      setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
+      setIsPairing(false); // Pairing process is complete
+      setError(null);
+    };
+
+    const handleSessionDelete = (topic: string) => {
+      console.log(">>> Provider: handleSessionDelete called:", topic);
+      setActiveSessions((prev) => {
+        const newSessions = { ...prev };
+        delete newSessions[topic];
+        return newSessions;
+      });
+      setIsPairing(false); // Ensure pairing state is reset on disconnect
+    };
+
+    // Attach listeners
+    console.log(">>> Provider: Attaching listeners.");
+    walletConnectService.on("pair_status", handlePairStatus);
+    walletConnectService.on("session_proposal", handleSessionProposal);
+    walletConnectService.on("session_connect", handleSessionConnect);
+    walletConnectService.on("session_delete", handleSessionDelete);
+
+    // Cleanup function
+    return () => {
+      console.log(">>> Provider: Cleaning up event listeners.");
+      if (walletConnectService) {
+        walletConnectService.off("pair_status", handlePairStatus);
+        walletConnectService.off("session_proposal", handleSessionProposal);
+        walletConnectService.off("session_connect", handleSessionConnect);
+        walletConnectService.off("session_delete", handleSessionDelete);
+      }
+    };
+    // Rerun ONLY when service initialization status changes or lensAccountAddress changes
+  }, [walletConnectService, isInitialized, lensAccountAddress]);
+
+  // --- Exposed Context Functions ---
+  const pair = useCallback(
+    async (uri: string) => {
+      if (!walletConnectService || !isInitialized) {
+        // Check initialization status
+        setError("WalletConnect Service not ready for pairing.");
+        console.error("Attempted to pair before service was initialized.");
+        return;
+      }
+      setIsPairing(true); // Set specific pairing state
+      setError(null);
+      try {
+        await walletConnectService.pair(uri);
+        // Let handlePairStatus and handleSessionConnect manage loading/error state
+      } catch (e: unknown) {
+        console.error("Pairing failed in provider callback:", e);
+        // Error is handled by handlePairStatus listener
+      }
+    },
+    [walletConnectService, isInitialized], // Add isInitialized dependency
+  );
+
+  const disconnect = useCallback(
+    async (topic: string) => {
+      if (!walletConnectService || !isInitialized) {
+        // Check initialization
+        setError("WalletConnect Service not ready for disconnecting.");
+        return;
+      }
+      // Don't set isLoading/isPairing here, let session_delete handle UI
+      setError(null);
+      try {
+        await walletConnectService.disconnectSession(topic, getSdkError("USER_DISCONNECTED"));
+        // State update happens via session_delete listener
+      } catch (e: unknown) {
+        setError((e as Error).message || "Failed to disconnect");
+      }
+    },
+    [walletConnectService, isInitialized], // Add isInitialized dependency
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      walletConnectService,
+      walletKitInstance,
+      activeSessions,
+      pair,
+      disconnect,
+      isLoading: isInitializing || isPairing, // Use combined loading state
+      isInitializing, // Expose specific initializing state
+      isPairing, // Expose specific pairing state
+      error,
+      isInitialized, // Expose initialization status
+    }),
+    [walletConnectService, walletKitInstance, activeSessions, pair, disconnect, isInitializing, isPairing, error, isInitialized],
+  );
+
+  return <WalletConnectContext.Provider value={contextValue}>{children}</WalletConnectContext.Provider>;
+}
+
+// Custom hook to use the context
+export function useWalletConnect() {
+  const context = useContext(WalletConnectContext);
+  if (context === undefined) {
+    throw new Error("useWalletConnect must be used within a WalletConnectProvider");
+  }
+  return context;
 }
 </file>
 
@@ -1693,8 +1408,7 @@ export const lensChain = defineChain({
 });
 
 // --- Contract Addresses ---
-export const LENS_GLOBAL_NAMESPACE_ADDRESS =
-  "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615";
+export const LENS_GLOBAL_NAMESPACE_ADDRESS = "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615";
 
 // --- ABIs ---
 export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
@@ -1709,9 +1423,198 @@ export const LENS_ACCOUNT_ABI = parseAbi([
 ]);
 
 export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
-export const ERC20_ABI = parseAbi([
-  "function balanceOf(address owner) view returns (uint256)",
-]);
+export const ERC20_ABI = parseAbi(["function balanceOf(address owner) view returns (uint256)"]);
+</file>
+
+<file path="src/services/walletConnectService.ts">
+// src/services/walletConnectService.ts
+import { WalletKit, IWalletKit, WalletKitTypes } from "@reown/walletkit";
+import { Core } from "@walletconnect/core";
+import { ICore, SessionTypes, SignClientTypes } from "@walletconnect/types";
+import { ErrorResponse } from "@walletconnect/jsonrpc-utils";
+import EventEmitter from "events";
+
+// Define the events that the service will emit
+export interface WalletConnectServiceEvents {
+  pair_status: (status: "pairing" | "paired" | "error", message?: string) => void;
+  session_proposal: (proposal: WalletKitTypes.SessionProposal) => void;
+  session_connect: (session: SessionTypes.Struct) => void;
+  session_delete: (topic: string) => void;
+}
+
+export class WalletConnectService extends EventEmitter {
+  private core: ICore | undefined;
+  private walletKit: IWalletKit | undefined;
+  private projectId: string;
+  private metadata: WalletKitTypes.Metadata;
+  private isInitialized = false;
+
+  constructor(projectId: string, metadata: WalletKitTypes.Metadata) {
+    super();
+    this.projectId = projectId;
+    this.metadata = JSON.parse(JSON.stringify(metadata));
+  }
+
+  async init(): Promise<IWalletKit | undefined> {
+    if (this.isInitialized) {
+      console.log("WalletConnectService already initialized");
+      return this.walletKit;
+    }
+    if (!this.projectId) {
+      throw new Error("Project ID is not defined for WalletConnectService");
+    }
+
+    try {
+      console.log("Initializing WalletConnect Core...");
+      this.core = new Core({ projectId: this.projectId });
+
+      console.log("Initializing WalletKit...");
+      this.walletKit = await WalletKit.init({
+        core: this.core,
+        metadata: this.metadata,
+      });
+
+      this.setupEventListeners();
+      this.isInitialized = true;
+      console.log("WalletConnectService initialized successfully");
+      return this.walletKit;
+    } catch (error: unknown) {
+      console.error("Failed to initialize WalletConnectService:", error);
+      throw error;
+    }
+  }
+
+  private setupEventListeners() {
+    if (!this.walletKit) {
+      console.error("WalletKit not initialized when setting up listeners.");
+      return;
+    }
+    if (!this.walletKit.engine?.signClient?.events) {
+      console.error("SignClient or its events emitter not available on engine.");
+      return;
+    }
+
+    console.log("Setting up WalletKit event listeners...");
+
+    this.walletKit.on("session_proposal", (proposal: WalletKitTypes.SessionProposal) => {
+      console.log("WalletConnectService received session_proposal:", proposal);
+      this.emit("session_proposal", proposal);
+    });
+
+    this.walletKit.on("session_delete", (event: { id: number; topic: string }) => {
+      console.log("WalletConnectService received session_delete:", event);
+      console.log(">>> Service: Received session_delete from WalletKit:", event); // <-- ADD LOG
+      this.emit("session_delete", event.topic);
+    });
+
+    this.walletKit.engine.signClient.events.on("session_connect", (sessionArgs: SignClientTypes.EventArguments["session_connect"]) => {
+      console.log("WalletConnectService received session_connect from SignClient:", sessionArgs);
+      this.emit("session_connect", sessionArgs.session);
+    });
+  }
+
+  async pair(uri: string) {
+    if (!this.walletKit) {
+      throw new Error("WalletKit is not initialized.");
+    }
+    try {
+      console.log("Attempting to pair with URI:", uri);
+      this.emit("pair_status", "pairing");
+      await this.walletKit.core.pairing.pair({ uri });
+      console.log("Pairing initiated for URI:", uri);
+    } catch (error: unknown) {
+      console.error("Pairing failed:", error);
+      this.emit("pair_status", "error", (error as Error).message || "Pairing failed");
+      throw error;
+    }
+  }
+
+  async approveSession(proposal: WalletKitTypes.SessionProposal, approvedNamespaces: SessionTypes.Namespaces): Promise<SessionTypes.Struct> {
+    if (!this.walletKit) {
+      throw new Error("WalletKit is not initialized.");
+    }
+    try {
+      console.log("Approving session:", proposal.id, approvedNamespaces);
+      const session = await this.walletKit.approveSession({
+        id: proposal.id,
+        namespaces: approvedNamespaces,
+      });
+      console.log("Session approved and acknowledged:", session);
+      return session;
+    } catch (error: unknown) {
+      console.error("Failed to approve session:", error);
+      throw error;
+    }
+  }
+
+  async rejectSession(proposal: WalletKitTypes.SessionProposal, reason: ErrorResponse) {
+    if (!this.walletKit) {
+      throw new Error("WalletKit is not initialized.");
+    }
+    try {
+      console.log("Rejecting session:", proposal.id, reason);
+      await this.walletKit.rejectSession({
+        id: proposal.id,
+        reason: reason,
+      });
+      console.log("Session rejected:", proposal.id);
+    } catch (error: unknown) {
+      console.error("Failed to reject session:", error);
+      throw error;
+    }
+  }
+
+  async disconnectSession(topic: string, reason: ErrorResponse) {
+    if (!this.walletKit) {
+      throw new Error("WalletKit is not initialized.");
+    }
+    try {
+      console.log("Disconnecting session:", topic, reason);
+      await this.walletKit.disconnectSession({
+        topic: topic,
+        reason: reason,
+      });
+      console.log("Session disconnected:", topic);
+    } catch (error: unknown) {
+      console.error("Failed to disconnect session:", error);
+      throw error;
+    }
+  }
+
+  // Typed EventEmitter methods
+  on<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return super.on(event, listener as (...args: any[]) => void);
+  }
+
+  once<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return super.once(event, listener as (...args: any[]) => void);
+  }
+
+  off<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return super.off(event, listener as (...args: any[]) => void);
+  }
+
+  removeListener<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return super.removeListener(event, listener as (...args: any[]) => void);
+  }
+
+  emit<E extends keyof WalletConnectServiceEvents>(event: E, ...args: Parameters<WalletConnectServiceEvents[E]>): boolean {
+    return super.emit(event, ...args);
+  }
+
+  getWalletKitInstance(): IWalletKit | undefined {
+    return this.walletKit;
+  }
+
+  getActiveSessions(): Record<string, SessionTypes.Struct> {
+    if (!this.walletKit) return {};
+    return this.walletKit.getActiveSessions() || {};
+  }
+}
 </file>
 
 <file path="Spec.technical.md">
@@ -1997,51 +1900,6 @@ export function Providers({ children }: Props) {
 }
 </file>
 
-<file path="package.json">
-{
-  "name": "lens-account-interface4",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "prepare": "husky",
-    "generate-llms": "repomix --include \"*.*,src\" -o llms.txt"
-  },
-  "dependencies": {
-    "@reown/walletkit": "^1.2.3",
-    "@tanstack/react-query": "^5.74.4",
-    "@walletconnect/core": "^2.20.0",
-    "@walletconnect/jsonrpc-utils": "^1.0.8",
-    "@walletconnect/utils": "^2.20.0",
-    "connectkit": "^1.9.0",
-    "next": "15.3.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "viem": "^2.27.2",
-    "wagmi": "^2.14.16"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/webpack": "^5.28.5",
-    "@walletconnect/types": "^2.20.0",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.1",
-    "husky": "^9.1.7",
-    "pino-pretty": "^13.0.0",
-    "repomix": "^0.3.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
-}
-</file>
-
 <file path="src/app/dashboard/page.tsx">
 // src/app/dashboard/page.tsx
 "use client";
@@ -2096,20 +1954,12 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold mb-4 text-center">Dashboard</h1>
         <div className="space-y-6">
           <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
-            <p className="text-sm font-medium text-gray-700">
-              Connected Owner Wallet:
-            </p>
-            <p className="text-xs text-gray-600 break-words font-mono">
-              {ownerAddress}
-            </p>
+            <p className="text-sm font-medium text-gray-700">Connected Owner Wallet:</p>
+            <p className="text-xs text-gray-600 break-words font-mono">{ownerAddress}</p>
           </div>
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-sm font-medium text-blue-800">
-              Managing Lens Account:
-            </p>
-            <p className="text-xs text-blue-700 break-words font-mono">
-              {lensAccountAddress}
-            </p>
+            <p className="text-sm font-medium text-blue-800">Managing Lens Account:</p>
+            <p className="text-xs text-blue-700 break-words font-mono">{lensAccountAddress}</p>
           </div>
 
           <AccountDisplay />
@@ -2119,9 +1969,7 @@ export default function Dashboard() {
 
           {/* Placeholder for Stage 5 content (WC Requests) */}
           <div className="p-4 border rounded-md bg-gray-50">
-            <p className="text-gray-600">
-              WalletConnect request display will appear here (Stage 5).
-            </p>
+            <p className="text-gray-600">WalletConnect request display will appear here (Stage 5).</p>
           </div>
         </div>
       </div>
@@ -2144,14 +1992,10 @@ import { useLensAccount } from "@/contexts/LensAccountContext"; // Import the co
 import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants";
 
 export default function Home() {
-  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">(
-    ""
-  );
+  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">("");
   const [expectedOwner, setExpectedOwner] = useState<Address | null>(null);
   const [ownerFetchError, setOwnerFetchError] = useState<string | null>(null);
-  const [verificationError, setVerificationError] = useState<string | null>(
-    null
-  ); // State for verification errors
+  const [verificationError, setVerificationError] = useState<string | null>(null); // State for verification errors
 
   const {
     address: connectedAddress,
@@ -2199,9 +2043,7 @@ export default function Home() {
   useEffect(() => {
     if (ownerError) {
       console.error("Error fetching owner:", ownerError);
-      setOwnerFetchError(
-        "Could not fetch account owner. Ensure the address is correct and on Lens Chain."
-      );
+      setOwnerFetchError("Could not fetch account owner. Ensure the address is correct and on Lens Chain.");
       setExpectedOwner(null);
     } else if (isAddress(lensAccountAddress)) {
       setOwnerFetchError(null);
@@ -2238,95 +2080,104 @@ export default function Home() {
           connected: connectedAddress,
           expected: expectedOwner,
         });
-        setVerificationError(
-          `Incorrect owner connected. Please connect with wallet: ${expectedOwner}`
-        );
+        setVerificationError(`Incorrect owner connected. Please connect with wallet: ${expectedOwner}`);
         clearContext();
       }
     }
-  }, [
-    connectedAddress,
-    connectedChainId,
-    expectedOwner,
-    lensAccountAddress,
-    isConnected,
-    router,
-    setVerifiedAccount,
-    clearContext,
-  ]);
+  }, [connectedAddress, connectedChainId, expectedOwner, lensAccountAddress, isConnected, router, setVerifiedAccount, clearContext]);
 
-  const showConnectButton =
-    expectedOwner && !isLoadingOwner && !ownerFetchError;
+  const showConnectButton = expectedOwner && !isLoadingOwner && !ownerFetchError;
   // const connectButtonDisabled = // REMOVED - Unused
   //   !!verificationError || connectedChainId !== LENS_CHAIN_ID;
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       <div className="w-full max-w-lg p-8 space-y-6 bg-white rounded-xl shadow-lg">
-        <h1 className="text-2xl font-bold text-center text-gray-800">
-          Lens Account Interface
-        </h1>
-        <p className="text-center text-gray-600">
-          Find your Lens Account by username or address.
-        </p>
+        <h1 className="text-2xl font-bold text-center text-gray-800">Lens Account Interface</h1>
+        <p className="text-center text-gray-600">Find your Lens Account by username or address.</p>
 
         <DiscoveryForm onAccountAddressFound={handleAccountFound} />
 
         <div className="mt-6 text-center space-y-3">
-          {isAddress(lensAccountAddress) && isLoadingOwner && (
-            <p className="text-gray-500">Fetching owner...</p>
-          )}
+          {isAddress(lensAccountAddress) && isLoadingOwner && <p className="text-gray-500">Fetching owner...</p>}
 
-          {ownerFetchError && !isLoadingOwner && (
-            <p className="text-red-600">{ownerFetchError}</p>
-          )}
+          {ownerFetchError && !isLoadingOwner && <p className="text-red-600">{ownerFetchError}</p>}
 
           {expectedOwner && !isLoadingOwner && !ownerFetchError && (
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-sm font-medium text-blue-800">
-                Identified Account Owner:
-              </p>
-              <p className="text-xs text-blue-700 break-words font-mono">
-                {expectedOwner}
-              </p>
-              {!isConnected && (
-                <p className="text-xs text-blue-600 mt-1">
-                  Connect this wallet to proceed.
-                </p>
-              )}
+              <p className="text-sm font-medium text-blue-800">Identified Account Owner:</p>
+              <p className="text-xs text-blue-700 break-words font-mono">{expectedOwner}</p>
+              {!isConnected && <p className="text-xs text-blue-600 mt-1">Connect this wallet to proceed.</p>}
             </div>
           )}
 
           {/* Verification Error Display */}
-          {verificationError && (
-            <p className="text-sm text-red-600 mt-2">{verificationError}</p>
-          )}
+          {verificationError && <p className="text-sm text-red-600 mt-2">{verificationError}</p>}
 
           {/* Only show Connect Button when expected owner is loaded and no fetch error */}
           {showConnectButton && (
             <div className="pt-2">
               {/* ConnectKit handles its own disabled state based on connection status */}
               <ConnectOwnerButton />
-              {isConnected && connectedChainId !== LENS_CHAIN_ID && (
-                <p className="text-xs text-orange-600 mt-1">
-                  Waiting for network switch...
-                </p>
-              )}
+              {isConnected && connectedChainId !== LENS_CHAIN_ID && <p className="text-xs text-orange-600 mt-1">Waiting for network switch...</p>}
             </div>
           )}
 
-          {!isAddress(lensAccountAddress) &&
-            !expectedOwner &&
-            !isLoadingOwner && (
-              <p className="text-sm text-gray-500">
-                Enter a Lens username or account address above to find the
-                owner.
-              </p>
-            )}
+          {!isAddress(lensAccountAddress) && !expectedOwner && !isLoadingOwner && (
+            <p className="text-sm text-gray-500">Enter a Lens username or account address above to find the owner.</p>
+          )}
         </div>
       </div>
     </main>
   );
+}
+</file>
+
+<file path="package.json">
+{
+  "name": "lens-account-interface4",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prepare": "husky",
+    "generate-llms": "repomix --include \"*.*,src\" -o llms.txt",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md,json}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
+  },
+  "dependencies": {
+    "@reown/walletkit": "^1.2.3",
+    "@tanstack/react-query": "^5.74.4",
+    "@walletconnect/core": "^2.20.0",
+    "@walletconnect/jsonrpc-utils": "^1.0.8",
+    "@walletconnect/utils": "^2.20.0",
+    "connectkit": "^1.9.0",
+    "next": "15.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.27.2",
+    "wagmi": "^2.14.16"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/webpack": "^5.28.5",
+    "@walletconnect/types": "^2.20.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "husky": "^9.1.7",
+    "pino-pretty": "^13.0.0",
+    "prettier": "^3.5.3",
+    "repomix": "^0.3.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
 }
 </file>
 
