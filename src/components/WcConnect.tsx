@@ -5,6 +5,53 @@ import React, { useState, useEffect } from "react";
 import { useWalletConnect } from "@/contexts/WalletConnectProvider"; // Ensure correct path
 import Image from "next/image";
 
+// Default/Fallback Icon
+const FallbackIcon = () => <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">?</div>;
+
+// Helper function to resolve icon URL
+const resolveIconUrl = (iconPath: string | null | undefined, baseUrl: string | null | undefined): string | undefined => {
+  if (!iconPath) return undefined;
+
+  try {
+    // Handle absolute URLs
+    if (iconPath.startsWith("http://") || iconPath.startsWith("https://")) {
+      return iconPath;
+    }
+    // Handle root-relative paths if base URL exists
+    if (iconPath.startsWith("/") && baseUrl) {
+      const origin = new URL(baseUrl).origin;
+      return `${origin}${iconPath}`;
+    }
+    console.warn("Invalid icon URL format:", iconPath);
+    return undefined;
+  } catch (e) {
+    console.warn("Error resolving icon URL:", e);
+    return undefined;
+  }
+};
+
+// Icon component with error handling
+const DAppIcon = ({ iconUrl, name, size = 40 }: { iconUrl?: string; name: string; size?: number }) => {
+  const [hasError, setHasError] = useState(false);
+
+  if (!iconUrl || hasError) return <FallbackIcon />;
+
+  return (
+    <Image
+      src={iconUrl}
+      alt={`${name} icon`}
+      width={size}
+      height={size}
+      className="rounded-full"
+      unoptimized
+      onError={() => {
+        console.warn("Failed to load icon:", iconUrl);
+        setHasError(true);
+      }}
+    />
+  );
+};
+
 export function WcConnect() {
   // Destructure states from the refactored provider, including isInitializing
   const {
@@ -65,6 +112,15 @@ export function WcConnect() {
   const approveButtonText = isLoading ? "Working..." : "Approve Session";
   const rejectButtonText = isLoading ? "Working..." : "Reject Session";
 
+  // Resolve icon URLs
+  const connectedDAppIconUrl = connectedSession
+    ? resolveIconUrl(connectedSession.peer.metadata.icons?.[0] ?? undefined, connectedSession.peer.metadata.url ?? undefined)
+    : undefined;
+
+  const proposalIconUrl = pendingProposal
+    ? resolveIconUrl(pendingProposal.params.proposer.metadata.icons?.[0] ?? undefined, pendingProposal.params.proposer.metadata.url ?? undefined)
+    : undefined;
+
   return (
     <div className="p-4 border rounded-md bg-gray-50 space-y-4">
       <h3 className="text-md font-semibold text-gray-700">Connect to dApp (via Lens Account)</h3>
@@ -74,16 +130,7 @@ export function WcConnect() {
         <div className="p-3 border border-yellow-300 bg-yellow-50 rounded-md space-y-2">
           <p className="text-sm font-medium text-yellow-800">Connection Request from:</p>
           <div className="flex items-center space-x-2">
-            {pendingProposal.params.proposer.metadata.icons?.[0] && (
-              <Image
-                src={pendingProposal.params.proposer.metadata.icons[0]}
-                alt={`${pendingProposal.params.proposer.metadata.name} icon`}
-                width={30}
-                height={30}
-                className="rounded-full"
-                unoptimized
-              />
-            )}
+            <DAppIcon iconUrl={proposalIconUrl} name={pendingProposal.params.proposer.metadata.name} size={30} />
             <span className="text-sm text-gray-700">{pendingProposal.params.proposer.metadata.name}</span>
           </div>
           {/* TODO: Display requested permissions details if needed */}
@@ -112,16 +159,7 @@ export function WcConnect() {
           {/* Display connected dApp info */}
           <p className="text-green-800 font-medium">Connected to:</p>
           <div className="flex items-center space-x-3">
-            {connectedSession.peer.metadata.icons?.[0] && (
-              <Image
-                src={connectedSession.peer.metadata.icons[0]}
-                alt={`${connectedSession.peer.metadata.name} icon`}
-                width={40}
-                height={40}
-                className="rounded-full"
-                unoptimized
-              />
-            )}
+            <DAppIcon iconUrl={connectedDAppIconUrl} name={connectedSession.peer.metadata.name} size={40} />
             <div>
               <p className="text-sm font-semibold text-gray-900">{connectedSession.peer.metadata.name}</p>
               <p className="text-xs text-gray-600 break-all">{connectedSession.peer.metadata.url}</p>
