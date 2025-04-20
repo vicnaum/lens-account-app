@@ -1,0 +1,1457 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: *.*, src
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+src/
+  app/
+    layout.tsx
+    page.tsx
+    providers.tsx
+  components/
+    DiscoveryForm.tsx
+  hooks/
+    useDebounce.ts
+  lib/
+    constants.ts
+    wagmi.ts
+  styles/
+    globals.css
+.gitignore
+DEVELOPMENT_PLAN.md
+eslint.config.mjs
+next.config.ts
+package.json
+postcss.config.mjs
+README.md
+Spec.functional.md
+Spec.technical.md
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="src/app/page.tsx">
+"use client";
+
+import { DiscoveryForm } from "@/components/DiscoveryForm"; // Adjust path if needed
+import { useState } from "react";
+
+export default function Home() {
+  // State type allows empty string
+  const [lensAccountAddress, setLensAccountAddress] = useState<
+    `0x${string}` | ""
+  >("");
+
+  const handleAccountFound = (address: `0x${string}` | "") => {
+    console.log("Account Address Updated in Parent:", address);
+    setLensAccountAddress(address);
+  };
+
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+      <div className="w-full max-w-lg p-8 space-y-6 bg-white rounded-xl shadow-lg">
+        <h1 className="text-2xl font-bold text-center text-gray-800">
+          Lens Account Interface
+        </h1>
+        <p className="text-center text-gray-600">
+          Find your Lens Account by username or address.
+        </p>
+
+        {/* Pass the handler */}
+        <DiscoveryForm onAccountAddressFound={handleAccountFound} />
+
+        {/* Placeholder for Stage 2 - Connect Button will go here */}
+        <div className="mt-6">
+          {lensAccountAddress ? (
+            <p className="text-center text-green-600">
+              Account identified: {lensAccountAddress}
+            </p>
+          ) : (
+            <p className="text-center text-gray-500">
+              Enter username or address above.
+            </p>
+          )}
+          {/* Connect Button will be added here in Stage 2 */}
+        </div>
+      </div>
+    </main>
+  );
+}
+</file>
+
+<file path="src/app/providers.tsx">
+// app/providers.tsx
+"use client"; // Mark this as a Client Component
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider } from "wagmi";
+import { ConnectKitProvider } from "connectkit"; // Import ConnectKitProvider
+import { config } from "@/lib/wagmi"; // Adjust path if needed
+import React, { useState } from "react";
+
+type Props = {
+  children: React.ReactNode;
+  // If using SSR with cookie storage in wagmi.ts, you'll add `initialState` here later
+  // initialState: State | undefined,
+};
+
+export function Providers({ children /*, initialState*/ }: Props) {
+  // Use useState to ensure QueryClient is only created once
+  const [queryClient] = useState(() => new QueryClient());
+
+  return (
+    // Pass config to WagmiProvider
+    // If using SSR hydration, pass initialState={initialState}
+    <WagmiProvider config={config} /*initialState={initialState}*/>
+      <QueryClientProvider client={queryClient}>
+        {/* Wrap with ConnectKitProvider */}
+        <ConnectKitProvider>{children}</ConnectKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
+}
+</file>
+
+<file path="src/components/DiscoveryForm.tsx">
+// components/DiscoveryForm.tsx
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useReadContract } from "wagmi";
+import { isAddress } from "viem";
+import { normalize } from "viem/ens";
+import { useDebounce } from "@/hooks/useDebounce";
+import {
+  LENS_CHAIN_ID,
+  LENS_GLOBAL_NAMESPACE_ADDRESS,
+  LENS_GLOBAL_NAMESPACE_ABI,
+} from "@/lib/constants";
+
+interface DiscoveryFormProps {
+  // Allow empty string or null when no valid address is found
+  onAccountAddressFound: (address: `0x${string}` | "") => void; // Changed type
+  initialUsername?: string;
+  initialAddress?: string;
+}
+
+export function DiscoveryForm({
+  onAccountAddressFound,
+  initialUsername = "",
+  initialAddress = "",
+}: DiscoveryFormProps) {
+  const [username, setUsername] = useState(initialUsername);
+  const [address, setAddress] = useState(initialAddress);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+
+  const [lastEdited, setLastEdited] = useState<"username" | "address" | null>(
+    initialUsername ? "username" : initialAddress ? "address" : null
+  );
+
+  const debouncedUsername = useDebounce(username, 500);
+  const debouncedAddress = useDebounce(address, 500);
+
+  const {
+    data: addressFromUsername,
+    isLoading: isLoadingAddress,
+    error: addressError,
+    refetch: refetchAddress,
+  } = useReadContract({
+    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
+    abi: LENS_GLOBAL_NAMESPACE_ABI,
+    functionName: "accountOf",
+    args: [debouncedUsername ? normalize(debouncedUsername) : ""],
+    chainId: LENS_CHAIN_ID,
+    query: {
+      enabled: false,
+    },
+  });
+
+  const {
+    data: usernameFromAddress,
+    isLoading: isLoadingUsername,
+    error: usernameError,
+    refetch: refetchUsername,
+  } = useReadContract({
+    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
+    abi: LENS_GLOBAL_NAMESPACE_ABI,
+    functionName: "usernameOf",
+    args: [debouncedAddress as `0x${string}`],
+    chainId: LENS_CHAIN_ID,
+    query: {
+      enabled: false,
+    },
+  });
+
+  useEffect(() => {
+    if (debouncedUsername && lastEdited === "username") {
+      setLookupError(null);
+      console.log(`Looking up address for username: ${debouncedUsername}`);
+      refetchAddress();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedUsername, lastEdited]);
+
+  useEffect(() => {
+    if (
+      debouncedAddress &&
+      isAddress(debouncedAddress) &&
+      lastEdited === "address"
+    ) {
+      setLookupError(null);
+      console.log(`Looking up username for address: ${debouncedAddress}`);
+      refetchUsername();
+    } else if (
+      debouncedAddress &&
+      !isAddress(debouncedAddress) &&
+      lastEdited === "address"
+    ) {
+      setLookupError("Invalid address format");
+      onAccountAddressFound(""); // Use empty string
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedAddress, lastEdited]);
+
+  useEffect(() => {
+    if (
+      addressFromUsername &&
+      isAddress(addressFromUsername) &&
+      lastEdited === "username"
+    ) {
+      if (
+        addressFromUsername === "0x0000000000000000000000000000000000000000"
+      ) {
+        setLookupError(`No account found for username "${debouncedUsername}"`);
+        setAddress("");
+        onAccountAddressFound(""); // Use empty string
+      } else {
+        console.log(`Found address: ${addressFromUsername}`);
+        setAddress(addressFromUsername);
+        onAccountAddressFound(addressFromUsername);
+        setLookupError(null);
+      }
+    } else if (addressError && lastEdited === "username") {
+      console.error("Error fetching address:", addressError);
+      setLookupError("Error fetching address. Check console.");
+      onAccountAddressFound(""); // Use empty string
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addressFromUsername, addressError, lastEdited]);
+
+  useEffect(() => {
+    if (usernameFromAddress && lastEdited === "address") {
+      console.log(`Found username: ${usernameFromAddress}`);
+      setUsername(usernameFromAddress);
+      if (isAddress(debouncedAddress)) {
+        // Ensure address is still valid
+        onAccountAddressFound(debouncedAddress as `0x${string}`);
+      }
+      setLookupError(null);
+    } else if (usernameError && lastEdited === "address") {
+      console.log(
+        "No primary username found for address or error:",
+        usernameError.message
+      );
+      setUsername("");
+      if (isAddress(debouncedAddress)) {
+        onAccountAddressFound(debouncedAddress as `0x${string}`);
+      }
+      setLookupError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usernameFromAddress, usernameError, lastEdited, debouncedAddress]);
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value);
+    setLastEdited("username");
+    if (lastEdited !== "address") setAddress("");
+    onAccountAddressFound(""); // Use empty string
+    setLookupError(null);
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAddress(value);
+    setLastEdited("address");
+    if (lastEdited !== "username") setUsername("");
+    if (!isAddress(value) && value !== "") {
+      setLookupError("Invalid address format");
+      onAccountAddressFound(""); // Use empty string
+    } else {
+      setLookupError(null);
+      if (isAddress(value)) {
+        onAccountAddressFound(value as `0x${string}`);
+      } else {
+        onAccountAddressFound(""); // Use empty string
+      }
+    }
+  };
+
+  const isLoading = isLoadingAddress || isLoadingUsername;
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <label
+          htmlFor="username"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          Lens Username
+        </label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          value={username}
+          onChange={handleUsernameChange}
+          placeholder="e.g. stani"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          aria-describedby="username-status"
+          disabled={isLoading && lastEdited === "address"}
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor="address"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          Account Address
+        </label>
+        <input
+          id="address"
+          name="address"
+          type="text"
+          value={address}
+          onChange={handleAddressChange}
+          placeholder="0x..."
+          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+            !lookupError && isAddress(address)
+              ? "border-green-500"
+              : address && !isAddress(address)
+              ? "border-red-500"
+              : "border-gray-300"
+          }`}
+          aria-describedby="address-status"
+          disabled={isLoading && lastEdited === "username"}
+        />
+      </div>
+      <div id="username-status" aria-live="polite" className="text-sm h-5">
+        {isLoading && lastEdited === "username" && (
+          <span className="text-gray-500">Checking username...</span>
+        )}
+      </div>
+      <div id="address-status" aria-live="polite" className="text-sm h-5">
+        {isLoading && lastEdited === "address" && (
+          <span className="text-gray-500">Checking address...</span>
+        )}
+        {lookupError && <span className="text-red-600">{lookupError}</span>}
+        {!lookupError && isAddress(address) && lastEdited !== "username" && (
+          <span className="text-green-600">Valid Address</span>
+        )}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/hooks/useDebounce.ts">
+// hooks/useDebounce.ts
+import { useState, useEffect } from "react";
+
+export function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    // Update debounced value after delay
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    // Cancel the timeout if value changes (also on delay change or unmount)
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]); // Only re-call effect if value or delay changes
+
+  return debouncedValue;
+}
+</file>
+
+<file path="src/lib/constants.ts">
+// lib/constants.ts
+import { defineChain, parseAbi } from "viem";
+
+export const LENS_CHAIN_ID = 232;
+
+export const lensChain = defineChain({
+  id: LENS_CHAIN_ID,
+  name: "Lens Chain",
+  nativeCurrency: { name: "GHO", symbol: "GHO", decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.lens.xyz"],
+    },
+  },
+  blockExplorers: {
+    default: { name: "Lens Explorer", url: "https://explorer.lens.xyz" },
+  },
+  testnet: false,
+});
+
+// --- Contract Addresses ---
+// IMPORTANT: Replace with the actual deployed address on Lens Chain
+export const LENS_GLOBAL_NAMESPACE_ADDRESS =
+  "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615"; // Example, Replace Me!
+
+// --- ABIs (Minimal for Stage 1) ---
+// Removed 'as const'
+export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
+  "function accountOf(string calldata name) view returns (address)",
+  "function usernameOf(address user) view returns (string)",
+]);
+
+// Removed 'as const'
+export const LENS_ACCOUNT_ABI = parseAbi([
+  "function owner() view returns (address)",
+  "function executeTransaction(address target, uint256 value, bytes calldata data)",
+]);
+
+// Removed 'as const'
+// IMPORTANT: Replace with the actual WGHO address on Lens Chain
+export const WGHO_TOKEN_ADDRESS = "0xYOUR_WGHO_TOKEN_ADDRESS"; // Example, Replace Me!
+export const ERC20_ABI = parseAbi([
+  "function balanceOf(address owner) view returns (uint256)",
+]);
+</file>
+
+<file path="src/lib/wagmi.ts">
+// lib/wagmi.ts
+import { http, createConfig } from "wagmi";
+import { getDefaultConfig } from "connectkit"; // Correct import
+import { lensChain } from "./constants";
+
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
+
+if (!projectId) {
+  throw new Error(
+    "NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set in .env.local"
+  );
+}
+
+export const config = createConfig(
+  // Use ConnectKit's getDefaultConfig
+  getDefaultConfig({
+    // Correct function name
+    // Required API Keys
+    walletConnectProjectId: projectId,
+
+    // Required App Info
+    appName: "Lens Account Interface",
+    appDescription: "Interact with your Lens Account",
+    appUrl:
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://example.com",
+    appIcon: "/favicon.ico",
+
+    // Chains to support
+    chains: [lensChain],
+
+    // Transports (ensure http is configured for your chain)
+    transports: {
+      [lensChain.id]: http(lensChain.rpcUrls.default.http[0]),
+    },
+
+    // ssr: true, // Keep commented unless SSR hydration with cookies is needed
+  })
+);
+
+// Optional: Register config for global type inference
+// declare module 'wagmi' {
+//   interface Register {
+//     config: typeof config
+//   }
+// }
+</file>
+
+<file path="src/styles/globals.css">
+@import "tailwindcss" source("../**/*.{js,ts,jsx,tsx,mdx}");
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+} */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+</file>
+
+<file path="eslint.config.mjs">
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import { FlatCompat } from "@eslint/eslintrc";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
+
+const eslintConfig = [
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
+];
+
+export default eslintConfig;
+</file>
+
+<file path="next.config.ts">
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+</file>
+
+<file path="package.json">
+{
+  "name": "lens-account-interface4",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prepare": "husky",
+    "generate-llms": "repomix --include \"*.*,src\" -o llms.txt"
+  },
+  "dependencies": {
+    "@reown/walletkit": "^1.2.3",
+    "@tanstack/react-query": "^5.74.4",
+    "@walletconnect/core": "^2.20.0",
+    "@walletconnect/utils": "^2.20.0",
+    "connectkit": "^1.9.0",
+    "next": "15.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.27.2",
+    "wagmi": "^2.14.16"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/webpack": "^5.28.5",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "husky": "^9.1.7",
+    "repomix": "^0.3.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+</file>
+
+<file path="postcss.config.mjs">
+const config = {
+  plugins: ["@tailwindcss/postcss"],
+};
+
+export default config;
+</file>
+
+<file path="README.md">
+# Lens Account Web Interface
+
+This project is a web application designed to provide an interface for interacting with a custom EVM Smart Account, specifically the "Lens Account". It allows the account owner to connect their controlling EOA wallet, view basic account information, and interact with external dApps _through_ the Lens Account using WalletConnect v2 via Reown WalletKit.
+
+This is the Minimum Viable Product (MVP) focusing on core functionality as outlined in the project specifications.
+
+## Tech Stack
+
+- **Framework:** Next.js 15+ (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Package Manager:** pnpm
+- **Core Web3 Libraries:**
+  - Wagmi
+  - Viem
+  - ConnectKit
+  - @reown/walletkit (for WalletConnect v2 Wallet functionality)
+  - @tanstack/react-query (peer dependency for Wagmi)
+
+## Prerequisites
+
+- Node.js (v18.17 or later recommended)
+- pnpm
+
+## Getting Started
+
+1.  **Clone the repository (if applicable):**
+
+    ```bash
+    git clone <repository-url>
+    cd lens-account-interface
+    ```
+
+2.  **Install dependencies:**
+
+    ```bash
+    pnpm install
+    ```
+
+3.  **Set up Environment Variables:**
+    Create a `.env.local` file in the root of the project. You **must** obtain a Project ID from [WalletConnect Cloud](https://cloud.walletconnect.com/).
+
+    ```plaintext [.env.local]
+    # Get your ID from https://cloud.walletconnect.com/
+    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=YOUR_WALLETCONNECT_PROJECT_ID_HERE
+    ```
+
+    Replace `YOUR_WALLETCONNECT_PROJECT_ID_HERE` with your actual Project ID.
+
+4.  **Run the development server:**
+    ```bash
+    pnpm dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Available Scripts
+
+In the project directory, you can run:
+
+- `pnpm dev`: Runs the app in development mode. Open [http://localhost:3000](http://localhost:3000).
+- `pnpm build`: Builds the app for production.
+- `pnpm start`: Starts the production server.
+- `pnpm lint`: Runs ESLint.
+
+## Project Structure
+
+The project uses the Next.js App Router. Key directories will include:
+
+- `app/`: Contains application routes and layouts.
+- `components/`: Reusable React components.
+- `contexts/`: React Context providers for managing shared state.
+- `hooks/`: Custom React Hooks for specific logic.
+- `lib/`: Configuration files (Wagmi, constants) and utility functions.
+- `services/`: Abstraction layers for external SDKs (e.g., Reown WalletKit).
+- `styles/`: Global styles and Tailwind configuration.
+
+_(Refer to the Technical Specification for a more detailed proposed structure)._
+
+## Contributing
+
+_(Placeholder: Add contribution guidelines here when applicable)._
+
+## License
+
+_(Placeholder: Add license information here when applicable)._
+</file>
+
+<file path="Spec.functional.md">
+# Functional Specification: Lens Account Web Interface - MVP (Iteration 1)
+
+## 1. Introduction
+
+This document outlines the functional requirements for the Minimum Viable Product (MVP) of a web interface designed to interact with a custom EVM Smart Accoun - Lens Account. Users (Owners) will be able to identify their Lens Account, connect their controlling EOA wallet, view a basic balance, and use WalletConnect v2 to interact with external dApps _through_ the Lens Account.
+
+## 2. Target Audience
+
+This specification is intended for developers, QA testers, and product managers involved in building the MVP.
+
+## 3. Key Concepts
+
+- **Lens Account:** The EVM smart contract wallet being managed. It has a single `owner()` address.
+- **Owner EOA:** The Externally Owned Account (e.g., MetaMask, hardware wallet address) designated as the `owner()` of the Lens Account. This wallet is used to authorize actions _for_ the Lens Account.
+- **Lens Username:** A username potentially linked to a Lens Account address via the `LensGlobalNamespace` contract.
+- **WalletConnect (WC):** A protocol allowing wallets (in this case, our interface acting _as_ a wallet for the Lens Account) to connect to dApps.
+- **Lens Chain:** The specific blockchain (ID 232) where the Lens Account and related contracts reside.
+
+## 4. Core Scenarios (MVP)
+
+### Scenario 1: Account Discovery and Owner Login
+
+**Goal:** The user identifies their target Lens Account using either a Lens username or the account address and connects their corresponding Owner EOA wallet, ensuring they are on the correct network.
+
+**Steps:**
+
+1.  **Initial View:** The user accesses the web application's main entry page (`/`).
+2.  **Input Fields:** The user is presented with two input fields:
+    - "Lens Username"
+    - "Account Address"
+3.  **Username Input (User Action):**
+    - The user types a Lens username into the "Lens Username" field.
+    - **(App Action):** As the user types (debounced), the application queries the `LensGlobalNamespace` contract on the Lens Chain using the `accountOf(string calldata name)` function.
+    - **(Outcome):**
+      - If an address is returned, the "Account Address" field is automatically populated with the resolved address.
+      - If no address is found (or an error occurs), the "Account Address" field remains empty or clears, and subtle feedback may be shown (e.g., input border color change).
+4.  **Address Input (User Action):**
+    - The user types or pastes an address into the "Account Address" field.
+    - **(App Action):** As the user types/pastes, the application checks until address length & format is correct (0x + 20 chars) and queries the `LensGlobalNamespace` contract on the Lens Chain using the `usernameOf(address user)` function.
+    - **(Outcome):**
+      - If a username is returned, the "Lens Username" field is populated.
+      - If no username is found, the "Lens Username" field remains empty or clears.
+5.  **Owner Verification (App Action):**
+    - Once a valid address exists in the "Account Address" field, the application queries the Lens Account contract at that address using the `owner()` function.
+    - The application stores the returned `owner` address internally as the _expected owner_.
+6.  **Wallet Connection (User Action):**
+    - A "Connect Wallet" button becomes enabled/visible once an Account Address is determined.
+    - The expected owner is also displayed above the Connect Wallet button with some text (something like "To Login - connect with this Owner wallet:" but proper).
+    - The user clicks "Connect Wallet".
+    - **(App Action):** A standard wallet connection modal (e.g., RainbowKit) appears, prompting the user to choose and connect their Owner EOA wallet.
+    - **(App Action):** The application checks if the connected Owner EOA wallet is currently on the **Lens Chain (ID: 232)**.
+    - **(Outcome - Chain Mismatch):**
+      - If the wallet is on a different chain, the application (via `wagmi`/`RainbowKit`) prompts the user to switch to the Lens Chain.
+      - If the Lens Chain is not configured in the user's wallet, the application prompts the user to add it.
+      - The connection process pauses until the wallet is successfully connected to the Lens Chain.
+    - **(App Action):** Once the Owner EOA is connected and on the Lens Chain, the application compares the connected wallet's address with the _expected owner_ address stored in step 5.b.
+    - **(Outcome - Owner Mismatch):**
+      - If the addresses do _not_ match, an error message is displayed clearly indicating the mismatch (e.g., "Incorrect owner connected. Please connect with address: `0x...{expectedOwnerAddress}`").
+      - The user remains on the login/discovery page and can attempt to connect a different wallet.
+    - **(Outcome - Success):**
+      - If the addresses _match_ and the wallet is on the Lens Chain, the user is authenticated for this session.
+      - The application navigates the user to the main Dashboard page (e.g., `/dashboard`).
+
+### Scenario 2: Viewing Dashboard & Initiating WalletConnect Pairing
+
+**Goal:** The user views basic account information and connects the Lens Account to an external dApp using a WalletConnect URI.
+
+**Preconditions:**
+
+- User has successfully completed Scenario 1.
+- Owner EOA wallet is connected and verified.
+- User is on the Dashboard page.
+
+**Steps:**
+
+1.  **Dashboard View:** The user sees the Dashboard.
+2.  **Account Info Display (App Action):**
+    - The Lens Account address is displayed.
+    - The WGHO token balance for the Lens Account is fetched and displayed (formatted).
+3.  **WalletConnect Input:** The user sees a dedicated section/component for WalletConnect containing:
+    - An input field labeled "Paste WalletConnect Code".
+    - A "Connect" button next to the input field.
+4.  **Obtain WC URI (User Action):** The user navigates to an external dApp (e.g., Aave) and initiates a WalletConnect connection, copying the generated WC v2 URI (e.g., `wc:abc...`).
+5.  **Paste & Connect (User Action):**
+    - The user pastes the WC URI into the input field in _this_ web app.
+    - The user clicks the "Connect" button.
+6.  **Pairing & Session (App Action):**
+    - The application uses the `@walletconnect/web3wallet` SDK to initiate pairing with the provided URI.
+    - The SDK emits a `session_proposal` event.
+    - The application automatically approves the session proposal using the Lens Account's address, enforcing Lens Chain (ID: 232) as the only supported chain regardless of dApp's requested chains.
+    - The WalletConnect session is established between this interface (acting for the Lens Account) and the external dApp.
+    - The input field clears and the WalletConnect section updates to show:
+      - A prominent "Connected" status indicator in green
+      - Connected dApp information from the session data:
+        - dApp name and icon
+        - Website URL
+        - Connected chain (should always show Lens Chain)
+        - Session ID (for debugging purposes)
+
+### Scenario 3: Handling WalletConnect Transaction Requests
+
+**Goal:** The user receives a transaction request from a connected external dApp and authorizes its execution via their Owner EOA.
+
+**Preconditions:**
+
+- User has successfully completed Scenario 1 & 2.
+- An active WalletConnect session exists between the Lens Account interface and an external dApp.
+
+**Steps:**
+
+1.  **Request Initiation (External Action):** The user performs an action on the external dApp that requires a transaction (e.g., depositing collateral on Aave).
+2.  **Request Reception (App Action):**
+    a. The external dApp sends a request (typically `eth_sendTransaction` containing `to`, `value`, `data`) over the established WC session.
+    b. The `@walletconnect/web3wallet` SDK listener in the application receives the `session_request` event.
+3.  **Request Display:**
+    - The application updates its state to indicate a pending request.
+    - A dedicated component (`WcRequestDisplay`) appears on the Dashboard, showing:
+      - The requesting dApp's name/icon (from session metadata).
+      - The transaction details:
+        - **Target Address (`to`):** The contract the Lens Account will call.
+        - **Value (`value`):** Amount of native currency (GHO) to send (formatted).
+        - **Data (`data`):** The raw calldata for the transaction. (MVP: Display raw hex data. Decoding can be added later).
+      - A "Send Transaction" button.
+      - A "Reject" button (optional for MVP, but good practice).
+4.  **User Review & Action:**
+    - The user reviews the displayed transaction details.
+    - **(Option A - Send):** The user clicks "Send Transaction".
+    - **(App Action - Execute):**
+      - The application prepares the call to the Lens Account's `executeTransaction(address target, uint256 value, bytes calldata data)` function, using the parameters from the WC request.
+      - It triggers the transaction using `wagmi`.
+      - The connected **Owner EOA wallet** (MetaMask, etc.) prompts the user to confirm _this_ transaction (the one calling `executeTransaction` on the Lens Account).
+      - **(User Action):** The user confirms the transaction in their EOA wallet.
+      - The transaction is sent to the Lens Chain network.
+      - The application waits for the transaction hash.
+      - Upon receiving the hash, the application sends a _success response_ containing the transaction hash back to the external dApp via the WalletConnect session (`web3wallet.respondSessionRequest`).
+      - The `WcRequestDisplay` component is hidden or updated.
+      - A success indicator (e.g., checkmark, brief message "Transaction Submitted") is displayed on the dashboard.
+    - **(Option B - Reject):** The user clicks "Reject" (if implemented).
+    - **(App Action - Reject):**
+      - The application sends an _error response_ (e.g., user rejection error) back to the external dApp via the WalletConnect session.
+      - The `WcRequestDisplay` component is hidden.
+
+### Scenario 4: Handling Errors during WC Request Execution
+
+**Goal:** Inform the user and the external dApp if an error occurs during the authorization or sending of a WC transaction request.
+
+**Steps (Owner Rejection):**
+
+1.  Follow Scenario 3 up to step 4.c.iii (Owner EOA wallet prompt).
+2.  **User Action:** User explicitly rejects the transaction in their wallet.
+3.  **(App Action):** The `wagmi` transaction hook/promise rejects with a user rejection error.
+4.  The application sends an _error response_ (user rejection) back to the external dApp via WalletConnect.
+5.  The `WcRequestDisplay` component is hidden.
+6.  An error message is displayed on the dashboard (e.g., "Transaction rejected by user").
+
+**Steps (Blockchain Error):**
+
+1.  Follow Scenario 3 up to step 4.c.v (Transaction sent).
+2.  **(Blockchain Action):** The transaction execution _fails_ on the Lens Chain (e.g., reverts).
+3.  **(App Action):** The `wagmi` transaction hook/promise resolves with a failed status (or requires checking the receipt).
+4.  The application sends an _error response_ (generic execution error) back to the external dApp via WalletConnect.
+5.  The `WcRequestDisplay` component is hidden.
+6.  An error message is displayed on the dashboard (e.g., "Transaction failed on-chain").
+
+## 5. Non-Functional Requirements (MVP)
+
+- **Target Network:** The application MUST operate exclusively on the Lens Chain Mainnet (ID: 232). Network configuration should reflect this.
+- **Responsiveness:** The UI should be usable on standard desktop browsers. Mobile responsiveness is secondary for the MVP.
+- **Error Handling:** Basic error messages should be displayed for contract call failures, lookup failures, WC connection issues, and incorrect owner connections.
+- **Performance:** Interactions (lookups, balance fetches) should feel reasonably responsive. Debouncing should be used for inputs triggering lookups.
+
+## 6. Out of Scope (MVP - Iteration 1)
+
+- Displaying Transaction History or Queue (beyond the currently active WC request).
+- Initiating _new_ transactions (e.g., Send ETH/Token) directly from the UI.
+- Managing Lens Account settings (Owners, Threshold).
+- Detailed decoding of transaction data within the WC request display.
+- Address Book functionality.
+- NFT display or management.
+- Advanced WalletConnect session management (listing active sessions, manual disconnection).
+- Gas controls or advanced transaction parameters.
+- Support for multiple Lens Account types or versions beyond the specific one targeted.
+- Account Manager roles.
+- Push notifications or complex real-time updates beyond basic WC request handling.
+
+## 7. Lens Chain Details
+
+- **Chain Type:** ZkSync-based L2, EVM-compatible
+- **Network Name:** Lens Chain Mainnet
+- **New RPC URL:** https://rpc.lens.xyz
+- **Chain ID:** 232
+- **Currency Symbol:** GHO
+- **Block Explorer URL:** https://explorer.lens.xyz
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+</file>
+
+<file path="src/app/layout.tsx">
+import type { Metadata } from "next";
+import "@/styles/globals.css";
+import { Geist, Geist_Mono } from "next/font/google";
+import { Providers } from "./providers"; // Import the Providers component
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Lens Account Interface", // Updated title
+  description: "Manage your Lens Account", // Updated description
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  // If using SSR hydration, you would get initialState here from headers/cookies
+  // const initialState = cookieToInitialState(...) etc.
+
+  return (
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}
+      >
+        {/* Wrap children with Providers */}
+        <Providers /*initialState={initialState}*/>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+</file>
+
+<file path="DEVELOPMENT_PLAN.md">
+**Version:** 1.0
+**Date:** 2025-04-19
+
+## 1. Introduction
+
+This document outlines the phased development plan for building the Minimum Viable Product (MVP) of the Lens Account Web Interface. It breaks down the work into manageable stages, aligning with the Functional Specification (`Spec.functional.md`) and Technical Specification (`TECHNICAL_SPEC.md`).
+
+## 2. Methodology
+
+We will follow an incremental development approach, building and verifying core features stage by stage. Each stage should result in a testable piece of functionality.
+
+## 3. Development Stages
+
+### Stage 0: Project Setup & Base Configuration (Completed via Setup)
+
+- [x] Initialize Next.js 15+ project with TypeScript, Tailwind CSS, App Router.
+- [x] Install pnpm as the package manager.
+- [x] Install core dependencies: `wagmi`, `viem`, `@tanstack/react-query`, `connectkit`, `@reown/walletkit`, `@walletconnect/core`, `@walletconnect/utils`.
+- [x] Set up basic ESLint and Prettier configuration.
+- [x] Create `.env.local` with `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` placeholder.
+- [x] Configure `WagmiProvider` and `QueryClientProvider` in the root layout (`app/layout.tsx`).
+  - **Check:** Development server runs (`pnpm dev`) without errors. Base Next.js page loads.
+
+### Stage 1: Account Discovery & Chain Read Interaction
+
+**Goal:** Implement the username/address input fields and the logic to look up corresponding data from the `LensGlobalNamespace` contract on the Lens Chain. Verify basic read operations work.
+
+- **Tasks:**
+  - [x] **Create Constants:** Define Lens Chain details (ID 232, RPC URL, etc.), `LensGlobalNamespace` address, and its partial ABI (`accountOf(string)`, `usernameOf(address)`) in `lib/constants.ts`.
+  - [x] **Update Wagmi Config:** Ensure the `lensChain` object is defined using `defineChain` and included in the `createConfig` call in `lib/wagmi.ts`.
+  - [x] **Create DiscoveryForm Component:** Build `components/DiscoveryForm.tsx` with two controlled input fields (Username, Account Address) styled with Tailwind.
+  - [x] **Implement Lookup Logic:**
+    - [x] Inside `DiscoveryForm.tsx` or a custom hook (`hooks/useLensLookup.ts`), use `useState` for input values.
+    - [x] Use `useEffect` with a debounce utility (e.g., from `lodash.debounce` or simple `setTimeout`) to trigger lookups on input change.
+    - [x] Call `useReadContract` (Wagmi) within the debounced effect:
+      - Target `LensGlobalNamespace` address.
+      - Use the appropriate function (`accountOf` or `usernameOf`) based on which input changed.
+      - **Crucially:** Pass `chainId: LENS_CHAIN_ID` to ensure the call targets the correct network.
+      - Handle loading and error states from `useReadContract`.
+    - [x] Update the _other_ input field's state based on the successful result from `useReadContract`.
+  - [x] **Integrate Form:** Place `DiscoveryForm.tsx` onto the root page (`app/page.tsx`).
+- **Verification:**
+  - [x] Typing a known Lens username (e.g., `stani`) correctly populates the Account Address field.
+  - [x] Typing/pasting a known Lens Account address correctly populates the Lens Username field (if one exists).
+  - [x] Invalid inputs show no result or subtle error indication.
+  - [x] Check browser developer console for any Wagmi/Viem errors related to contract reads. Network tab should show RPC calls to the Lens Chain RPC URL.
+
+### Stage 2: Owner EOA Connection & Verification
+
+**Goal:** Integrate the "Connect Wallet" functionality, fetch the Lens Account owner, verify it against the connected EOA, handle chain switching, and navigate to the dashboard.
+
+- **Tasks:**
+  - [ ] **Add Owner ABI:** Include the `owner()` function signature in the `LENS_ACCOUNT_ABI` within `lib/constants.ts`.
+  - [ ] **Create Connect Button:** Build `components/ConnectOwnerButton.tsx`. Use ConnectKit's `<ConnectKitButton />` or its underlying hooks (`useModal`, etc.) for the UI.
+  - [ ] **Fetch Expected Owner:**
+    - In `app/page.tsx`, once a valid Lens Account address is determined (from Stage 1 state), use `useReadContract` to call `owner()` on the Lens Account address.
+    - Pass `chainId: LENS_CHAIN_ID`.
+    - Store the result in state (`expectedOwner`).
+  - [ ] **Display Expected Owner:** Show the `expectedOwner` address clearly near the `ConnectOwnerButton`.
+  - [ ] **Integrate Connect Button:** Add `ConnectOwnerButton` to `app/page.tsx`, potentially disabling it until `expectedOwner` is fetched.
+  - [ ] **Implement Verification Logic:**
+    - In `app/page.tsx`, use `useAccount` (Wagmi) to get the connected EOA's `address` and `chainId`.
+    - Use `useEffect` to monitor changes in the connected `address`, `chainId`, and the `expectedOwner`.
+    - Inside the effect:
+      - If `address` and `expectedOwner` exist:
+        - If `chainId !== LENS_CHAIN_ID`, do nothing (ConnectKit/Wagmi handle switch prompt).
+        - If `address.toLowerCase() === expectedOwner.toLowerCase()` and `chainId === LENS_CHAIN_ID`, proceed to navigation.
+        - If `address.toLowerCase() !== expectedOwner.toLowerCase()` and `chainId === LENS_CHAIN_ID`, set an error state ("Incorrect owner connected...").
+      - If `address` is disconnected, clear any error state.
+  - [ ] **Implement Navigation:**
+    - Use `useRouter` from `next/navigation`.
+    - When verification passes (addresses match, correct chain), call `router.push('/dashboard')`.
+  - [ ] **Create Context (Optional but Recommended):** Create `contexts/LensAccountProvider.tsx` to store the verified `lensAccountAddress` and `ownerAddress` so the dashboard can access them. Wrap the root layout or dashboard layout with this provider. Update `app/page.tsx` to set context values upon successful verification before navigating.
+- **Verification:**
+  - [ ] "Connect Wallet" button appears/enables only when a Lens Account address is set and `owner()` has been potentially fetched. Expected owner address is displayed.
+  - [ ] Clicking "Connect Wallet" opens the ConnectKit modal.
+  - [ ] Connecting the _correct_ Owner EOA wallet on the wrong network prompts a "Switch Network" request to Lens Chain.
+  - [ ] Connecting the _correct_ Owner EOA wallet on the Lens Chain navigates the user to `/dashboard`.
+  - [ ] Connecting an _incorrect_ EOA wallet (not the owner) on the Lens Chain displays a clear error message and _does not_ navigate.
+  - [ ] Disconnecting the wallet returns the user to the login/discovery state or clears the owner state.
+
+### Stage 3: Basic Dashboard Display
+
+**Goal:** Create the dashboard page and display the Lens Account address and its WGHO balance.
+
+- **Tasks:**
+  - [ ] **Create Dashboard Page:** Create `app/dashboard/page.tsx`. Ensure it's protected or redirects if owner/lens account state (from Context) is missing.
+  - [ ] **Add WGHO Constants:** Define `WGHO_TOKEN_ADDRESS` and `ERC20_ABI` (with `balanceOf(address)`) in `lib/constants.ts`.
+  - [ ] **Create AccountDisplay Component:** Build `components/AccountDisplay.tsx`.
+  - [ ] **Fetch/Display Data:**
+    - In `AccountDisplay.tsx`, retrieve the `lensAccountAddress` from context (e.g., `useContext(LensAccountContext)`).
+    - Use `useReadContract` (Wagmi) to call `balanceOf(lensAccountAddress)` on the `WGHO_TOKEN_ADDRESS`.
+    - Pass `chainId: LENS_CHAIN_ID`.
+    - Use Viem's `formatUnits` to format the returned balance (assuming WGHO has 18 decimals).
+    - Display the `lensAccountAddress` and the formatted WGHO balance. Handle loading/error states for the balance fetch.
+  - [ ] **Integrate Component:** Add `AccountDisplay` to the dashboard page.
+- **Verification:**
+  - [ ] Navigating to `/dashboard` after successful login shows the correct Lens Account address.
+  - [ ] The WGHO balance for the Lens Account is fetched and displayed correctly (or shows loading/error state).
+
+### Stage 4: WalletConnect v2 Pairing (Act as Wallet)
+
+**Goal:** Implement the WalletConnect URI input and pairing logic, allowing the web app (representing the Lens Account) to connect to external dApps.
+
+- **Tasks:**
+  - [ ] **Create WC Service:** Set up `services/walletConnectService.ts`. Include an `init` method that creates a `Web3Wallet` instance from `@reown/walletkit` using the `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`. Store the instance.
+  - [ ] **Create WC Context:** Set up `contexts/WalletConnectProvider.tsx`. Initialize the `walletConnectService` on mount. Provide the `web3wallet` instance, active sessions state (`useState`), pairing state (`useState`), and pending request state (`useState`) via context.
+  - [ ] **Wrap Layout:** Wrap the relevant part of the application (e.g., dashboard layout or root layout) with `WalletConnectProvider`.
+  - [ ] **Create WcConnect Component:** Build `components/WcConnect.tsx`.
+    - Include an `<input>` for the WC URI and a `<button>` ("Connect").
+    - Add state for the input value.
+    - On button click, call a `pair` function provided by the `WalletConnectContext`.
+  - [ ] **Implement Pairing Logic:**
+    - In `WalletConnectProvider` (or the service), define the `pair(uri)` function. Call `web3wallet.core.pairing.pair({ uri })`. Handle potential errors.
+    - Set up the `session_proposal` listener (`web3wallet.on('session_proposal', handleSessionProposal)`).
+  - [ ] **Implement Session Approval:**
+    - Define `handleSessionProposal(proposal)` in the service/provider.
+    - Retrieve the `lensAccountAddress` and `LENS_CHAIN_ID` from state/constants.
+    - Construct the `approvedNamespaces` object containing only the `eip155` namespace, with the `LENS_CHAIN_ID`, the Lens Account address (formatted as `eip155:232:0x...`), required methods (`eth_sendTransaction`, `personal_sign`, etc.), and events (`chainChanged`, `accountsChanged`).
+    - Call `web3wallet.approveSession({ id: proposal.id, namespaces: approvedNamespaces })`.
+    - On success, update the `activeSessions` state in the context.
+    - Handle potential errors during approval.
+  - [ ] **Update UI:** Modify `WcConnect.tsx` to:
+    - Conditionally render the input/button form OR the connected dApp info based on `activeSessions` state from context.
+    - Display dApp metadata (name, icon, url) from the active session.
+- **Verification:**
+  - [ ] Open the dashboard page. The WC input form is visible.
+  - [ ] Go to a test dApp (e.g., Reown's React Dapp Example) and generate a WC v2 URI.
+  - [ ] Paste the URI into the input field in _this_ app and click "Connect".
+  - [ ] The connection should establish successfully (no prompt needed in the Owner EOA wallet for pairing/session _approval_ in this flow).
+  - [ ] The `WcConnect.tsx` component should update to show the connected dApp's information. Check the dApp, it should also show a successful connection to the _Lens Account address_.
+
+### Stage 5: WalletConnect v2 Transaction Request Handling
+
+**Goal:** Handle incoming `eth_sendTransaction` requests from the connected dApp, prompt the Owner EOA for approval via the Lens Account's `executeTransaction`, and relay the result.
+
+- **Tasks:**
+  - [ ] **Create WcRequestDisplay Component:** Build `components/WcRequestDisplay.tsx`. It should conditionally render based on the `pendingRequest` state from `WalletConnectContext`. Display request details (`to`, `value`, `data` hex string) and "Send Transaction" / "Reject" buttons.
+  - [ ] **Implement Request Listener:**
+    - In `WalletConnectProvider` (or service), set up the `session_request` listener (`web3wallet.on('session_request', handleSessionRequest)`).
+    - Define `handleSessionRequest(event)`: Store the `event.topic`, `event.id`, and `event.params.request` (`{ method, params }`) in the `pendingRequest` state of the context. Only handle `eth_sendTransaction` for MVP.
+  - [ ] **Implement Transaction Execution Logic:**
+    - Create `hooks/useWcRequestHandler.ts` or add logic to `WcRequestDisplay.tsx`.
+    - On "Send Transaction" click:
+      - Get `lensAccountAddress`, `ownerAddress` from relevant contexts.
+      - Get `topic`, `id`, `request` (`method`, `params`) from `WalletConnectContext.pendingRequest`.
+      - Extract `to`, `value`, `data` from `request.params[0]`.
+      - Call `useWriteContract` (Wagmi) hook configured for the `executeTransaction` function on the `LENS_ACCOUNT_ABI` and `lensAccountAddress`.
+      - The `args` for `executeTransaction` will be `[to, value || 0n, data || '0x']`.
+      - Pass `account: ownerAddress` and `chainId: LENS_CHAIN_ID` to `useWriteContract`'s mutation function.
+      - Use `useWaitForTransactionReceipt` to wait for the transaction hash returned by `writeContract`.
+  - [ ] **Implement Response Logic:**
+    - Modify the "Send Transaction" click handler:
+      - On `writeContract` success: Wait for the receipt. If receipt status is `'success'`, call `web3wallet.respondSessionRequest({ topic, response: { id, result: receipt.transactionHash, jsonrpc: '2.0' } })`.
+      - If receipt status is `'reverted'`, call `web3wallet.respondSessionRequest` with a JSON-RPC error payload (e.g., `{ id, jsonrpc: '2.0', error: { code: -32000, message: 'Transaction reverted' } }`).
+      - On `writeContract` error (e.g., user rejection in EOA wallet): Call `web3wallet.respondSessionRequest` with a user rejection error payload (`{ id, jsonrpc: '2.0', error: { code: 5000, message: 'User Rejected' } }`).
+    - On "Reject" click: Call `web3wallet.respondSessionRequest` with a user rejection error payload.
+    - After responding (success or error), clear the `pendingRequest` state in the context.
+  - [ ] **Integrate Component:** Add `WcRequestDisplay` to the dashboard page.
+- **Verification:**
+  - [ ] Connect to a test dApp (e.g., Aave testnet interface pointed to Lens Chain RPC, or a simple custom test page).
+  - [ ] Initiate a transaction on the test dApp (e.g., a simple contract call or ETH transfer _if possible via the dApp_).
+  - [ ] The `WcRequestDisplay` component should appear in _this_ app showing the request details.
+  - [ ] Clicking "Reject" should send an error to the dApp and hide the request display.
+  - [ ] Clicking "Send Transaction" should:
+    - Prompt the _Owner EOA wallet_ (MetaMask, etc.) to confirm the `executeTransaction` call on the Lens Account.
+    - Rejecting in the Owner EOA wallet sends an error to the dApp.
+    - Confirming in the Owner EOA wallet sends the transaction.
+    - Upon successful mining, the transaction hash is sent back to the dApp, and the request display hides. Success feedback is shown.
+    - If the on-chain execution reverts, an error is sent back to the dApp, and the request display hides. Error feedback is shown.
+
+## 4. Post-MVP Considerations
+
+- Implement handling for other WalletConnect methods (`personal_sign`, etc.).
+- Add UI for managing active WalletConnect sessions (viewing, disconnecting).
+- Improve transaction data decoding in the request display.
+- Enhance error messages and user feedback.
+- Refine UI/UX, add loading states more granularly.
+- Mobile responsiveness.
+</file>
+
+<file path="Spec.technical.md">
+# Technical Specification: Lens Account Web Interface - MVP (Iteration 1)
+
+**Version:** 1.0
+**Date:** 2024-10-27
+
+---
+
+## 1. Introduction
+
+### 1.1. Purpose
+
+This document provides the technical details necessary for the development of the Minimum Viable Product (MVP) of the Lens Account Web Interface. It outlines the technology stack, architecture, key components, APIs, data structures, and implementation details derived from the Functional Specification (`Spec.functional.md`).
+
+### 1.2. Scope
+
+The scope of this MVP is limited to the core scenarios defined in the Functional Specification:
+
+1.  **Account Discovery & Owner Login:** Identifying a Lens Account via username or address, connecting the Owner EOA wallet, and verifying ownership on the Lens Chain.
+2.  **Dashboard & WalletConnect Pairing:** Displaying basic Lens Account info (address, balance) and initiating WalletConnect v2 pairings with external dApps.
+3.  **WalletConnect Transaction Handling:** Receiving transaction requests from dApps via WalletConnect and facilitating their execution through the Lens Account via the Owner EOA.
+4.  **Basic Error Handling:** Managing connection and transaction errors.
+
+Features listed as "Out of Scope" in the Functional Specification are not included in this technical plan.
+
+---
+
+## 2. Technology Stack
+
+- **Framework:** Next.js 15+ (App Router recommended)
+- **Language:** TypeScript
+- **Core Web3 Libraries:**
+  - **Wagmi:** v2.x - For React hooks interacting with Ethereum (account state, contract interaction via Owner EOA, chain state, ENS lookups if adapted).
+  - **Viem:** v2.x - Used internally by Wagmi for low-level Ethereum operations (encoding, decoding, RPC calls, utilities). May be used directly for specific utilities if needed.
+  - **ConnectKit:** Latest compatible version - For the Owner EOA wallet connection UI and simplifying the `useConnect` flow from Wagmi.
+  - **@walletconnect/web3wallet:** Latest v2 compatible version - **Crucially**, this SDK is required for the application to act _as a wallet_ on behalf of the Lens Account when interacting with external dApps via WalletConnect. ConnectKit/Wagmi handle connecting the _Owner EOA_ to _this_ app; `@walletconnect/web3wallet` handles connecting _this_ app (representing the Lens Account) to _other_ dApps.
+- **UI/Styling:**
+  - **Tailwind CSS:** Recommended for utility-first styling to maintain simplicity and avoid heavy UI library dependencies for the MVP. Basic HTML elements (`input`, `button`, `div`, `p`, etc.) styled with Tailwind will suffice. No complex UI component library is necessary initially.
+- **State Management:** React Context API / `useState` / `useReducer` for managing application state (e.g., connected owner, target Lens Account, WC sessions/requests). Avoid Redux/Zustand for MVP complexity unless state becomes unmanageable.
+- **Linting/Formatting:** ESLint, Prettier (Standard Next.js setup).
+
+**Note on EthersJS:** While Wagmi v1 used EthersJS, Wagmi v2 (used by ConnectKit) uses **Viem**. EthersJS is **not** expected to be a required dependency for this project based on the chosen stack. We will proceed assuming Viem is the primary low-level library.
+
+---
+
+## 3. Architecture
+
+### 3.1. Overview
+
+The application will be a single-page application (SPA) built with Next.js. The core logic will reside within React components and custom hooks.
+
+- **Client-Side Rendering:** Given the heavy reliance on wallet interactions and real-time state, the application will primarily be client-side rendered. Server components might be used for static layout elements if desired, but core functionality requires client components (`"use client"`).
+- **Wallet Connection Management:**
+  - **Owner EOA Connection:** Managed by ConnectKit, utilizing Wagmi hooks (`useAccount`, `useConnect`, `useDisconnect`, `useSwitchChain`). State will be accessible via Wagmi's context/hooks.
+  - **Lens Account WC Connection (Acting as Wallet):** Managed by a dedicated service/context (`WalletConnectService`) wrapping the `@walletconnect/web3wallet` SDK. This service will handle pairing, session proposals/approvals, request handling, and responses.
+- **Contract Interaction:**
+  - Reading Lens Account `owner()`: Uses Wagmi's `useReadContract`.
+  - Reading `LensGlobalNamespace` (`accountOf`, `usernameOf`): Uses Wagmi's `useReadContract`.
+  - Reading WGHO Balance: Uses Wagmi's `useReadContract` (ERC20 `balanceOf`).
+  - Executing Lens Account Transactions (via Owner EOA): Uses Wagmi's `useWriteContract` targeting the Lens Account's `executeTransaction`.
+- **State Management:** A combination of Wagmi's built-in state, local React component state (`useState`), and potentially 1-2 specific React Contexts (e.g., `WalletConnectContext` for managing WC sessions/requests, `LensAccountContext` for holding the target Lens Account address and owner).
+
+### 3.2. Key Modules/Services
+
+- **Wagmi Config (`lib/wagmi.ts`):** Central configuration for Wagmi/ConnectKit (chains, connectors, transports).
+- **WalletConnect Service (`services/walletConnectService.ts`):** Singleton or context-provided class encapsulating `@walletconnect/web3wallet` logic (initialization, pairing, event listeners, session management, request/response handling).
+- **Lens Contract Service (`services/lensService.ts`):** Optional utility functions abstracting the direct `useReadContract` calls for Lens Account `owner()`, `LensGlobalNamespace` lookups, and WGHO balance.
+
+---
+
+## 4. Project Structure (App Router Example)
+
+```
+src/
+├── app/
+│   ├── dashboard/             # Dashboard page (requires auth)
+│   │   └── page.tsx
+│   ├── layout.tsx             # Root layout (WagmiProvider, etc.)
+│   └── page.tsx               # Root page (Login/Discovery View)
+├── components/
+│   ├── layout/                # Header, Footer, etc.
+│   ├── ui/                    # Basic UI elements (Button, Input - if abstracting)
+│   ├── AccountDisplay.tsx     # Shows Lens Account Address/Balance
+│   ├── ConnectOwnerButton.tsx # Uses ConnectKit button/logic
+│   ├── DiscoveryForm.tsx      # Username/Address input fields
+│   ├── WcConnect.tsx          # WC URI input and connection status
+│   └── WcRequestDisplay.tsx   # Displays incoming WC requests
+├── contexts/
+│   ├── WalletConnectProvider.tsx # Manages WC state/service
+│   └── LensAccountProvider.tsx   # Manages target Lens Account state
+├── hooks/
+│   ├── useLensLookup.ts       # Custom hook for username/address lookups
+│   └── useWcRequestHandler.ts # Custom hook for handling WC requests
+├── services/
+│   ├── walletConnectService.ts # Wrapper around @walletconnect/web3wallet
+│   └── lensService.ts          # (Optional) Utilities for Lens contract reads
+├── lib/
+│   ├── wagmi.ts               # Wagmi/ConnectKit config
+│   ├── constants.ts           # Chain info, contract addresses, ABIs
+│   └── utils.ts               # Helper functions
+├── public/
+│   └── ...                    # Static assets
+├── styles/
+│   └── globals.css            # Tailwind directives
+├── .env.local                 # Environment variables (WC Project ID)
+├── next.config.mjs
+├── package.json
+├── tailwind.config.ts
+└── tsconfig.json
+```
+
+---
+
+## 5. Core Components & Logic Implementation
+
+### 5.1. Scenario 1: Account Discovery and Owner Login (`/app/page.tsx`, `DiscoveryForm.tsx`, `ConnectOwnerButton.tsx`)
+
+- **UI:** `DiscoveryForm.tsx` contains two `<input>` fields styled with Tailwind. `ConnectOwnerButton.tsx` wraps ConnectKit's logic.
+- **State:** Local state (`useState`) in `DiscoveryForm.tsx` for input values. A shared state (Context or prop drilling from `page.tsx`) for the determined Lens Account address and expected owner address.
+- **Logic (`useLensLookup.ts`, `DiscoveryForm.tsx`):**
+  - Use `React.useEffect` with debouncing for input changes.
+  - Inside `useEffect`, call `useReadContract` (Wagmi) targeting `LensGlobalNamespace` (`accountOf` or `usernameOf`). **Important:** Need to configure `useReadContract` specifically for Lens Chain (ID 232). Pass the `chainId` parameter.
+  - Update the corresponding input field based on lookup results.
+  - Once an address is confirmed, call `useReadContract` targeting the Lens Account address for the `owner()` function. Store the result as `expectedOwner`.
+  - Display `expectedOwner` near the connect button.
+- **Owner Connection (`ConnectOwnerButton.tsx`, `page.tsx`):**
+  - Use `ConnectKitButton` component or `useConnect` (Wagmi) + `useAccount` (Wagmi). ConnectKit is simpler.
+  - The `wagmi.ts` config must include the Lens Chain definition. ConnectKit/Wagmi will handle prompting the user to add/switch to the Lens Chain.
+  - After connection, use `useAccount` hook (Wagmi) to get the `address` and `chainId`.
+  - Compare `address` with `expectedOwner`.
+  - If match and `chainId === 232`, navigate to `/dashboard` (e.g., using `next/navigation`'s `useRouter`). Store the Lens Account address and Owner EOA address in Context/State for the dashboard.
+  - If mismatch, display an error message.
+
+### 5.2. Scenario 2: Viewing Dashboard & Initiating WalletConnect Pairing (`/app/dashboard/page.tsx`, `AccountDisplay.tsx`, `WcConnect.tsx`, `WalletConnectProvider.tsx`, `services/walletConnectService.ts`)
+
+- **UI:** `AccountDisplay.tsx` shows Lens address (from Context/State) and balance. `WcConnect.tsx` shows WC URI input/button initially, then connected dApp info.
+- **State:** `WalletConnectContext` manages `Web3Wallet` instance, active sessions, and pairing state.
+- **Logic:**
+  - Fetch WGHO balance using `useReadContract` (Wagmi) targeting the ERC20 contract with the Lens Account address. Format using Viem's `formatUnits`.
+  - In `WalletConnectProvider.tsx` (or on component mount):
+    - Initialize `Web3Wallet` from `@walletconnect/web3wallet` using `projectId` from `.env.local`. Store the instance.
+    - Set up listeners (`web3wallet.on('session_proposal', ...)` etc.) defined in `walletConnectService.ts`.
+  - **Pairing (`WcConnect.tsx`, `walletConnectService.ts`):**
+    - On "Connect" button click with URI: Call `web3wallet.core.pairing.pair({ uri })`.
+  - **Session Approval (`walletConnectService.ts` listener):**
+    - On `session_proposal` event:
+      - Construct approved `namespaces` containing **only** the Lens Chain (`eip155:232`) and the Lens Account address (`eip155:232:0x...`). Include standard methods (`eth_sendTransaction`, `personal_sign`, etc.).
+      - Call `web3wallet.approveSession({ id: proposal.id, namespaces })`.
+      - Store the resulting session details in the `WalletConnectContext`.
+      - Update UI state in `WcConnect.tsx` to show connected dApp info.
+
+### 5.3. Scenario 3 & 4: Handling WalletConnect Transaction Requests (`/app/dashboard/page.tsx`, `WcRequestDisplay.tsx`, `useWcRequestHandler.ts`, `services/walletConnectService.ts`)
+
+- **UI:** `WcRequestDisplay.tsx` conditionally renders when a request is pending in `WalletConnectContext`. Displays request details and Approve/Reject buttons.
+- **State:** `WalletConnectContext` stores the current pending `session_request` event payload.
+- **Logic:**
+  - **Request Listener (`walletConnectService.ts`):**
+    - On `session_request` event: Store the event payload (`topic`, `params`, `id`) in `WalletConnectContext` state.
+  - **Transaction Execution (`WcRequestDisplay.tsx`, `useWcRequestHandler.ts`):**
+    - On "Send Transaction" click:
+      - Retrieve request details (`to`, `value`, `data`) from the context state.
+      - Use Viem's `encodeFunctionData` to prepare the calldata for the Lens Account's `executeTransaction(address target, uint256 value, bytes calldata data)` function.
+      - Call the `writeContract` mutation function returned by `useWriteContract` (Wagmi), providing:
+        - `address`: The Lens Account address (from Context/State).
+        - `abi`: The Lens Account ABI (including `executeTransaction`).
+        - `functionName`: `'executeTransaction'`.
+        - `args`: `[to, value, data]`.
+        - `account`: The connected Owner EOA address (from `useAccount`).
+        - `chainId`: Must be Lens Chain ID (232).
+      - Handle `useWriteContract`'s `isPending`, `isSuccess`, `error` states.
+      - If `isPending`, show loading state.
+      - If `error`, call `web3wallet.respondSessionRequest` with an appropriate error payload (e.g., `{ code: 5000, message: 'User Rejected' }` or a generic error). Display error in UI. Clear the pending request state.
+      - If `isSuccess` (meaning the _Owner EOA_ transaction was submitted), wait for the transaction receipt using `useWaitForTransactionReceipt` (Wagmi).
+        - If the receipt status is `'success'`, call `web3wallet.respondSessionRequest({ topic, response: { id, result: receipt.transactionHash, jsonrpc: '2.0' } })`. Display success in UI. Clear the pending request state.
+        - If the receipt status is `'reverted'`, call `web3wallet.respondSessionRequest` with a generic execution error payload. Display error in UI. Clear the pending request state.
+    - On "Reject" button click:
+      - Call `web3wallet.respondSessionRequest` with a user rejection error payload.
+      - Clear the pending request state.
+
+---
+
+## 6. State Management
+
+- **Wagmi:** Manages Owner EOA connection state (address, chainId, connector, connection status) and provides TanStack Query caching for reads.
+- **LensAccountContext:** Stores the identified Lens Account address and the verified Owner EOA address upon successful login.
+- **WalletConnectContext:** Stores the `@walletconnect/web3wallet` instance, active WC sessions (list/map), current pending WC request payload, and connection/pairing status flags.
+- **Local Component State:** Used for form inputs, UI loading/error states within specific components.
+
+---
+
+## 7. Styling
+
+- Utilize **Tailwind CSS** for styling all components.
+- Keep styling minimal and functional for the MVP.
+- Ensure basic layout structure (header, main content area).
+
+---
+
+## 8. Error Handling
+
+- Implement `try...catch` blocks around critical operations (WC pairing, session approval, request responses).
+- Utilize the `error` states returned by Wagmi hooks (`useReadContract`, `useWriteContract`, `useWaitForTransactionReceipt`).
+- Display user-friendly error messages for common issues (network mismatch, incorrect owner, transaction rejection, WC errors, contract reverts). Log detailed errors to the console for debugging.
+- Specifically handle WalletConnect SDK errors during pairing and session proposals.
+
+---
+
+## 9. Constants & Configuration
+
+- **`lib/constants.ts`:**
+  - `LENS_CHAIN_ID = 232`
+  - `LENS_CHAIN_RPC_URL = 'https://rpc.lens.xyz'`
+  - `LENS_CHAIN_EXPLORER_URL = 'https://explorer.lens.xyz'`
+  - `LENS_CHAIN_CURRENCY = { name: 'GHO', symbol: 'GHO', decimals: 18 }`
+  - `LENS_GLOBAL_NAMESPACE_ADDRESS = '0x1aA55B9042f08f45825dC4b651B64c9F98Af4615'`
+  - `WGHO_TOKEN_ADDRESS = '0x6bDc36E20D267Ff0dd6097799f82e78907105e2F'` (Actual Address Needed)
+  - `LENS_ACCOUNT_ABI = [...]` (Include `owner()`, `executeTransaction()`)
+  - `LENS_GLOBAL_NAMESPACE_ABI = [...]` (Include `accountOf(string)`, `usernameOf(address)`)
+  - `ERC20_ABI = [...]` (Include `balanceOf(address)`)
+- **`lib/wagmi.ts`:**
+  - Define the `lensChain` object using Viem's `defineChain`.
+  - Configure `createConfig` (Wagmi) with `chains: [lensChain]`, necessary connectors (e.g., `injected`, `walletConnect`), and transports.
+- **`.env.local`:**
+  - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<Your_WC_Project_ID>` (Obtain from [cloud.walletconnect.com](https://cloud.walletconnect.com/))
+
+---
+
+## 10. Deployment
+
+- Standard Next.js deployment process (e.g., Vercel, Netlify).
+- Ensure environment variables (like `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`) are configured in the deployment environment.
+
+---
+
+## 11. Future Considerations (Post-MVP)
+
+- Support for multiple Lens Account types/versions.
+- Transaction history display.
+- Direct sending of GHO/WGHO from the UI.
+- More detailed transaction decoding for WC requests.
+- Advanced error handling and user feedback.
+- Mobile responsiveness improvements.
+- Session management UI (disconnecting specific WC sessions).
+- Support for additional WC methods (e.g., `personal_sign`).
+- Potential integration of Safe SDKs if the Lens Account implements Safe compatibility layers.
+</file>
+
+</files>

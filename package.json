@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare": "husky",
+    "generate-llms": "repomix --include \"*.*,src\" -o llms.txt"
   },
   "dependencies": {
     "@reown/walletkit": "^1.2.3",
@@ -29,6 +31,8 @@
     "@types/webpack": "^5.28.5",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
+    "husky": "^9.1.7",
+    "repomix": "^0.3.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
