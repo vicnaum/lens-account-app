@@ -86,18 +86,32 @@ tsconfig.json
 <files>
 This section contains the contents of the repository's files.
 
+<file path="src/components/ConnectOwnerButton.tsx">
+// components/ConnectOwnerButton.tsx
+"use client";
+
+import { ConnectKitButton } from "connectkit";
+
+export function ConnectOwnerButton() {
+  return (
+    <div className="flex justify-center">
+      <ConnectKitButton />
+    </div>
+  );
+}
+</file>
+
 <file path="src/components/WcRequestDisplay.tsx">
 // src/components/WcRequestDisplay.tsx
 "use client";
 
-import React, { useState, useEffect } from "react"; // <<<--- IMPORT useEffect
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useWalletConnect } from "@/contexts/WalletConnectProvider";
 import { useLensAccount } from "@/contexts/LensAccountContext";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { formatUnits } from "viem"; // Removed parseAbiItem as it's not used here
+import { formatUnits, type TransactionReceipt, type Hash } from "viem";
 import { getSdkError } from "@walletconnect/utils";
-// Import formatters from the correct package
-import { formatJsonRpcError, formatJsonRpcResult } from "@walletconnect/jsonrpc-utils"; // <<<--- CORRECTED IMPORT
+import { formatJsonRpcError, formatJsonRpcResult, JsonRpcResponse } from "@walletconnect/jsonrpc-utils";
 import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, lensChain } from "@/lib/constants";
 import Image from "next/image";
 
@@ -135,7 +149,7 @@ const DAppIcon = ({ iconUrl, name, size = 40 }: { iconUrl?: string; name: string
   const [hasError, setHasError] = useState(false);
   useEffect(() => setHasError(false), [iconUrl]); // Reset error state if URL changes
 
-  if (!iconUrl || hasError) return <FallbackIcon size={size} />; // Use size prop here too
+  if (!iconUrl || hasError) return <FallbackIcon size={size} />;
 
   return (
     <Image
@@ -157,7 +171,10 @@ export function WcRequestDisplay() {
   const { pendingRequest, respondRequest, error: wcError, isLoading: isWcLoading } = useWalletConnect();
   const { lensAccountAddress } = useLensAccount();
   const { address: ownerAddress, chainId: ownerChainId } = useAccount();
-  const { data: hash, error: writeError, isPending: isWritePending, writeContractAsync } = useWriteContract();
+
+  // State related to the write *initiation*
+  const { data: hash, error: writeError, isPending: isWritePending, writeContractAsync, reset: resetWriteContract } = useWriteContract();
+  // State related to the *confirmation* of the hash from write initiation
   const {
     isLoading: isConfirming,
     isSuccess: isConfirmed,
@@ -167,87 +184,196 @@ export function WcRequestDisplay() {
 
   const [localError, setLocalError] = useState<string | null>(null);
   const [localLoadingMessage, setLocalLoadingMessage] = useState<string | null>(null);
+  // Store the ID of the request currently being actively processed
+  const processingRequestId = useRef<number | null>(null);
+  // Store the hash associated with the *currently processed* request ID
+  const processingRequestHash = useRef<Hash | null>(null);
 
-  // Clear local state when pending request changes
+  // --- Log Component Render ---
+  console.log(
+    `%cWcRequestDisplay Render: pendingReqId=${pendingRequest?.id ?? "null"}, currentProcessingId=${processingRequestId.current}, currentProcessingHash=${processingRequestHash.current ?? "null"}, hookHash=${hash ?? "null"}, isWritePending=${isWritePending}, isConfirming=${isConfirming}, isConfirmed=${isConfirmed}, receiptHash=${receipt?.transactionHash ?? "null"}, writeError=${!!writeError}, receiptError=${!!receiptError}`,
+    "color: magenta",
+  );
+  // --------------------------
+
+  // --- Effect to Reset State When a NEW Request Arrives ---
   useEffect(() => {
-    setLocalError(null);
-    setLocalLoadingMessage(null);
-  }, [pendingRequest]);
+    const incomingRequestId = pendingRequest?.id ?? null;
+    const currentProcessing = processingRequestId.current;
 
-  // Handle transaction submission result
-  useEffect(() => {
-    if (!pendingRequest || !hash) return;
+    console.log(
+      `%cWcRequestDisplay ResetEffect: Running. Incoming ID: ${incomingRequestId}, Current Processing ID: ${currentProcessing}`,
+      "color: teal",
+    );
 
-    if (isConfirming) {
-      setLocalLoadingMessage("Waiting for transaction confirmation...");
-      return;
-    }
-
-    if (receiptError) {
-      console.error("Transaction Receipt Error:", receiptError);
-      setLocalError(`Transaction failed: ${receiptError.message}`);
-      respondRequest(formatJsonRpcError(pendingRequest.id, { code: -32000, message: "Transaction Failed on chain" }));
-      return;
-    }
-
-    if (isConfirmed && receipt) {
-      setLocalLoadingMessage(null);
-      if (receipt.status === "success") {
-        console.log("Transaction successful:", receipt.transactionHash);
-        respondRequest(formatJsonRpcResult(pendingRequest.id, receipt.transactionHash));
+    if (incomingRequestId !== null) {
+      if (currentProcessing !== incomingRequestId) {
+        console.log(`%cWcRequestDisplay ResetEffect: New request ${incomingRequestId} detected. Resetting state.`, "color: teal");
+        resetWriteContract();
+        setLocalError(null);
+        setLocalLoadingMessage(null);
+        processingRequestId.current = incomingRequestId;
+        processingRequestHash.current = null; // Reset hash ref
       } else {
-        console.error("Transaction reverted:", receipt);
-        setLocalError("Transaction reverted on chain.");
-        respondRequest(formatJsonRpcError(pendingRequest.id, { code: -32000, message: "Transaction reverted" }));
+        console.log(
+          `%cWcRequestDisplay ResetEffect: Incoming ID ${incomingRequestId} matches current Processing ID. No reset needed.`,
+          "color: teal",
+        );
+      }
+    } else {
+      if (currentProcessing !== null) {
+        console.log(`%cWcRequestDisplay ResetEffect: No pending request. Resetting state.`, "color: teal");
+        resetWriteContract();
+        setLocalError(null);
+        setLocalLoadingMessage(null);
+        processingRequestId.current = null;
+        processingRequestHash.current = null; // Reset hash ref
+      } else {
+        console.log(`%cWcRequestDisplay ResetEffect: No pending request and nothing processing. No reset needed.`, "color: teal");
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConfirming, isConfirmed, receiptError, receipt, hash, pendingRequest, respondRequest]); // Keep respondRequest here
+  }, [pendingRequest, resetWriteContract]); // Now depends on pendingRequest object itself
 
-  // Handle direct write errors (like user rejection)
+  // --- Effect to track the hash associated with the current request ---
   useEffect(() => {
-    if (writeError && pendingRequest) {
-      console.error("Write Contract Error:", writeError);
-      setLocalError(`Transaction rejected or failed to send: ${writeError.message}`);
-      // Use getSdkError directly as the error payload
-      respondRequest(formatJsonRpcError(pendingRequest.id, getSdkError("USER_REJECTED"))); // <<<--- CORRECTED
+    if (hash && processingRequestId.current && !processingRequestHash.current) {
+      console.log(`%cWcRequestDisplay HashTrackEffect: Associating hash ${hash} with request ID ${processingRequestId.current}`, "color: purple");
+      processingRequestHash.current = hash; // Store the hash for the request we are processing
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [writeError, pendingRequest, respondRequest]); // Keep respondRequest here
+  }, [hash, processingRequestId]); // Run when hash changes and we have a processing ID
+
+  // --- Centralized Respond Function ---
+  const handleRespond = useCallback(
+    (response: JsonRpcResponse) => {
+      const currentId = processingRequestId.current;
+      if (currentId !== null && currentId === response.id) {
+        console.log(`%cWcRequestDisplay handleRespond: Responding for request ID: ${response.id}`, "color: darkmagenta", response);
+        respondRequest(response);
+        // Reset processing state *after* responding
+        processingRequestId.current = null;
+        processingRequestHash.current = null; // Reset hash ref
+        setLocalLoadingMessage(null);
+        resetWriteContract(); // Try resetting here too
+      } else {
+        console.warn(
+          `%cWcRequestDisplay handleRespond: Ignoring response attempt for stale/mismatched request ID: ${response.id} (Current Processing: ${currentId})`,
+          "color: orange",
+        );
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [respondRequest, resetWriteContract],
+  ); // Add resetWriteContract
+
+  // --- Effect to Handle Transaction Submission Result ---
+  useEffect(() => {
+    const currentProcessingId = processingRequestId.current;
+    const currentReqHash = processingRequestHash.current; // Use the hash we stored for this request
+
+    console.log(
+      `%cWcRequestDisplay ReceiptEffect: Running. CurrentProcessingId=${currentProcessingId}, CurrentReqHash=${currentReqHash ?? "null"}, HookHash=${hash ?? "null"}, isConfirming=${isConfirming}, isConfirmed=${isConfirmed}, receiptHash=${receipt?.transactionHash ?? "null"}, receiptError=${!!receiptError}`,
+      "color: #2ECC71",
+    );
+
+    // Guards:
+    // 1. Must be processing a request.
+    // 2. Must have a specific hash associated with *this* request attempt.
+    // 3. The confirmation process must be finished (or errored).
+    // 4. The hook's current hash must match the hash associated with our request.
+    if (!currentProcessingId || !currentReqHash || isConfirming || hash !== currentReqHash) {
+      console.log(
+        `%cWcRequestDisplay ReceiptEffect: Bailing out (ProcessingID: ${currentProcessingId}, CurrentReqHash: ${currentReqHash}, HookHash: ${hash}, Confirming: ${isConfirming})`,
+        "color: gray",
+      );
+      return;
+    }
+
+    // Now check receipt and errors, ensuring they match the currentReqHash
+    if (receipt && receipt.transactionHash === currentReqHash) {
+      console.log(`%cWcRequestDisplay ReceiptEffect: Receipt received for current hash ${currentReqHash}`, "color: #2ECC71");
+      setLocalLoadingMessage(null);
+      if (receipt.status === "success") {
+        console.log(
+          `%cWcRequestDisplay ReceiptEffect: Transaction successful, calling handleRespond for ID ${currentProcessingId}`,
+          "color: #2ECC71",
+        );
+        handleRespond(formatJsonRpcResult(currentProcessingId, receipt.transactionHash));
+      } else {
+        console.error(
+          `%cWcRequestDisplay ReceiptEffect: Transaction reverted, calling handleRespond for ID ${currentProcessingId}`,
+          "color: red",
+          receipt,
+        );
+        setLocalError("Transaction reverted on chain.");
+        handleRespond(formatJsonRpcError(currentProcessingId, { code: -32000, message: "Transaction reverted" }));
+      }
+    } else if (receiptError) {
+      console.error(
+        `%cWcRequestDisplay ReceiptEffect: Transaction Receipt Error for hash ${currentReqHash}, calling handleRespond for ID ${currentProcessingId}`,
+        "color: red",
+        receiptError,
+      );
+      setLocalError(`Transaction failed: ${receiptError.message}`);
+      handleRespond(formatJsonRpcError(currentProcessingId, { code: -32000, message: "Transaction Failed on chain" }));
+    } else if (isConfirmed && !receipt) {
+      console.warn(
+        `%cWcRequestDisplay ReceiptEffect: isConfirmed is true but receipt is still null/undefined for hash ${currentReqHash}. Waiting.`,
+        "color: orange",
+      );
+    } else {
+      console.log(`%cWcRequestDisplay ReceiptEffect: No definitive action taken for hash ${currentReqHash}`, "color: gray");
+    }
+  }, [isConfirming, isConfirmed, receiptError, receipt, hash, handleRespond]); // Keep dependencies
+
+  // --- Effect to Handle Direct Write Errors ---
+  useEffect(() => {
+    const currentProcessingId = processingRequestId.current;
+    console.log(`%cWcRequestDisplay WriteErrorEffect: Running. writeError=${!!writeError}, currentProcessingId=${currentProcessingId}`, "color: red");
+    if (writeError && currentProcessingId) {
+      console.error("WcRequestDisplay WriteErrorEffect: Write Contract Error detected:", writeError);
+      setLocalError(`Transaction rejected or failed to send: ${writeError.message}`);
+      handleRespond(formatJsonRpcError(currentProcessingId, getSdkError("USER_REJECTED")));
+    }
+  }, [writeError, handleRespond]);
 
   const handleApprove = async () => {
-    if (!pendingRequest || !lensAccountAddress || !ownerAddress) {
-      setLocalError("Missing required information to send transaction.");
-      return;
-    }
-    if (ownerChainId !== LENS_CHAIN_ID) {
-      setLocalError("Owner wallet is not connected to Lens Chain.");
-      return;
-    }
+    if (!pendingRequest) return setLocalError("No request to approve.");
+    if (!lensAccountAddress) return setLocalError("Lens Account address missing.");
+    if (!ownerAddress) return setLocalError("Owner wallet not connected.");
+    if (!writeContractAsync) return setLocalError("Transaction function not ready.");
+    if (ownerChainId !== LENS_CHAIN_ID) return setLocalError("Owner wallet not on Lens Chain.");
 
+    // Reset local state AND ensure we reset wagmi state *before* initiating write
+    console.log(`%cWcRequestDisplay handleApprove: Resetting state before write for request ID: ${pendingRequest.id}`, "color: blueviolet");
+    resetWriteContract(); // Reset here as well
+    processingRequestId.current = pendingRequest.id; // Mark immediately
+    processingRequestHash.current = null; // Clear previous hash
     setLocalError(null);
     setLocalLoadingMessage("Please confirm in your wallet...");
 
     const { method, params } = pendingRequest.params.request;
-
     if (method !== "eth_sendTransaction") {
-      setLocalError(`Unsupported method: ${method}`);
-      respondRequest(formatJsonRpcError(pendingRequest.id, { code: 4200, message: "Method not supported" }));
+      const errorMsg = `Unsupported method: ${method}`;
+      setLocalError(errorMsg);
+      handleRespond(formatJsonRpcError(pendingRequest.id, { code: 4200, message: "Method not supported" }));
       return;
     }
 
     const tx = params[0] as { to?: `0x${string}`; value?: string; data?: `0x${string}` };
     const targetAddress = tx.to;
-    const value = tx.value ? BigInt(tx.value) : 0n; // BigInt literal should work now
+    const value = tx.value ? BigInt(tx.value) : 0n;
     const data = tx.data || "0x";
 
     if (!targetAddress) {
-      setLocalError("Transaction 'to' address is missing.");
-      respondRequest(formatJsonRpcError(pendingRequest.id, { code: -32602, message: "Invalid parameters: missing 'to' address" }));
+      const errorMsg = "Transaction 'to' address is missing.";
+      setLocalError(errorMsg);
+      handleRespond(formatJsonRpcError(pendingRequest.id, { code: -32602, message: "Invalid parameters: missing 'to' address" }));
       return;
     }
 
     try {
+      console.log("%cWcRequestDisplay handleApprove: Calling writeContractAsync...", "color: blueviolet");
+      // Call async, the hash state update will trigger the HashTrackEffect
       await writeContractAsync({
         address: lensAccountAddress,
         abi: LENS_ACCOUNT_ABI,
@@ -256,23 +382,28 @@ export function WcRequestDisplay() {
         account: ownerAddress,
         chainId: LENS_CHAIN_ID,
       });
+      console.log("%cWcRequestDisplay handleApprove: writeContractAsync call submitted.", "color: blueviolet");
     } catch (error) {
-      console.error("Error initiating transaction:", error);
-      if (!writeError) {
-        setLocalError(`Failed to initiate transaction: ${(error as Error).message}`);
+      console.error("WcRequestDisplay handleApprove: Error calling writeContractAsync:", error);
+      if (!writeError && processingRequestId.current) {
+        // Check current ID before responding
+        const errorMsg = `Failed to initiate transaction: ${(error as Error).message}`;
+        setLocalError(errorMsg);
+        handleRespond(formatJsonRpcError(processingRequestId.current, getSdkError("USER_REJECTED")));
       }
     }
   };
 
   const handleReject = () => {
     if (!pendingRequest) return;
+    processingRequestId.current = pendingRequest.id; // Mark which request we are rejecting
     setLocalError(null);
     setLocalLoadingMessage(null);
-    console.log("Rejecting request:", pendingRequest.id);
-    // Use getSdkError directly as the error payload
-    respondRequest(formatJsonRpcError(pendingRequest.id, getSdkError("USER_REJECTED"))); // <<<--- CORRECTED
+    console.log("WcRequestDisplay handleReject: Rejecting request:", pendingRequest.id);
+    handleRespond(formatJsonRpcError(pendingRequest.id, getSdkError("USER_REJECTED")));
   };
 
+  // --- Render Logic ---
   if (!pendingRequest) {
     return (
       <div className="p-4 border rounded-md bg-gray-50">
@@ -281,26 +412,20 @@ export function WcRequestDisplay() {
     );
   }
 
-  // Extract request details
+  // Extract request details safely
   const { request, chainId } = pendingRequest.params;
-  const txDetails = request.params[0] as { to?: string; value?: string; data?: string };
-  const dAppName = pendingRequest.verifyContext?.verified.origin || "Unknown dApp"; // Use origin for name/url
+  const txDetails = request.params?.[0] as { to?: string; value?: string; data?: string } | undefined;
+  const dAppName = pendingRequest.verifyContext?.verified.origin || "Unknown dApp";
   const dAppUrl = pendingRequest.verifyContext?.verified.origin;
-  // TODO: Get icon from proposal metadata cache if possible, or use a generic icon
-  // const dAppIconUrl = resolveIconUrl(???);
-
-  const formattedValue = txDetails.value
+  const formattedValue = txDetails?.value
     ? `${formatUnits(BigInt(txDetails.value), lensChain.nativeCurrency.decimals)} ${lensChain.nativeCurrency.symbol}`
     : `0 ${lensChain.nativeCurrency.symbol}`;
-
   const isLoading = isWritePending || isConfirming || isWcLoading;
 
   return (
     <div className="p-4 border-2 border-blue-300 rounded-md bg-blue-50 shadow-md space-y-4">
       <h3 className="text-md font-semibold text-blue-800">WalletConnect Request</h3>
-
       <div className="flex items-center space-x-3 mb-3 pb-3 border-b border-blue-200">
-        {/* <DAppIcon iconUrl={dAppIconUrl} name={dAppName} size={30} /> */}
         <FallbackIcon size={30} />
         <div>
           <p className="text-sm font-medium text-gray-800">{dAppName}</p>
@@ -316,7 +441,7 @@ export function WcRequestDisplay() {
           <strong className="text-gray-600">Chain:</strong> <span className="font-mono bg-gray-100 px-1 rounded">{chainId}</span>
         </p>
         <p>
-          <strong className="text-gray-600">Target (to):</strong> <span className="font-mono text-xs break-all">{txDetails.to ?? "N/A"}</span>
+          <strong className="text-gray-600">Target (to):</strong> <span className="font-mono text-xs break-all">{txDetails?.to ?? "N/A"}</span>
         </p>
         <p>
           <strong className="text-gray-600">Value:</strong> <span className="font-mono">{formattedValue}</span>
@@ -325,7 +450,7 @@ export function WcRequestDisplay() {
           <strong className="text-gray-600">Data:</strong>
           <textarea
             readOnly
-            value={txDetails.data ?? "0x"}
+            value={txDetails?.data ?? "0x"}
             className="mt-1 w-full h-20 p-1 border border-gray-300 rounded text-xs font-mono bg-gray-50"
           />
         </div>
@@ -353,21 +478,6 @@ export function WcRequestDisplay() {
           Reject
         </button>
       </div>
-    </div>
-  );
-}
-</file>
-
-<file path="src/components/ConnectOwnerButton.tsx">
-// components/ConnectOwnerButton.tsx
-"use client";
-
-import { ConnectKitButton } from "connectkit";
-
-export function ConnectOwnerButton() {
-  return (
-    <div className="flex justify-center">
-      <ConnectKitButton />
     </div>
   );
 }
@@ -784,36 +894,6 @@ This specification is intended for developers, QA testers, and product managers 
 - **Chain ID:** 232
 - **Currency Symbol:** GHO
 - **Block Explorer URL:** https://explorer.lens.xyz
-</file>
-
-<file path="tsconfig.json">
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
-}
 </file>
 
 <file path="src/components/DiscoveryForm.tsx">
@@ -1373,6 +1453,36 @@ src/
 - Potential integration of Safe SDKs if the Lens Account implements Safe compatibility layers.
 </file>
 
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+</file>
+
 <file path="src/app/dashboard/layout.tsx">
 // src/app/dashboard/layout.tsx
 "use client"; // Context providers require client components
@@ -1608,356 +1718,6 @@ export function Providers({ children }: Props) {
         </ConnectKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
-  );
-}
-</file>
-
-<file path="src/services/walletConnectService.ts">
-// src/services/walletConnectService.ts
-import { WalletKit, IWalletKit, WalletKitTypes } from "@reown/walletkit";
-import { Core } from "@walletconnect/core";
-import { ICore, SessionTypes, SignClientTypes } from "@walletconnect/types";
-import { ErrorResponse, JsonRpcResponse } from "@walletconnect/jsonrpc-utils"; // Import JsonRpcResponse
-import EventEmitter from "events";
-
-// --- Export Enums and Interfaces ---
-export enum ServiceEvents {
-  Initialized = "initialized",
-  PairStatus = "pair_status",
-  SessionProposal = "session_proposal",
-  SessionConnect = "session_connect",
-  SessionDelete = "session_delete",
-  SessionRequest = "session_request", // <<<--- ADDED
-  Error = "error",
-  SessionsUpdated = "sessions_updated",
-  IS_LOADING = "is_loading",
-  IS_PAIRING = "is_pairing",
-}
-
-export interface WalletConnectServiceEvents {
-  [ServiceEvents.Initialized]: (payload: { success: boolean; instance: IWalletKit | null }) => void;
-  [ServiceEvents.PairStatus]: (payload: { status: "pairing" | "paired" | "error"; message?: string }) => void;
-  [ServiceEvents.SessionProposal]: (payload: { proposal: WalletKitTypes.SessionProposal }) => void;
-  [ServiceEvents.SessionConnect]: (payload: { session: SessionTypes.Struct }) => void;
-  [ServiceEvents.SessionDelete]: (payload: { topic: string }) => void;
-  [ServiceEvents.SessionRequest]: (payload: { request: WalletKitTypes.SessionRequest }) => void; // <<<--- ADDED
-  [ServiceEvents.Error]: (payload: { message: string }) => void;
-  [ServiceEvents.SessionsUpdated]: (payload: { sessions: Record<string, SessionTypes.Struct> }) => void;
-  [ServiceEvents.IS_LOADING]: (payload: { isLoading: boolean }) => void;
-  [ServiceEvents.IS_PAIRING]: (payload: { isPairing: boolean }) => void;
-}
-// ------------------------------------
-
-// --- Export the Class Definition ---
-export class WalletConnectService extends EventEmitter {
-  private core: ICore | undefined;
-  private walletKit: IWalletKit | undefined;
-  private projectId: string;
-  private metadata: WalletKitTypes.Metadata;
-  private _isInitialized = false;
-  private _isInitializing = false;
-  private initPromise: Promise<IWalletKit> | null = null;
-
-  constructor(projectId: string, metadata: WalletKitTypes.Metadata) {
-    super();
-    if (!projectId) {
-      throw new Error("WalletConnectService: Project ID is required.");
-    }
-    this.projectId = projectId;
-    this.metadata = JSON.parse(JSON.stringify(metadata));
-    console.log("WalletConnectService: NEW Instance created (by Provider).");
-  }
-
-  // --- Getters (keep as before) ---
-  public isInitialized(): boolean {
-    return this._isInitialized;
-  }
-  public isInitializing(): boolean {
-    return this._isInitializing;
-  }
-  public getWalletKitInstance(): IWalletKit | undefined {
-    return this.walletKit;
-  }
-  public getActiveSessions(): Record<string, SessionTypes.Struct> {
-    return this.walletKit?.getActiveSessions() || {};
-  }
-
-  // --- Core Initialization (Idempotent) ---
-  async init(): Promise<IWalletKit> {
-    if (this._isInitialized && this.walletKit) {
-      console.log("WalletConnectService Instance: Init called but already initialized.");
-      this.emit(ServiceEvents.Initialized, { success: true, instance: this.walletKit });
-      return this.walletKit;
-    }
-    if (this._isInitializing && this.initPromise) {
-      console.log("WalletConnectService Instance: Init called while already initializing. Returning existing promise.");
-      return this.initPromise;
-    }
-    console.log("WalletConnectService Instance: Starting initialization (init)...");
-    this._isInitializing = true;
-    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
-    this.initPromise = (async () => {
-      try {
-        console.log("WalletConnectService Instance: Initializing WalletConnect Core...");
-        process.env.DISABLE_GLOBAL_CORE = "true";
-        this.core = new Core({ projectId: this.projectId });
-        process.env.DISABLE_GLOBAL_CORE = "false";
-        console.log("WalletConnectService Instance: Initializing WalletKit...");
-        this.walletKit = await WalletKit.init({ core: this.core, metadata: this.metadata });
-        this.setupInternalListeners();
-        this._isInitialized = true;
-        console.log("WalletConnectService Instance: Initialization successful.");
-        this.emit(ServiceEvents.Initialized, { success: true, instance: this.walletKit });
-        this.emit(ServiceEvents.SessionsUpdated, { sessions: this.getActiveSessions() });
-        return this.walletKit;
-      } catch (error: unknown) {
-        console.error("WalletConnectService Instance: Initialization failed:", error);
-        this._isInitialized = false;
-        this.emit(ServiceEvents.Initialized, { success: false, instance: null });
-        this.emit(ServiceEvents.Error, { message: `Initialization failed: ${(error as Error).message}` });
-        throw error;
-      } finally {
-        this._isInitializing = false;
-        this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
-        this.initPromise = null;
-      }
-    })();
-    return this.initPromise;
-  }
-
-  private setupInternalListeners() {
-    if (!this.walletKit) {
-      console.error("WalletConnectService: Cannot setup listeners, WalletKit not ready.");
-      return;
-    }
-    console.log("WalletConnectService: Setting up internal event listeners...");
-
-    this.walletKit.off("session_proposal", this.handleSessionProposal);
-    this.walletKit.on("session_proposal", this.handleSessionProposal);
-
-    if (this.walletKit.engine?.signClient?.events) {
-      this.walletKit.engine.signClient.events.off("session_connect", this.handleSessionConnect);
-      this.walletKit.engine.signClient.events.on("session_connect", this.handleSessionConnect);
-    } else {
-      console.warn("WalletConnectService: SignClient events not available for session_connect listener.");
-    }
-
-    this.walletKit.off("session_delete", this.handleSessionDelete);
-    this.walletKit.on("session_delete", this.handleSessionDelete);
-
-    // --- Add session_request Listener ---
-    this.walletKit.off("session_request", this.handleSessionRequest); // <<<--- ADDED
-    this.walletKit.on("session_request", this.handleSessionRequest); // <<<--- ADDED
-    // ------------------------------------
-
-    console.log("WalletConnectService: Internal listeners attached.");
-  }
-
-  // --- Event Handlers (bound methods) ---
-  private handleSessionProposal = (proposal: WalletKitTypes.SessionProposal) => {
-    console.log("Service Handler: session_proposal", proposal.id);
-    this.emit(ServiceEvents.SessionProposal, { proposal });
-    this.emit(ServiceEvents.IS_PAIRING, { isPairing: false });
-  };
-
-  private handleSessionConnect = (sessionArgs: SignClientTypes.EventArguments["session_connect"]) => {
-    console.log("Service Handler: session_connect", sessionArgs.session.topic);
-    this.emit(ServiceEvents.SessionConnect, { session: sessionArgs.session });
-    this.emit(ServiceEvents.SessionsUpdated, { sessions: this.getActiveSessions() });
-  };
-
-  private handleSessionDelete = (event: { id: number; topic: string }) => {
-    console.log("Service Handler: session_delete", event.topic);
-    this.emit(ServiceEvents.SessionDelete, { topic: event.topic });
-    this.emit(ServiceEvents.SessionsUpdated, { sessions: this.getActiveSessions() });
-  };
-
-  // --- Handler for Session Request ---
-  private handleSessionRequest = (request: WalletKitTypes.SessionRequest) => {
-    // <<<--- ADDED
-    console.log("Service Handler: session_request", request.id, request.params.request.method);
-    this.emit(ServiceEvents.SessionRequest, { request });
-  };
-  // -----------------------------------
-
-  // --- Public Methods ---
-  async pair(uri: string): Promise<void> {
-    if (!this._isInitialized || !this.walletKit) throw new Error("WalletConnectService: Not initialized. Cannot pair.");
-    console.log("Service: Attempting to pair with URI:", uri);
-    this.emit(ServiceEvents.IS_PAIRING, { isPairing: true });
-    this.emit(ServiceEvents.PairStatus, { status: "pairing" });
-    try {
-      await this.walletKit.pair({ uri });
-      console.log("Service: Pairing initiated for URI:", uri);
-    } catch (error: unknown) {
-      console.error("Service: Pairing failed:", error);
-      const message = (error as Error).message || "Pairing failed";
-      this.emit(ServiceEvents.PairStatus, { status: "error", message });
-      this.emit(ServiceEvents.IS_PAIRING, { isPairing: false });
-      this.emit(ServiceEvents.Error, { message });
-      throw error;
-    }
-  }
-
-  async approveSession(proposal: WalletKitTypes.SessionProposal, approvedNamespaces: SessionTypes.Namespaces): Promise<SessionTypes.Struct> {
-    if (!this._isInitialized || !this.walletKit) throw new Error("WalletConnectService: Not initialized. Cannot approve session.");
-    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
-    try {
-      console.log("Service: Approving session:", proposal.id);
-      const session = await this.walletKit.approveSession({ id: proposal.id, namespaces: approvedNamespaces });
-      console.log("Service: Session approved via approveSession:", session.topic);
-      return session;
-    } catch (error: unknown) {
-      console.error("Service: Failed to approve session:", error);
-      this.emit(ServiceEvents.Error, { message: (error as Error).message || "Failed to approve session" });
-      throw error;
-    } finally {
-      this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
-    }
-  }
-
-  async rejectSession(proposal: WalletKitTypes.SessionProposal, reason: ErrorResponse): Promise<void> {
-    if (!this._isInitialized || !this.walletKit) throw new Error("WalletConnectService: Not initialized. Cannot reject session.");
-    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
-    try {
-      console.log("Service: Rejecting session:", proposal.id);
-      await this.walletKit.rejectSession({ id: proposal.id, reason: reason });
-      console.log("Service: Session rejected:", proposal.id);
-    } catch (error: unknown) {
-      console.error("Service: Failed to reject session:", error);
-      this.emit(ServiceEvents.Error, { message: (error as Error).message || "Failed to reject session" });
-      throw error;
-    } finally {
-      this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
-    }
-  }
-
-  async disconnectSession(topic: string, reason: ErrorResponse): Promise<void> {
-    if (!this._isInitialized || !this.walletKit) throw new Error("WalletConnectService: Not initialized. Cannot disconnect session.");
-    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
-    try {
-      console.log("Service: Disconnecting session:", topic);
-      await this.walletKit.disconnectSession({ topic: topic, reason: reason });
-      console.log("Service: Disconnect call successful for topic:", topic);
-    } catch (error: unknown) {
-      console.error("Service: Failed to disconnect session:", error);
-      this.emit(ServiceEvents.Error, { message: (error as Error).message || "Failed to disconnect session" });
-      throw error;
-    } finally {
-      this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
-    }
-  }
-
-  // --- Method to Respond to Session Requests ---
-  async respondSessionRequest(topic: string, response: JsonRpcResponse): Promise<void> {
-    // <<<--- ADDED
-    if (!this._isInitialized || !this.walletKit) {
-      throw new Error("WalletConnectService: Not initialized. Cannot respond to request.");
-    }
-    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
-    try {
-      console.log("Service: Responding to session request:", response.id, "on topic:", topic);
-      await this.walletKit.respondSessionRequest({ topic, response });
-      console.log("Service: Response sent for request:", response.id);
-    } catch (error: unknown) {
-      console.error("Service: Failed to respond to session request:", error);
-      this.emit(ServiceEvents.Error, { message: (error as Error).message || "Failed to respond to request" });
-      throw error;
-    } finally {
-      this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
-    }
-  }
-  // -------------------------------------------
-
-  // Typed EventEmitter methods (keep as before)
-  on<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
-    return super.on(event, listener as (...args: any[]) => void);
-  }
-  once<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
-    return super.once(event, listener as (...args: any[]) => void);
-  }
-  off<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
-    return super.off(event, listener as (...args: any[]) => void);
-  }
-  removeListener<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
-    return super.removeListener(event, listener as (...args: any[]) => void);
-  }
-  emit<E extends keyof WalletConnectServiceEvents>(event: E, ...args: Parameters<WalletConnectServiceEvents[E]>): boolean {
-    return super.emit(event, ...args);
-  }
-}
-</file>
-
-<file path="src/app/dashboard/page.tsx">
-// src/app/dashboard/page.tsx
-"use client";
-
-import { useLensAccount } from "@/contexts/LensAccountContext";
-import { useAccount, useDisconnect } from "wagmi";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { AccountDisplay } from "@/components/AccountDisplay";
-import { WcConnect } from "@/components/WcConnect";
-import { WcRequestDisplay } from "@/components/WcRequestDisplay"; // <<<--- IMPORTED
-
-export default function Dashboard() {
-  const { lensAccountAddress, ownerAddress, clearAccount } = useLensAccount();
-  const { isConnected } = useAccount();
-  const { disconnect: disconnectOwnerWallet } = useDisconnect();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isConnected || !lensAccountAddress || !ownerAddress) {
-      console.log("Redirecting to home: not connected or missing context");
-      if (!lensAccountAddress || !ownerAddress) {
-        clearAccount();
-      }
-      router.replace("/");
-    }
-  }, [isConnected, lensAccountAddress, ownerAddress, router, clearAccount]);
-
-  const handleLogout = () => {
-    disconnectOwnerWallet();
-    clearAccount();
-    console.log("Logout initiated");
-  };
-
-  if (!isConnected || !lensAccountAddress || !ownerAddress) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p>Loading or redirecting...</p>
-      </div>
-    );
-  }
-
-  return (
-    <main className="flex min-h-screen flex-col items-center p-6 md:p-24">
-      <div className="w-full max-w-4xl p-8 bg-white rounded-xl shadow-lg relative">
-        <button
-          onClick={handleLogout}
-          className="absolute top-4 right-4 px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-        >
-          {" "}
-          Logout Owner{" "}
-        </button>
-        <h1 className="text-2xl font-bold mb-4 text-center">Dashboard</h1>
-        <div className="space-y-6">
-          <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
-            <p className="text-sm font-medium text-gray-700">Connected Owner Wallet:</p>
-            <p className="text-xs text-gray-600 break-words font-mono">{ownerAddress}</p>
-          </div>
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-sm font-medium text-blue-800">Managing Lens Account:</p>
-            <p className="text-xs text-blue-700 break-words font-mono">{lensAccountAddress}</p>
-          </div>
-          <AccountDisplay />
-          <WcConnect />
-          {/* --- Render the Request Display Component --- */}
-          <WcRequestDisplay /> {/* <<<--- ADDED */}
-          {/* ------------------------------------------- */}
-        </div>
-      </div>
-    </main>
   );
 }
 </file>
@@ -2338,6 +2098,282 @@ export function WcConnect() {
 }
 </file>
 
+<file path="src/services/walletConnectService.ts">
+// src/services/walletConnectService.ts
+import { WalletKit, IWalletKit, WalletKitTypes } from "@reown/walletkit";
+import { Core } from "@walletconnect/core";
+import { ICore, SessionTypes, SignClientTypes } from "@walletconnect/types";
+import { ErrorResponse, JsonRpcResponse } from "@walletconnect/jsonrpc-utils"; // Import JsonRpcResponse
+import EventEmitter from "events";
+
+// --- Export Enums and Interfaces ---
+export enum ServiceEvents {
+  Initialized = "initialized",
+  PairStatus = "pair_status",
+  SessionProposal = "session_proposal",
+  SessionConnect = "session_connect",
+  SessionDelete = "session_delete",
+  SessionRequest = "session_request", // <<<--- ADDED
+  Error = "error",
+  SessionsUpdated = "sessions_updated",
+  IS_LOADING = "is_loading",
+  IS_PAIRING = "is_pairing",
+}
+
+export interface WalletConnectServiceEvents {
+  [ServiceEvents.Initialized]: (payload: { success: boolean; instance: IWalletKit | null }) => void;
+  [ServiceEvents.PairStatus]: (payload: { status: "pairing" | "paired" | "error"; message?: string }) => void;
+  [ServiceEvents.SessionProposal]: (payload: { proposal: WalletKitTypes.SessionProposal }) => void;
+  [ServiceEvents.SessionConnect]: (payload: { session: SessionTypes.Struct }) => void;
+  [ServiceEvents.SessionDelete]: (payload: { topic: string }) => void;
+  [ServiceEvents.SessionRequest]: (payload: { request: WalletKitTypes.SessionRequest }) => void; // <<<--- ADDED
+  [ServiceEvents.Error]: (payload: { message: string }) => void;
+  [ServiceEvents.SessionsUpdated]: (payload: { sessions: Record<string, SessionTypes.Struct> }) => void;
+  [ServiceEvents.IS_LOADING]: (payload: { isLoading: boolean }) => void;
+  [ServiceEvents.IS_PAIRING]: (payload: { isPairing: boolean }) => void;
+}
+// ------------------------------------
+
+// --- Export the Class Definition ---
+export class WalletConnectService extends EventEmitter {
+  private core: ICore | undefined;
+  private walletKit: IWalletKit | undefined;
+  private projectId: string;
+  private metadata: WalletKitTypes.Metadata;
+  private _isInitialized = false;
+  private _isInitializing = false;
+  private initPromise: Promise<IWalletKit> | null = null;
+
+  constructor(projectId: string, metadata: WalletKitTypes.Metadata) {
+    super();
+    if (!projectId) {
+      throw new Error("WalletConnectService: Project ID is required.");
+    }
+    this.projectId = projectId;
+    this.metadata = JSON.parse(JSON.stringify(metadata));
+    console.log("WalletConnectService: NEW Instance created (by Provider).");
+  }
+
+  // --- Getters (keep as before) ---
+  public isInitialized(): boolean {
+    return this._isInitialized;
+  }
+  public isInitializing(): boolean {
+    return this._isInitializing;
+  }
+  public getWalletKitInstance(): IWalletKit | undefined {
+    return this.walletKit;
+  }
+  public getActiveSessions(): Record<string, SessionTypes.Struct> {
+    return this.walletKit?.getActiveSessions() || {};
+  }
+
+  // --- Core Initialization (Idempotent) ---
+  async init(): Promise<IWalletKit> {
+    if (this._isInitialized && this.walletKit) {
+      console.log("WalletConnectService Instance: Init called but already initialized.");
+      this.emit(ServiceEvents.Initialized, { success: true, instance: this.walletKit });
+      return this.walletKit;
+    }
+    if (this._isInitializing && this.initPromise) {
+      console.log("WalletConnectService Instance: Init called while already initializing. Returning existing promise.");
+      return this.initPromise;
+    }
+    console.log("WalletConnectService Instance: Starting initialization (init)...");
+    this._isInitializing = true;
+    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
+    this.initPromise = (async () => {
+      try {
+        console.log("WalletConnectService Instance: Initializing WalletConnect Core...");
+        process.env.DISABLE_GLOBAL_CORE = "true";
+        this.core = new Core({ projectId: this.projectId });
+        process.env.DISABLE_GLOBAL_CORE = "false";
+        console.log("WalletConnectService Instance: Initializing WalletKit...");
+        this.walletKit = await WalletKit.init({ core: this.core, metadata: this.metadata });
+        this.setupInternalListeners();
+        this._isInitialized = true;
+        console.log("WalletConnectService Instance: Initialization successful.");
+        this.emit(ServiceEvents.Initialized, { success: true, instance: this.walletKit });
+        this.emit(ServiceEvents.SessionsUpdated, { sessions: this.getActiveSessions() });
+        return this.walletKit;
+      } catch (error: unknown) {
+        console.error("WalletConnectService Instance: Initialization failed:", error);
+        this._isInitialized = false;
+        this.emit(ServiceEvents.Initialized, { success: false, instance: null });
+        this.emit(ServiceEvents.Error, { message: `Initialization failed: ${(error as Error).message}` });
+        throw error;
+      } finally {
+        this._isInitializing = false;
+        this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
+        this.initPromise = null;
+      }
+    })();
+    return this.initPromise;
+  }
+
+  private setupInternalListeners() {
+    if (!this.walletKit) {
+      console.error("WalletConnectService: Cannot setup listeners, WalletKit not ready.");
+      return;
+    }
+    console.log("WalletConnectService: Setting up internal event listeners...");
+
+    this.walletKit.off("session_proposal", this.handleSessionProposal);
+    this.walletKit.on("session_proposal", this.handleSessionProposal);
+
+    if (this.walletKit.engine?.signClient?.events) {
+      this.walletKit.engine.signClient.events.off("session_connect", this.handleSessionConnect);
+      this.walletKit.engine.signClient.events.on("session_connect", this.handleSessionConnect);
+    } else {
+      console.warn("WalletConnectService: SignClient events not available for session_connect listener.");
+    }
+
+    this.walletKit.off("session_delete", this.handleSessionDelete);
+    this.walletKit.on("session_delete", this.handleSessionDelete);
+
+    // --- Add session_request Listener ---
+    this.walletKit.off("session_request", this.handleSessionRequest); // <<<--- ADDED
+    this.walletKit.on("session_request", this.handleSessionRequest); // <<<--- ADDED
+    // ------------------------------------
+
+    console.log("WalletConnectService: Internal listeners attached.");
+  }
+
+  // --- Event Handlers (bound methods) ---
+  private handleSessionProposal = (proposal: WalletKitTypes.SessionProposal) => {
+    console.log("Service Handler: session_proposal", proposal.id);
+    this.emit(ServiceEvents.SessionProposal, { proposal });
+    this.emit(ServiceEvents.IS_PAIRING, { isPairing: false });
+  };
+
+  private handleSessionConnect = (sessionArgs: SignClientTypes.EventArguments["session_connect"]) => {
+    console.log("Service Handler: session_connect", sessionArgs.session.topic);
+    this.emit(ServiceEvents.SessionConnect, { session: sessionArgs.session });
+    this.emit(ServiceEvents.SessionsUpdated, { sessions: this.getActiveSessions() });
+  };
+
+  private handleSessionDelete = (event: { id: number; topic: string }) => {
+    console.log("Service Handler: session_delete", event.topic);
+    this.emit(ServiceEvents.SessionDelete, { topic: event.topic });
+    this.emit(ServiceEvents.SessionsUpdated, { sessions: this.getActiveSessions() });
+  };
+
+  // --- Handler for Session Request ---
+  private handleSessionRequest = (request: WalletKitTypes.SessionRequest) => {
+    // <<<--- ADDED
+    console.log("Service Handler: session_request", request.id, request.params.request.method);
+    this.emit(ServiceEvents.SessionRequest, { request });
+  };
+  // -----------------------------------
+
+  // --- Public Methods ---
+  async pair(uri: string): Promise<void> {
+    if (!this._isInitialized || !this.walletKit) throw new Error("WalletConnectService: Not initialized. Cannot pair.");
+    console.log("Service: Attempting to pair with URI:", uri);
+    this.emit(ServiceEvents.IS_PAIRING, { isPairing: true });
+    this.emit(ServiceEvents.PairStatus, { status: "pairing" });
+    try {
+      await this.walletKit.pair({ uri });
+      console.log("Service: Pairing initiated for URI:", uri);
+    } catch (error: unknown) {
+      console.error("Service: Pairing failed:", error);
+      const message = (error as Error).message || "Pairing failed";
+      this.emit(ServiceEvents.PairStatus, { status: "error", message });
+      this.emit(ServiceEvents.IS_PAIRING, { isPairing: false });
+      this.emit(ServiceEvents.Error, { message });
+      throw error;
+    }
+  }
+
+  async approveSession(proposal: WalletKitTypes.SessionProposal, approvedNamespaces: SessionTypes.Namespaces): Promise<SessionTypes.Struct> {
+    if (!this._isInitialized || !this.walletKit) throw new Error("WalletConnectService: Not initialized. Cannot approve session.");
+    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
+    try {
+      console.log("Service: Approving session:", proposal.id);
+      const session = await this.walletKit.approveSession({ id: proposal.id, namespaces: approvedNamespaces });
+      console.log("Service: Session approved via approveSession:", session.topic);
+      return session;
+    } catch (error: unknown) {
+      console.error("Service: Failed to approve session:", error);
+      this.emit(ServiceEvents.Error, { message: (error as Error).message || "Failed to approve session" });
+      throw error;
+    } finally {
+      this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
+    }
+  }
+
+  async rejectSession(proposal: WalletKitTypes.SessionProposal, reason: ErrorResponse): Promise<void> {
+    if (!this._isInitialized || !this.walletKit) throw new Error("WalletConnectService: Not initialized. Cannot reject session.");
+    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
+    try {
+      console.log("Service: Rejecting session:", proposal.id);
+      await this.walletKit.rejectSession({ id: proposal.id, reason: reason });
+      console.log("Service: Session rejected:", proposal.id);
+    } catch (error: unknown) {
+      console.error("Service: Failed to reject session:", error);
+      this.emit(ServiceEvents.Error, { message: (error as Error).message || "Failed to reject session" });
+      throw error;
+    } finally {
+      this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
+    }
+  }
+
+  async disconnectSession(topic: string, reason: ErrorResponse): Promise<void> {
+    if (!this._isInitialized || !this.walletKit) throw new Error("WalletConnectService: Not initialized. Cannot disconnect session.");
+    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
+    try {
+      console.log("Service: Disconnecting session:", topic);
+      await this.walletKit.disconnectSession({ topic: topic, reason: reason });
+      console.log("Service: Disconnect call successful for topic:", topic);
+    } catch (error: unknown) {
+      console.error("Service: Failed to disconnect session:", error);
+      this.emit(ServiceEvents.Error, { message: (error as Error).message || "Failed to disconnect session" });
+      throw error;
+    } finally {
+      this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
+    }
+  }
+
+  // --- Method to Respond to Session Requests ---
+  async respondSessionRequest(topic: string, response: JsonRpcResponse): Promise<void> {
+    // <<<--- ADDED
+    if (!this._isInitialized || !this.walletKit) {
+      throw new Error("WalletConnectService: Not initialized. Cannot respond to request.");
+    }
+    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
+    try {
+      console.log("Service: Responding to session request:", response.id, "on topic:", topic);
+      await this.walletKit.respondSessionRequest({ topic, response });
+      console.log("Service: Response sent for request:", response.id);
+    } catch (error: unknown) {
+      console.error("Service: Failed to respond to session request:", error);
+      this.emit(ServiceEvents.Error, { message: (error as Error).message || "Failed to respond to request" });
+      throw error;
+    } finally {
+      this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
+    }
+  }
+  // -------------------------------------------
+
+  // Typed EventEmitter methods (keep as before)
+  on<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    return super.on(event, listener as (...args: any[]) => void);
+  }
+  once<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    return super.once(event, listener as (...args: any[]) => void);
+  }
+  off<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    return super.off(event, listener as (...args: any[]) => void);
+  }
+  removeListener<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    return super.removeListener(event, listener as (...args: any[]) => void);
+  }
+  emit<E extends keyof WalletConnectServiceEvents>(event: E, ...args: Parameters<WalletConnectServiceEvents[E]>): boolean {
+    return super.emit(event, ...args);
+  }
+}
+</file>
+
 <file path="package.json">
 {
   "name": "lens-account-interface4",
@@ -2383,6 +2419,80 @@ export function WcConnect() {
     "tailwindcss": "^4",
     "typescript": "^5"
   }
+}
+</file>
+
+<file path="src/app/dashboard/page.tsx">
+// src/app/dashboard/page.tsx
+"use client";
+
+import { useLensAccount } from "@/contexts/LensAccountContext";
+import { useAccount, useDisconnect } from "wagmi";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { AccountDisplay } from "@/components/AccountDisplay";
+import { WcConnect } from "@/components/WcConnect";
+import { WcRequestDisplay } from "@/components/WcRequestDisplay"; // <<<--- IMPORTED
+
+export default function Dashboard() {
+  const { lensAccountAddress, ownerAddress, clearAccount } = useLensAccount();
+  const { isConnected } = useAccount();
+  const { disconnect: disconnectOwnerWallet } = useDisconnect();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isConnected || !lensAccountAddress || !ownerAddress) {
+      console.log("Redirecting to home: not connected or missing context");
+      if (!lensAccountAddress || !ownerAddress) {
+        clearAccount();
+      }
+      router.replace("/");
+    }
+  }, [isConnected, lensAccountAddress, ownerAddress, router, clearAccount]);
+
+  const handleLogout = () => {
+    disconnectOwnerWallet();
+    clearAccount();
+    console.log("Logout initiated");
+  };
+
+  if (!isConnected || !lensAccountAddress || !ownerAddress) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>Loading or redirecting...</p>
+      </div>
+    );
+  }
+
+  return (
+    <main className="flex min-h-screen flex-col items-center p-6 md:p-24">
+      <div className="w-full max-w-4xl p-8 bg-white rounded-xl shadow-lg relative">
+        <button
+          onClick={handleLogout}
+          className="absolute top-4 right-4 px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+        >
+          {" "}
+          Logout Owner{" "}
+        </button>
+        <h1 className="text-2xl font-bold mb-4 text-center">Dashboard</h1>
+        <div className="space-y-6">
+          <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+            <p className="text-sm font-medium text-gray-700">Connected Owner Wallet:</p>
+            <p className="text-xs text-gray-600 break-words font-mono">{ownerAddress}</p>
+          </div>
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-sm font-medium text-blue-800">Managing Lens Account:</p>
+            <p className="text-xs text-blue-700 break-words font-mono">{lensAccountAddress}</p>
+          </div>
+          <AccountDisplay />
+          <WcConnect />
+          {/* --- Render the Request Display Component --- */}
+          <WcRequestDisplay /> {/* <<<--- ADDED */}
+          {/* ------------------------------------------- */}
+        </div>
+      </div>
+    </main>
+  );
 }
 </file>
 
