@@ -1,0 +1,595 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files and files not matching ignore patterns, combined into a single document by Repomix.
+The content has been processed where security check has been disabled.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: nextjs/next-wagmi-app-router
+- Files matching these patterns are excluded: **/*.svg
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Security check has been disabled - content may contain sensitive information
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+nextjs/
+  next-wagmi-app-router/
+    src/
+      app/
+        globals.css
+        layout.tsx
+        page.tsx
+      components/
+        ActionButtonList.tsx
+        ConnectButton.tsx
+        InfoList.tsx
+      config/
+        index.ts
+      context/
+        index.tsx
+      hooks/
+        useClientMount.ts
+    .env.example
+    .eslintrc.json
+    .gitignore
+    next.config.ts
+    package.json
+    README.md
+    tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="nextjs/next-wagmi-app-router/src/app/globals.css">
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}
+
+section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #f9f9f9;
+  padding: 13px;
+  margin: 10px;
+  width: 90%;
+  text-align: left;
+}
+
+.pages {
+  align-items: center;
+  justify-items: center;
+  text-align: center;
+}
+
+button {
+  padding: 10px 15px;
+  background-color: white;
+  color: black;
+  border: 2px solid black;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 15px; /* Space between buttons */
+}
+
+button:hover {
+  background-color: black;
+    color: white;
+}
+
+button:active {
+  background-color: #333; /* Dark gray on click */
+    color: white;
+}
+
+h1 {
+  margin: 20px;
+}
+
+pre {
+  white-space: pre-wrap; /* Wrap text */
+  word-wrap: break-word; /* Break long words */
+  word-break: break-all;
+}
+
+
+.link-button {
+  background-color: black;
+  color: white;
+  padding: 5px 10px;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+.link-button:hover {
+  background-color: #333;  /* Darken the background on hover */
+}
+
+.link-button:hover {
+  background-color: white;  /* Change background to white on hover */
+  color: black;  /* Change text color to black on hover */
+}
+
+.advice {
+  text-align: 'center';
+   margin-bottom: 10px;
+   line-height: 25px;
+}
+</file>
+
+<file path="nextjs/next-wagmi-app-router/src/app/layout.tsx">
+import type { Metadata } from "next";
+
+
+import { headers } from 'next/headers' // added
+import './globals.css';
+import ContextProvider from '@/context'
+
+export const metadata: Metadata = {
+  title: "AppKit in Next.js + wagmi",
+  description: "AppKit example dApp",
+};
+
+export default async function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const headersData = await headers();
+  const cookies = headersData.get('cookie');
+
+  return (
+    <html lang="en">
+      <body>
+        <ContextProvider cookies={cookies}>{children}</ContextProvider>
+      </body>
+    </html>
+  );
+}
+</file>
+
+<file path="nextjs/next-wagmi-app-router/src/app/page.tsx">
+// import { cookieStorage, createStorage, http } from '@wagmi/core'
+import { ConnectButton } from "@/components/ConnectButton";
+import { InfoList } from "@/components/InfoList";
+import { ActionButtonList } from "@/components/ActionButtonList";
+import Image from 'next/image';
+
+export default function Home() {
+
+  return (
+    <div className={"pages"}>
+      <Image src="/reown.svg" alt="Reown" width={150} height={150} priority />
+      <h1>AppKit Wagmi Next.js App Router Example</h1>
+
+      <ConnectButton />
+      <ActionButtonList />
+      <div className="advice">
+        <p>
+          This projectId only works on localhost. <br/>Go to <a href="https://cloud.reown.com" target="_blank" className="link-button" rel="Reown Cloud">Reown Cloud</a> to get your own.
+        </p>
+      </div>
+      <InfoList />
+    </div>
+  );
+}
+</file>
+
+<file path="nextjs/next-wagmi-app-router/src/components/ActionButtonList.tsx">
+'use client'
+import { useDisconnect, useAppKit, useAppKitNetwork  } from '@reown/appkit/react'
+import { networks } from '@/config'
+
+export const ActionButtonList = () => {
+    const { disconnect } = useDisconnect();
+    const { open } = useAppKit();
+    const { switchNetwork } = useAppKitNetwork();
+
+    const handleDisconnect = async () => {
+      try {
+        await disconnect();
+      } catch (error) {
+        console.error("Failed to disconnect:", error);
+      }
+    }
+  return (
+    <div>
+        <button onClick={() => open()}>Open</button>
+        <button onClick={handleDisconnect}>Disconnect</button>
+        <button onClick={() => switchNetwork(networks[1]) }>Switch</button>
+    </div>
+  )
+}
+</file>
+
+<file path="nextjs/next-wagmi-app-router/src/components/ConnectButton.tsx">
+'use client'
+
+export const ConnectButton = () => {
+  return (
+    <div >
+        <appkit-button />
+    </div>
+  )
+}
+</file>
+
+<file path="nextjs/next-wagmi-app-router/src/components/InfoList.tsx">
+'use client'
+
+import { useEffect } from 'react'
+import {
+    useAppKitState,
+    useAppKitTheme,
+    useAppKitEvents,
+    useAppKitAccount,
+    useWalletInfo
+     } from '@reown/appkit/react'
+import { useClientMounted } from "@/hooks/useClientMount";
+
+export const InfoList = () => {
+    const kitTheme = useAppKitTheme();
+    const state = useAppKitState();
+    const {address, caipAddress, isConnected, embeddedWalletInfo} = useAppKitAccount();
+    const events = useAppKitEvents()
+    const walletInfo = useWalletInfo()
+    const mounted = useClientMounted();
+    useEffect(() => {
+        console.log("Events: ", events);
+    }, [events]);
+
+  return !mounted ? null : (
+    <>
+        <section>
+            <h2>useAppKit</h2>
+            <pre>
+                Address: {address}<br />
+                caip Address: {caipAddress}<br />
+                Connected: {isConnected.toString()}<br />
+                Account Type: {embeddedWalletInfo?.accountType}<br />
+                {embeddedWalletInfo?.user?.email && (`Email: ${embeddedWalletInfo?.user?.email}\n`)}
+                {embeddedWalletInfo?.user?.username && (`Username: ${embeddedWalletInfo?.user?.username}\n`)}
+                {embeddedWalletInfo?.authProvider && (`Provider: ${embeddedWalletInfo?.authProvider}\n`)}
+            </pre>
+        </section>
+
+        <section>
+            <h2>Theme</h2>
+            <pre>
+                Theme: {kitTheme.themeMode}<br />
+            </pre>
+        </section>
+
+        <section>
+            <h2>State</h2>
+            <pre>
+                activeChain: {state.activeChain}<br />
+                loading: {state.loading.toString()}<br />
+                open: {state.open.toString()}<br />
+            </pre>
+        </section>
+
+        <section>
+            <h2>WalletInfo</h2>
+            <pre>
+                Name: {walletInfo.walletInfo?.name?.toString()}<br />
+            </pre>
+        </section>
+    </>
+  )
+}
+</file>
+
+<file path="nextjs/next-wagmi-app-router/src/config/index.ts">
+import { cookieStorage, createStorage } from 'wagmi'
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
+import { mainnet, arbitrum } from '@reown/appkit/networks'
+import type { AppKitNetwork } from '@reown/appkit/networks'
+
+// Get projectId from https://cloud.reown.com
+export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID || "b56e18d47c72ab683b10814fe9495694" // this is a public projectId only to use on localhost
+
+if (!projectId) {
+  throw new Error('Project ID is not defined')
+}
+
+export const networks = [mainnet, arbitrum] as [AppKitNetwork, ...AppKitNetwork[]]
+
+//Set up the Wagmi Adapter (Config)
+export const wagmiAdapter = new WagmiAdapter({
+  storage: createStorage({
+    storage: cookieStorage
+  }),
+  ssr: true,
+  projectId,
+  networks
+})
+
+export const config = wagmiAdapter.wagmiConfig
+</file>
+
+<file path="nextjs/next-wagmi-app-router/src/context/index.tsx">
+'use client'
+
+import { wagmiAdapter, projectId, networks } from '@/config'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createAppKit } from '@reown/appkit/react'
+import React, { type ReactNode } from 'react'
+import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi'
+
+// Set up queryClient
+const queryClient = new QueryClient()
+
+// Set up metadata
+const metadata = {
+  name: 'next-reown-appkit',
+  description: 'next-reown-appkit',
+  url: 'https://github.com/0xonerb/next-reown-appkit-ssr', // origin must match your domain & subdomain
+  icons: ['https://avatars.githubusercontent.com/u/179229932']
+}
+
+// Create the modal
+export const modal = createAppKit({
+  adapters: [wagmiAdapter],
+  projectId,
+  networks,
+  metadata,
+  themeMode: 'light',
+  features: {
+    analytics: true // Optional - defaults to your Cloud configuration
+  },
+  themeVariables: {
+    '--w3m-accent': '#000000',
+  }
+})
+
+function ContextProvider({ children, cookies }: { children: ReactNode; cookies: string | null }) {
+  const initialState = cookieToInitialState(wagmiAdapter.wagmiConfig as Config, cookies)
+
+  return (
+    <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </WagmiProvider>
+  )
+}
+
+export default ContextProvider
+</file>
+
+<file path="nextjs/next-wagmi-app-router/src/hooks/useClientMount.ts">
+'use client'
+import { useEffect, useState } from "react";
+
+export function useClientMounted() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []); // Runs only on mount
+
+  return mounted;
+}
+</file>
+
+<file path="nextjs/next-wagmi-app-router/.env.example">
+NEXT_PUBLIC_PROJECT_ID=
+</file>
+
+<file path="nextjs/next-wagmi-app-router/.eslintrc.json">
+{
+  "extends": ["next/core-web-vitals", "next/typescript"]
+}
+</file>
+
+<file path="nextjs/next-wagmi-app-router/.gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env files (can opt-in for committing if needed)
+.env
+.env.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+pnpm-lock.yaml
+</file>
+
+<file path="nextjs/next-wagmi-app-router/next.config.ts">
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  webpack: config => {
+    config.externals.push('pino-pretty', 'lokijs', 'encoding')
+    return config
+  }
+};
+
+export default nextConfig;
+</file>
+
+<file path="nextjs/next-wagmi-app-router/package.json">
+{
+  "name": "next-wagmi-app-router",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@reown/appkit": "1.7.3",
+    "@reown/appkit-adapter-wagmi": "1.7.3",
+    "@tanstack/react-query": "^5.59.20",
+    "next": "15.3.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "viem": "^2.21.44",
+    "wagmi": "^2.12.31"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.6",
+    "typescript": "^5"
+  }
+}
+</file>
+
+<file path="nextjs/next-wagmi-app-router/README.md">
+# Reown AppKit Example using wagmi (next.js with App Router)
+
+This is a Next.js project.
+
+## Usage
+
+1. Go to [Reown Cloud](https://cloud.reown.com) and create a new project.
+2. Copy your `Project ID`
+3. Rename `.env.example` to `.env` and paste your `Project ID` as the value for `NEXT_PUBLIC_PROJECT_ID`
+4. Run `pnpm install` to install dependencies
+5. Run `pnpm run dev` to start the development server
+
+## Resources
+
+- [Reown — Docs](https://docs.reown.com)
+- [Next.js — Docs](https://nextjs.org/docs)
+</file>
+
+<file path="nextjs/next-wagmi-app-router/tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+</file>
+
+</files>

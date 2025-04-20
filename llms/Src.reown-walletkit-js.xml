@@ -1,0 +1,3440 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+The content has been processed where security check has been disabled.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Security check has been disabled - content may contain sensitive information
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+.github/
+  ISSUE_TEMPLATE/
+    bug_report.md
+    config.yml
+    feature_request.md
+  workflows/
+    pr_checks.yml
+    publish.yml
+  pr_template_release.md
+  pull_request_template.md
+packages/
+  walletkit/
+    src/
+      constants/
+        client.ts
+        index.ts
+        request.ts
+      controllers/
+        engine.ts
+        index.ts
+      types/
+        client.ts
+        engine.ts
+        index.ts
+      utils/
+        index.ts
+        notifications.ts
+      client.ts
+      index.ts
+    test/
+      shared/
+        helpers.ts
+        index.ts
+        values.ts
+      multitenancy.spec.ts
+      sign.spec.ts
+    .npmignore
+    LICENSE
+    package.json
+    README.md
+    rollup.config.js
+    tsconfig.json
+.eslintrc
+.gitignore
+.prettierrc
+lerna.json
+package.json
+README.md
+renovate.json
+rollup.config.js
+tsconfig.json
+vitest.config.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".github/ISSUE_TEMPLATE/bug_report.md">
+---
+name: Bug report
+about: Create a report to help us improve
+title: ''
+labels: 'type: bug'
+assignees: ''
+
+---
+
+**Describe the bug**
+A clear and concise description of what the bug is.
+
+**SDK Version (if relevant)**
+ - Client: [e.g. JS, Swift, Kotlin]
+ - Version [e.g. 22]
+
+
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Go to '...'
+2. Click on '....'
+3. Scroll down to '....'
+4. See error
+
+**Expected behavior**
+A clear and concise description of what you expected to happen.
+
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
+
+**Desktop (please complete the following information):**
+ - OS: [e.g. iOS]
+ - Browser [e.g. chrome, safari]
+ - Version [e.g. 22]
+
+**Smartphone (please complete the following information):**
+ - Device: [e.g. iPhone6]
+ - OS: [e.g. iOS8.1]
+ - Browser [e.g. stock browser, safari]
+ - Version [e.g. 22]
+
+**Additional context**
+Add any other context about the problem here.
+</file>
+
+<file path=".github/ISSUE_TEMPLATE/config.yml">
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/WalletConnect/walletconnect-monorepo/discussions/new
+    about: Ask questions and discuss with other community members.
+  - name: View our FAQ
+    url: https://walletconnect.com/faq
+    about: See our frequently asked questions
+</file>
+
+<file path=".github/ISSUE_TEMPLATE/feature_request.md">
+---
+name: Feature request
+about: Suggest an idea for this project
+title: ''
+labels: ''
+assignees: ''
+
+---
+
+**Is your feature request related to a problem? Please describe.**
+A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+
+**Describe the solution you'd like**
+A clear and concise description of what you want to happen.
+
+**Describe alternatives you've considered**
+A clear and concise description of any alternative solutions or features you've considered.
+
+**Additional context**
+Add any other context or screenshots about the feature request here.
+</file>
+
+<file path=".github/workflows/pr_checks.yml">
+name: pull request checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.action == 'opened' || github.event.action == 'synchronize'
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup-node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+      - name: install
+        run: npm ci
+      - name: build
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            packages/walletkit/dist
+
+  code_style:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        style-command:
+          - lint
+          - prettier
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup-node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+      - name: install
+        run: npm ci
+      - name: check
+        run: npm run ${{ matrix.style-command }}
+
+  test:
+    needs: [build, code_style]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-prefix:
+          - packages/walletkit
+    env:
+      TEST_RELAY_URL: ${{ secrets.TEST_RELAY_URL }}
+      TEST_PROJECT_ID: ${{ secrets.TEST_PROJECT_ID }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup-node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+      - name: install
+        run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+      - run: npm run test --prefix=${{ matrix.test-prefix }}
+</file>
+
+<file path=".github/workflows/publish.yml">
+name: Publish to NPM
+on:
+  release:
+    types: [created]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+      - name: Install dependencies and build 🔧
+        run: npm ci && npm run build
+      - name: Publish package on NPM 📦
+        run: npm run npm-publish:latest
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+</file>
+
+<file path=".github/pr_template_release.md">
+## Release Checklist
+
+- [ ] **Canary Version QA**
+
+  - [ ] I have thoroughly tested the release using a canary version: `v2...`
+  - [ ] The canary version has been verified to work as expected.
+  - [ ] All major features and changes have been tested and validated.
+
+- [ ] **Web3Modal Team QA**
+
+  - [ ] The Web3Modal team has tested the release for compatibility and functionality.
+  - [ ] The release is backwards compatible with Web3Modal.
+  - [ ] Any reported issues or bugs have been addressed or documented.
+
+- [ ] **React Native Team QA**
+
+  - [ ] The React Native team has tested the release for compatibility and functionality (if relevant).
+  - [ ] The release works correctly in React Native environments and is backwards compatible with Web3Modal React Native.
+  - [ ] Any reported issues or bugs have been addressed or documented.
+
+## Description
+
+Provide a detailed description of the changes made in this release. Please include relevant information about new features, bug fixes, or improvements.
+
+If applicable, mention any specific areas that need additional attention during the review process.
+
+## Testing Instructions
+
+Outline the steps needed to test the release thoroughly. Include any specific scenarios or test cases that should be executed to verify the correctness and stability of the package. If necessary, provide links to additional resources, testing environments, or tools that can assist in the testing process.
+
+## Related Issues and Pull Requests
+
+List any related issues or pull requests that are relevant to this release, such as dependent changes to upstream packages or relevant documentation changes. If this release fixes any issues, please include the issue number in the format `#<issue number>`. If this release is dependent on any other pull requests, please include the pull request number in the format `#<pull request number>`.
+
+## Additional Notes
+
+Include any additional information, concerns, or considerations related to the release that might be important for the reviewers to be aware of.
+
+## Definition of Done
+
+- [ ] The release has been tested using a canary version.
+- [ ] The release has been reviewed and approved by the Web3Modal team (if relevant).
+- [ ] The release has been reviewed and approved by the React Native team (if relevant).
+- [ ] All necessary documentation, including API changes or new features, has been updated.
+- [ ] Any dependent changes have been merged and published in downstream modules.
+- [ ] All tests (unit, integration, etc.) pass successfully.
+- [ ] The release has been properly versioned and tagged.
+- [ ] The release notes and changelog have been updated to reflect the changes made.
+
+Please ensure that all the items on the checklist have been completed before merging the release.
+</file>
+
+<file path=".github/pull_request_template.md">
+> Creating a release? Please use the [Release PR Template](https://github.com/WalletConnect/walletconnect-monorepo/blob/v2.0/.github/pr_template_release.md) instead.
+
+## Description
+
+Please include a brief summary of the change.
+
+## Type of change
+
+- [ ] Chore (non-breaking change that addresses non-functional tasks, maintenance, or code quality improvements)
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Draft PR (breaking/non-breaking change which needs more work for having a proper functionality _[Mark this PR as ready to review only when completely ready]_)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+
+## How has this been tested?
+
+Please describe the tests that you ran to verify your changes. Please also list any relevant details for your configuration.
+
+## Fixes/Resolves (Optional)
+
+Please list any issues that are fixed by this PR in the format `#<issue number>`. If it fixes multiple issues, please put each issue in a separate line. If this Pull Request does not fix any issues, please delete this section.
+
+## Examples/Screenshots (Optional)
+
+Please attach a screenshot or screen recording of features/fixes you've implemented to verify your changes. Please also note any relevant details for your configuration. If your changes do not affect the UI, please delete this section.
+
+Use this table template to show examples of your changes:
+
+| Before       | After        |
+| ------------ | ------------ |
+| Content Cell | Content Cell |
+| Content Cell | Content Cell |
+
+## Checklist
+
+- [ ] I have performed a self-review of my own code
+- [ ] My changes generate no new warnings
+- [ ] Any dependent changes have been merged and published in downstream modules
+
+# Additional Information (Optional)
+
+Please include any additional information that may be useful for the reviewer.
+</file>
+
+<file path="packages/walletkit/src/constants/client.ts">
+export const PROTOCOL = "wc";
+export const PROTOCOL_VERSION = 2;
+export const CLIENT_CONTEXT = "WalletKit";
+
+export const CLIENT_STORAGE_PREFIX = `${PROTOCOL}@${PROTOCOL_VERSION}:${CLIENT_CONTEXT}:`;
+
+export const CLIENT_STORAGE_OPTIONS = {
+  database: ":memory:",
+};
+</file>
+
+<file path="packages/walletkit/src/constants/index.ts">
+export * from "./client";
+export * from "./request";
+</file>
+
+<file path="packages/walletkit/src/constants/request.ts">
+export const REQUEST_CONTEXT = "request";
+</file>
+
+<file path="packages/walletkit/src/controllers/engine.ts">
+import { SignClient } from "@walletconnect/sign-client";
+import { ISignClient, SessionTypes } from "@walletconnect/types";
+import { IWalletKitEngine, WalletKitTypes } from "../types";
+
+export class Engine extends IWalletKitEngine {
+  public signClient: ISignClient;
+
+  constructor(client: IWalletKitEngine["client"]) {
+    super(client);
+    // initialized in init()
+    this.signClient = {} as any;
+  }
+
+  public init = async () => {
+    this.signClient = await SignClient.init({
+      core: this.client.core,
+      metadata: this.client.metadata,
+      signConfig: this.client.signConfig,
+    });
+    this.signClient.core.eventClient.init().catch((error) => {
+      this.client.logger.warn(error);
+    });
+  };
+
+  public pair: IWalletKitEngine["pair"] = async (params) => {
+    await this.client.core.pairing.pair(params);
+  };
+
+  // Sign //
+  public approveSession: IWalletKitEngine["approveSession"] = async (sessionProposal) => {
+    const { topic, acknowledged } = await this.signClient.approve({
+      ...sessionProposal,
+      id: sessionProposal.id,
+      namespaces: sessionProposal.namespaces,
+      sessionProperties: sessionProposal.sessionProperties,
+      sessionConfig: sessionProposal.sessionConfig,
+    });
+    await acknowledged();
+    return this.signClient.session.get(topic);
+  };
+
+  public rejectSession: IWalletKitEngine["rejectSession"] = async (params) => {
+    return await this.signClient.reject(params);
+  };
+
+  public updateSession: IWalletKitEngine["updateSession"] = async (params) => {
+    return await this.signClient.update(params);
+  };
+
+  public extendSession: IWalletKitEngine["extendSession"] = async (params) => {
+    return await this.signClient.extend(params);
+  };
+
+  public respondSessionRequest: IWalletKitEngine["respondSessionRequest"] = async (params) => {
+    const result = await this.signClient.respond(params);
+    return result;
+  };
+
+  public disconnectSession: IWalletKitEngine["disconnectSession"] = async (params) => {
+    return await this.signClient.disconnect(params);
+  };
+
+  public emitSessionEvent: IWalletKitEngine["emitSessionEvent"] = async (params) => {
+    return await this.signClient.emit(params);
+  };
+
+  public getActiveSessions: IWalletKitEngine["getActiveSessions"] = () => {
+    const sessions = this.signClient.session.getAll();
+    return sessions.reduce((sessions: Record<string, SessionTypes.Struct>, session) => {
+      sessions[session.topic] = session;
+      return sessions;
+    }, {});
+  };
+
+  public getPendingSessionProposals: IWalletKitEngine["getPendingSessionProposals"] = () => {
+    return this.signClient.proposal.getAll();
+  };
+
+  public getPendingSessionRequests: IWalletKitEngine["getPendingSessionRequests"] = () => {
+    return this.signClient.getPendingSessionRequests();
+  };
+
+  // Multi chain Auth //
+  public approveSessionAuthenticate: IWalletKitEngine["approveSessionAuthenticate"] = async (
+    params,
+  ) => {
+    return await this.signClient.approveSessionAuthenticate(params);
+  };
+
+  public rejectSessionAuthenticate: IWalletKitEngine["rejectSessionAuthenticate"] = async (
+    params,
+  ) => {
+    return await this.signClient.rejectSessionAuthenticate(params);
+  };
+
+  public formatAuthMessage: IWalletKitEngine["formatAuthMessage"] = (params) => {
+    return this.signClient.formatAuthMessage(params);
+  };
+
+  // Push //
+  public registerDeviceToken: IWalletKitEngine["registerDeviceToken"] = (params) => {
+    return this.client.core.echoClient.registerDeviceToken(params);
+  };
+
+  // ---------- public events ----------------------------------------------- //
+  public on: IWalletKitEngine["on"] = (name, listener) => {
+    this.setEvent(name, "off");
+    this.setEvent(name, "on");
+    return this.client.events.on(name, listener);
+  };
+
+  public once: IWalletKitEngine["once"] = (name, listener) => {
+    this.setEvent(name, "off");
+    this.setEvent(name, "once");
+    return this.client.events.once(name, listener);
+  };
+
+  public off: IWalletKitEngine["off"] = (name, listener) => {
+    this.setEvent(name, "off");
+    return this.client.events.off(name, listener);
+  };
+
+  public removeListener: IWalletKitEngine["removeListener"] = (name, listener) => {
+    this.setEvent(name, "removeListener");
+    return this.client.events.removeListener(name, listener);
+  };
+
+  // ---------- Private ----------------------------------------------- //
+
+  private onSessionRequest = (event: WalletKitTypes.SessionRequest) => {
+    this.client.events.emit("session_request", event);
+  };
+
+  private onSessionProposal = (event: WalletKitTypes.SessionProposal) => {
+    this.client.events.emit("session_proposal", event);
+  };
+
+  private onSessionDelete = (event: WalletKitTypes.SessionDelete) => {
+    this.client.events.emit("session_delete", event);
+  };
+
+  private onProposalExpire = (event: WalletKitTypes.ProposalExpire) => {
+    this.client.events.emit("proposal_expire", event);
+  };
+
+  private onSessionRequestExpire = (event: WalletKitTypes.SessionRequestExpire) => {
+    this.client.events.emit("session_request_expire", event);
+  };
+
+  private onSessionRequestAuthenticate = (event: WalletKitTypes.SessionAuthenticate) => {
+    this.client.events.emit("session_authenticate", event);
+  };
+
+  private setEvent = (
+    event: WalletKitTypes.Event,
+    action: "on" | "off" | "once" | "removeListener",
+  ) => {
+    switch (event) {
+      case "session_request":
+        this.signClient.events[action]("session_request", this.onSessionRequest);
+        break;
+      case "session_proposal":
+        this.signClient.events[action]("session_proposal", this.onSessionProposal);
+        break;
+      case "session_delete":
+        this.signClient.events[action]("session_delete", this.onSessionDelete);
+        break;
+      case "proposal_expire":
+        this.signClient.events[action]("proposal_expire", this.onProposalExpire);
+        break;
+      case "session_request_expire":
+        this.signClient.events[action]("session_request_expire", this.onSessionRequestExpire);
+        break;
+      case "session_authenticate":
+        this.signClient.events[action]("session_authenticate", this.onSessionRequestAuthenticate);
+        break;
+    }
+  };
+}
+</file>
+
+<file path="packages/walletkit/src/controllers/index.ts">
+export * from "./engine";
+</file>
+
+<file path="packages/walletkit/src/types/client.ts">
+import EventEmmiter, { EventEmitter } from "events";
+import { ICore, CoreTypes, SignClientTypes } from "@walletconnect/types";
+import { IWalletKitEngine } from "./engine";
+import { Logger } from "@walletconnect/logger";
+import { JsonRpcPayload } from "@walletconnect/jsonrpc-utils";
+
+export declare namespace WalletKitTypes {
+  type Event =
+    | "session_proposal"
+    | "session_request"
+    | "session_delete"
+    | "proposal_expire"
+    | "session_request_expire"
+    | "session_authenticate";
+
+  interface BaseEventArgs<T = unknown> {
+    id: number;
+    topic: string;
+    params: T;
+  }
+
+  type SessionRequest = SignClientTypes.EventArguments["session_request"];
+
+  type SessionProposal = SignClientTypes.EventArguments["session_proposal"];
+
+  type SessionDelete = Omit<BaseEventArgs, "params">;
+
+  type ProposalExpire = { id: number };
+
+  type SessionRequestExpire = { id: number };
+
+  type SessionAuthenticate = SignClientTypes.EventArguments["session_authenticate"];
+
+  type SignConfig = SignClientTypes.Options["signConfig"];
+
+  interface EventArguments {
+    session_proposal: SessionProposal;
+    session_request: SessionRequest;
+    session_delete: Omit<BaseEventArgs, "params">;
+    proposal_expire: ProposalExpire;
+    session_request_expire: SessionRequestExpire;
+    session_authenticate: SessionAuthenticate;
+  }
+
+  interface Options {
+    core: ICore;
+    metadata: Metadata;
+    name?: string;
+    signConfig?: SignConfig;
+  }
+
+  type Metadata = CoreTypes.Metadata;
+
+  interface INotifications {
+    decryptMessage: (params: {
+      topic: string;
+      encryptedMessage: string;
+      storageOptions?: CoreTypes.Options["storageOptions"];
+      storage?: CoreTypes.Options["storage"];
+    }) => Promise<JsonRpcPayload>;
+    getMetadata: (params: {
+      topic: string;
+      storageOptions?: CoreTypes.Options["storageOptions"];
+      storage?: CoreTypes.Options["storage"];
+    }) => Promise<CoreTypes.Metadata>;
+  }
+}
+
+export abstract class IWalletKitEvents extends EventEmmiter {
+  constructor() {
+    super();
+  }
+
+  public abstract emit: <E extends WalletKitTypes.Event>(
+    event: E,
+    args: WalletKitTypes.EventArguments[E],
+  ) => boolean;
+
+  public abstract on: <E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => any,
+  ) => this;
+
+  public abstract once: <E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => any,
+  ) => this;
+
+  public abstract off: <E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => any,
+  ) => this;
+
+  public abstract removeListener: <E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => any,
+  ) => this;
+}
+
+export abstract class IWalletKit {
+  public abstract readonly name: string;
+  public abstract engine: IWalletKitEngine;
+  public abstract events: EventEmitter;
+  public abstract logger: Logger;
+  public abstract core: ICore;
+  public abstract metadata: WalletKitTypes.Metadata;
+  public abstract signConfig?: WalletKitTypes.SignConfig;
+
+  constructor(public opts: WalletKitTypes.Options) {}
+
+  // ---------- Public Methods ----------------------------------------------- //
+
+  public abstract pair: IWalletKitEngine["pair"];
+
+  // sign //
+  public abstract approveSession: IWalletKitEngine["approveSession"];
+  public abstract rejectSession: IWalletKitEngine["rejectSession"];
+  public abstract updateSession: IWalletKitEngine["updateSession"];
+  public abstract extendSession: IWalletKitEngine["extendSession"];
+  public abstract respondSessionRequest: IWalletKitEngine["respondSessionRequest"];
+  public abstract disconnectSession: IWalletKitEngine["disconnectSession"];
+  public abstract emitSessionEvent: IWalletKitEngine["emitSessionEvent"];
+  public abstract getActiveSessions: IWalletKitEngine["getActiveSessions"];
+  public abstract getPendingSessionProposals: IWalletKitEngine["getPendingSessionProposals"];
+  public abstract getPendingSessionRequests: IWalletKitEngine["getPendingSessionRequests"];
+  // push
+  public abstract registerDeviceToken: IWalletKitEngine["registerDeviceToken"];
+  // multi chain auth //
+  public abstract approveSessionAuthenticate: IWalletKitEngine["approveSessionAuthenticate"];
+  public abstract formatAuthMessage: IWalletKitEngine["formatAuthMessage"];
+  public abstract rejectSessionAuthenticate: IWalletKitEngine["rejectSessionAuthenticate"];
+
+  // ---------- Event Handlers ----------------------------------------------- //
+  public abstract on: <E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => void,
+  ) => EventEmitter;
+
+  public abstract once: <E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => void,
+  ) => EventEmitter;
+
+  public abstract off: <E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => void,
+  ) => EventEmitter;
+
+  public abstract removeListener: <E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => void,
+  ) => EventEmitter;
+}
+</file>
+
+<file path="packages/walletkit/src/types/engine.ts">
+import { ErrorResponse, JsonRpcResponse } from "@walletconnect/jsonrpc-utils";
+import {
+  ISignClient,
+  PendingRequestTypes,
+  ProposalTypes,
+  SessionTypes,
+  EchoClientTypes,
+  AuthTypes,
+} from "@walletconnect/types";
+import { IWalletKit, WalletKitTypes } from "./client";
+import EventEmitter from "events";
+
+export abstract class IWalletKitEngine {
+  public abstract signClient: ISignClient;
+
+  constructor(public client: IWalletKit) {}
+  // ---------- Public Methods ------------------------------------------------- //
+  public abstract init(): Promise<void>;
+
+  public abstract pair(params: { uri: string; activatePairing?: boolean }): Promise<void>;
+
+  // ---------- Sign ------------------------------------------------- //
+  // approve a session proposal (SIGN)
+  public abstract approveSession(params: {
+    id: number;
+    namespaces: Record<string, SessionTypes.Namespace>;
+    sessionProperties?: ProposalTypes.SessionProperties;
+    sessionConfig?: SessionTypes.SessionConfig;
+    relayProtocol?: string;
+  }): Promise<SessionTypes.Struct>;
+
+  // reject a session proposal (SIGN)
+  public abstract rejectSession(params: {
+    // proposerPublicKey: string;
+    id: number;
+    reason: ErrorResponse;
+  }): Promise<void>;
+
+  // update session namespaces (SIGN)
+  public abstract updateSession(params: {
+    topic: string;
+    namespaces: SessionTypes.Namespaces;
+  }): Promise<{ acknowledged: () => Promise<void> }>;
+
+  // update session expiry (SIGN)
+  public abstract extendSession(params: {
+    topic: string;
+  }): Promise<{ acknowledged: () => Promise<void> }>;
+
+  // respond JSON-RPC request (SIGN)
+  public abstract respondSessionRequest(params: {
+    topic: string;
+    response: JsonRpcResponse;
+  }): Promise<void>;
+
+  // emit session events (SIGN)
+  public abstract emitSessionEvent(params: {
+    topic: string;
+    event: any; //SessionEvent;
+    chainId: string;
+  }): Promise<void>;
+
+  // disconnect a session (SIGN)
+  public abstract disconnectSession(params: {
+    topic: string;
+    reason: ErrorResponse;
+  }): Promise<void>;
+
+  // query all active sessions (SIGN)
+  public abstract getActiveSessions(): Record<string, SessionTypes.Struct>;
+
+  // query all pending session requests (SIGN)
+  public abstract getPendingSessionProposals(): Record<number, ProposalTypes.Struct>;
+
+  // query all pending session requests (SIGN)
+  public abstract getPendingSessionRequests(): PendingRequestTypes.Struct[];
+
+  // ---------- Multi chain Auth ------------------------------------------------- //
+
+  public abstract approveSessionAuthenticate(
+    params: AuthTypes.ApproveSessionAuthenticateParams,
+  ): Promise<{ session: SessionTypes.Struct | undefined }>;
+
+  public abstract formatAuthMessage: (params: {
+    request: AuthTypes.BaseAuthRequestParams;
+    iss: string;
+  }) => string;
+
+  public abstract rejectSessionAuthenticate(params: {
+    id: number;
+    reason: ErrorResponse;
+  }): Promise<void>;
+
+  // ---------- Push ------------------------------------------------- //
+  public abstract registerDeviceToken(
+    params: EchoClientTypes.RegisterDeviceTokenParams,
+  ): Promise<void>;
+
+  // ---------- Event Handlers ----------------------------------------------- //
+  public abstract on: <E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => void,
+  ) => EventEmitter;
+
+  public abstract once: <E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => void,
+  ) => EventEmitter;
+
+  public abstract off: <E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => void,
+  ) => EventEmitter;
+
+  public abstract removeListener: <E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => void,
+  ) => EventEmitter;
+}
+</file>
+
+<file path="packages/walletkit/src/types/index.ts">
+export * from "./client";
+export * from "./engine";
+</file>
+
+<file path="packages/walletkit/src/utils/index.ts">
+export * from "./notifications";
+</file>
+
+<file path="packages/walletkit/src/utils/notifications.ts">
+import { Core } from "@walletconnect/core";
+import { WalletKitTypes } from "../types";
+import { SessionStore } from "@walletconnect/sign-client";
+
+export const Notifications: WalletKitTypes.INotifications = {
+  decryptMessage: async (params) => {
+    const instance = {
+      core: new Core({
+        storageOptions: params.storageOptions,
+        storage: params.storage,
+      }),
+    } as any;
+    await instance.core.crypto.init();
+    const decoded = instance.core.crypto.decode(params.topic, params.encryptedMessage);
+    instance.core = null;
+    return decoded;
+  },
+  getMetadata: async (params) => {
+    const instances = {
+      core: new Core({
+        storageOptions: params.storageOptions,
+        storage: params.storage,
+      }),
+      sessionStore: null,
+    } as any;
+    instances.sessionStore = new SessionStore(instances.core, instances.core.logger);
+    await instances.sessionStore.init();
+    const session = instances.sessionStore.get(params.topic);
+    const metadata = session?.peer.metadata;
+    instances.core = null;
+    instances.sessionStore = null;
+    return metadata;
+  },
+};
+</file>
+
+<file path="packages/walletkit/src/client.ts">
+import EventEmitter from "events";
+import { CLIENT_CONTEXT } from "./constants";
+import { Engine } from "./controllers";
+import { IWalletKit, WalletKitTypes } from "./types";
+import { Notifications } from "./utils";
+
+export class WalletKit extends IWalletKit {
+  public name: IWalletKit["name"];
+  public core: IWalletKit["core"];
+  public logger: IWalletKit["logger"];
+  public events: IWalletKit["events"] = new EventEmitter();
+  public engine: IWalletKit["engine"];
+  public metadata: IWalletKit["metadata"];
+  public static notifications: WalletKitTypes.INotifications = Notifications;
+  public signConfig: IWalletKit["signConfig"];
+
+  static async init(opts: WalletKitTypes.Options) {
+    const client = new WalletKit(opts);
+    await client.initialize();
+
+    return client;
+  }
+
+  constructor(opts: WalletKitTypes.Options) {
+    super(opts);
+    this.metadata = opts.metadata;
+    this.name = opts.name || CLIENT_CONTEXT;
+    this.signConfig = opts.signConfig;
+    this.core = opts.core;
+    this.logger = this.core.logger;
+    this.engine = new Engine(this);
+  }
+
+  // ---------- Events ----------------------------------------------- //
+
+  public on: IWalletKit["on"] = (name, listener) => {
+    return this.engine.on(name, listener);
+  };
+
+  public once: IWalletKit["once"] = (name, listener) => {
+    return this.engine.once(name, listener);
+  };
+
+  public off: IWalletKit["off"] = (name, listener) => {
+    return this.engine.off(name, listener);
+  };
+
+  public removeListener: IWalletKit["removeListener"] = (name, listener) => {
+    return this.engine.removeListener(name, listener);
+  };
+
+  // ---------- Engine ----------------------------------------------- //
+
+  public pair: IWalletKit["pair"] = async (params) => {
+    try {
+      return await this.engine.pair(params);
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public approveSession: IWalletKit["approveSession"] = async (params) => {
+    try {
+      return await this.engine.approveSession(params);
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public rejectSession: IWalletKit["rejectSession"] = async (params) => {
+    try {
+      return await this.engine.rejectSession(params);
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public updateSession: IWalletKit["updateSession"] = async (params) => {
+    try {
+      return await this.engine.updateSession(params);
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public extendSession: IWalletKit["extendSession"] = async (params) => {
+    try {
+      return await this.engine.extendSession(params);
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public respondSessionRequest: IWalletKit["respondSessionRequest"] = async (params) => {
+    try {
+      return await this.engine.respondSessionRequest(params);
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public disconnectSession: IWalletKit["disconnectSession"] = async (params) => {
+    try {
+      return await this.engine.disconnectSession(params);
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public emitSessionEvent: IWalletKit["emitSessionEvent"] = async (params) => {
+    try {
+      return await this.engine.emitSessionEvent(params);
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public getActiveSessions: IWalletKit["getActiveSessions"] = () => {
+    try {
+      return this.engine.getActiveSessions();
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public getPendingSessionProposals: IWalletKit["getPendingSessionProposals"] = () => {
+    try {
+      return this.engine.getPendingSessionProposals();
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public getPendingSessionRequests: IWalletKit["getPendingSessionRequests"] = () => {
+    try {
+      return this.engine.getPendingSessionRequests();
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public registerDeviceToken: IWalletKit["registerDeviceToken"] = (params) => {
+    try {
+      return this.engine.registerDeviceToken(params);
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public approveSessionAuthenticate: IWalletKit["approveSessionAuthenticate"] = (params) => {
+    try {
+      return this.engine.approveSessionAuthenticate(params);
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public rejectSessionAuthenticate: IWalletKit["rejectSessionAuthenticate"] = (params) => {
+    try {
+      return this.engine.rejectSessionAuthenticate(params);
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  public formatAuthMessage: IWalletKit["formatAuthMessage"] = (params) => {
+    try {
+      return this.engine.formatAuthMessage(params);
+    } catch (error: any) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  };
+
+  // ---------- Private ----------------------------------------------- //
+
+  private async initialize() {
+    this.logger.trace(`Initialized`);
+    try {
+      await this.engine.init();
+      this.logger.info(`WalletKit Initialization Success`);
+    } catch (error: any) {
+      this.logger.info(`WalletKit Initialization Failure`);
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+}
+</file>
+
+<file path="packages/walletkit/src/index.ts">
+import { WalletKit as Client } from "./client";
+
+export * from "./constants";
+export * from "./types";
+
+export const WalletKit = Client;
+export default Client;
+</file>
+
+<file path="packages/walletkit/test/shared/helpers.ts">
+import { ICore } from "@walletconnect/types";
+
+export async function disconnect(core: ICore) {
+  if (core.relayer.connected) {
+    await core.relayer.transportClose();
+  }
+}
+</file>
+
+<file path="packages/walletkit/test/shared/index.ts">
+export * from "./values";
+export * from "./helpers";
+</file>
+
+<file path="packages/walletkit/test/shared/values.ts">
+import { CoreTypes } from "@walletconnect/types";
+export const TEST_ETHEREUM_CHAIN = "eip155:1";
+export const TEST_ARBITRUM_CHAIN = "eip155:42161";
+export const TEST_AVALANCHE_CHAIN = "eip155:43114";
+
+export const TEST_CHAINS = [TEST_ETHEREUM_CHAIN, TEST_ARBITRUM_CHAIN, TEST_AVALANCHE_CHAIN];
+export const TEST_METHODS = [
+  "eth_signTransaction",
+  "eth_sendTransaction",
+  "personal_sign",
+  "eth_signTypedData",
+];
+export const TEST_EVENTS = ["chainChanged", "accountsChanged"];
+
+export const TEST_ETHEREUM_ADDRESS = "0x3c582121909DE92Dc89A36898633C1aE4790382b";
+
+export const TEST_ETHEREUM_ACCOUNT = `${TEST_ETHEREUM_CHAIN}:${TEST_ETHEREUM_ADDRESS}`;
+export const TEST_ARBITRUM_ACCOUNT = `${TEST_ARBITRUM_CHAIN}:${TEST_ETHEREUM_ADDRESS}`;
+export const TEST_AVALANCHE_ACCOUNT = `${TEST_AVALANCHE_CHAIN}:${TEST_ETHEREUM_ADDRESS}`;
+
+export const TEST_ACCOUNTS = [TEST_ETHEREUM_ACCOUNT, TEST_ARBITRUM_ACCOUNT, TEST_AVALANCHE_ACCOUNT];
+
+export const TEST_NAMESPACES = {
+  eip155: {
+    methods: [TEST_METHODS[0]],
+    accounts: [TEST_ACCOUNTS[0]],
+    events: [TEST_EVENTS[0]],
+  },
+};
+
+export const TEST_UPDATED_NAMESPACES = {
+  eip155: {
+    methods: TEST_METHODS,
+    accounts: TEST_ACCOUNTS,
+    events: TEST_EVENTS,
+  },
+};
+
+export const TEST_REQUIRED_NAMESPACES = {
+  eip155: {
+    methods: [TEST_METHODS[0]],
+    chains: [TEST_CHAINS[0]],
+    events: [TEST_EVENTS[0]],
+  },
+};
+
+export const TEST_CORE_OPTIONS = {
+  projectId: process.env.TEST_PROJECT_ID || "",
+  logger: "fatal",
+  relayUrl: process.env.TEST_RELAY_URL || "",
+};
+
+export const TEST_METADATA: CoreTypes.Metadata = {
+  name: "test",
+  description: "test",
+  url: "test",
+  icons: [],
+};
+</file>
+
+<file path="packages/walletkit/test/multitenancy.spec.ts">
+import { TEST_METADATA } from "./shared/values";
+import { Core } from "@walletconnect/core";
+import { formatJsonRpcResult } from "@walletconnect/jsonrpc-utils";
+import { SignClient } from "@walletconnect/sign-client";
+import { ICore, ISignClient, SessionTypes } from "@walletconnect/types";
+import { parseUri } from "@walletconnect/utils";
+import { KeyValueStorage } from "@walletconnect/keyvaluestorage";
+import { Wallet as CryptoWallet } from "@ethersproject/wallet";
+
+import { expect, describe, it, beforeAll } from "vitest";
+import { WalletKit, IWalletKit } from "../src";
+import {
+  TEST_CORE_OPTIONS,
+  TEST_ETHEREUM_CHAIN,
+  TEST_NAMESPACES,
+  TEST_REQUIRED_NAMESPACES,
+} from "./shared";
+
+interface IClientInstance {
+  clientId: number;
+  core: ICore;
+  wallet: IWalletKit;
+  cryptoWallet: CryptoWallet;
+  sessionTopic: string;
+}
+
+describe("Multitenancy", () => {
+  // enable global core - its disabled in tests by default
+  process.env.DISABLE_GLOBAL_CORE = "false";
+  // create 5 walletkit clients
+  const walletKitClientsToCreate = process.env.WALLETKIT_CLIENTS_TO_CREATE
+    ? parseInt(process.env.WALLETKIT_CLIENTS_TO_CREATE, 10)
+    : 5;
+
+  expect(walletKitClientsToCreate).to.be.a("number");
+  expect(walletKitClientsToCreate).to.be.greaterThan(0);
+
+  // send 5 session requests to the clients
+  const sessionRequestsToSend = process.env.SESSION_REQUESTS_TO_SEND
+    ? parseInt(process.env.SESSION_REQUESTS_TO_SEND, 10)
+    : 5;
+
+  expect(sessionRequestsToSend).to.be.a("number");
+  expect(sessionRequestsToSend).to.be.greaterThan(0);
+
+  // force all clients to use the same storage
+  const walletKitStorage = new KeyValueStorage({
+    database: "./test/tmp/walletkit-core-db",
+  });
+
+  // map of the number of proposals received by each WalletKit client
+  const proposalsReceived = new Map<number, number>();
+  // map of the number of proposals responded by each WalletKit client
+  const proposalsResponded = new Map<number, number>();
+
+  // map of the number of session requests received by each WalletKit client
+  const sessionRequestsReceived = new Map<
+    number,
+    {
+      instanceId: number;
+      count: number;
+      payload: string;
+    }
+  >();
+  // map of the number of session requests responded by each WalletKit client
+  const sessionRequestsResponded = new Map<
+    number,
+    {
+      instanceId: number;
+      count: number;
+      payload: string;
+    }
+  >();
+
+  let core: ICore;
+  let dapp: ISignClient;
+
+  // map of walletkit clients, one client for each session
+  const walletKitClients = new Map<string, IClientInstance>();
+  const walletKitIdToSessionTopic = new Map<number, string>();
+  // map of dapp sessions, one session with each client
+  const dappSessions = new Map<string, SessionTypes.Struct>();
+
+  const createWalletKitClient = async (id: number, isRestarting = false) => {
+    const core = new Core({
+      ...TEST_CORE_OPTIONS,
+      storage: walletKitStorage,
+    });
+    const wallet = await WalletKit.init({
+      core,
+      name: "wallet",
+      metadata: TEST_METADATA,
+      signConfig: {
+        disableRequestQueue: true,
+      },
+    });
+    if (isRestarting) {
+      // each walletKit client will load the sessions of the previous client instances because of the same storage they all use
+      expect(Object.keys(wallet.getActiveSessions()).length).to.be.eq(walletKitClientsToCreate);
+    }
+
+    const clientInstance: IClientInstance = {
+      clientId: id,
+      wallet,
+      core: wallet.core,
+      cryptoWallet: CryptoWallet.createRandom(),
+      sessionTopic: "", // will be set after session is approved or after restarting the wallet
+    };
+    return clientInstance;
+  };
+
+  const pairWalletKitClient = async (walletInstance: IClientInstance, uri: string) => {
+    const wallet = walletInstance.wallet;
+    const { topic: pairingTopic } = parseUri(uri);
+
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_proposal", async (sessionProposal) => {
+          // count the number of proposals received for each client
+          proposalsReceived.set(
+            walletInstance.clientId,
+            (proposalsReceived.get(walletInstance.clientId) || 0) + 1,
+          );
+
+          if (sessionProposal.params.pairingTopic !== pairingTopic) {
+            console.warn("Session proposal not intended for this client, skipping...");
+            return;
+          }
+
+          proposalsResponded.set(
+            walletInstance.clientId,
+            (proposalsResponded.get(walletInstance.clientId) || 0) + 1,
+          );
+
+          const session = await wallet.approveSession({
+            id: sessionProposal.id,
+            namespaces: TEST_NAMESPACES,
+          });
+          walletInstance.sessionTopic = session.topic;
+          resolve(session);
+        });
+      }),
+      wallet.pair({ uri }),
+    ]);
+
+    // map the walletkit instance id to the session topic
+    walletKitIdToSessionTopic.set(walletInstance.clientId, walletInstance.sessionTopic);
+
+    expect(walletInstance.sessionTopic).to.be.exist;
+    expect(walletInstance.sessionTopic).to.be.not.empty;
+    expect(walletInstance.sessionTopic).to.be.a("string");
+    expect(walletInstance.sessionTopic).to.not.eql("");
+
+    expect(walletInstance.core).to.be.exist;
+    expect(walletInstance.wallet).to.be.exist;
+    expect(walletInstance.cryptoWallet).to.be.exist;
+
+    return walletInstance.sessionTopic;
+  };
+
+  beforeAll(async () => {
+    core = new Core({
+      ...TEST_CORE_OPTIONS,
+      // isolate dapp storage from walletkit clients
+      customStoragePrefix: "dapp-storage",
+    });
+    dapp = await SignClient.init({
+      core,
+      ...TEST_CORE_OPTIONS,
+      name: "Dapp",
+      metadata: TEST_METADATA,
+    });
+  });
+
+  it("should establish sessions to multiple WalletKit clients", async () => {
+    for (let i = 0; i < walletKitClientsToCreate; i++) {
+      const { uri, approval } = await dapp.connect({
+        requiredNamespaces: TEST_REQUIRED_NAMESPACES,
+      });
+      if (!uri) {
+        throw new Error(`URI is not defined for client ${i}`);
+      }
+      const walletKitInstanceId = i + 1;
+      // 1. create new WalletKit client for each session
+      // 2. pair the WalletKit client with the dapp
+      // 3. store the paired WalletKit client in the walletKitClients map
+      // 4. store the session in the dappSessions map
+      const walletInstance = await createWalletKitClient(walletKitInstanceId);
+      await Promise.all([
+        new Promise<void>(async (resolve) => {
+          const session = await approval();
+          dappSessions.set(session.topic, session);
+          resolve();
+        }),
+        new Promise<void>(async (resolve) => {
+          const sessionTopic = await pairWalletKitClient(walletInstance, uri);
+          walletKitClients.set(sessionTopic, walletInstance);
+          resolve();
+        }),
+      ]);
+    }
+    // verify that the number of sessions in the dappSessions map is equal to the number of WalletKit clients
+    expect(dappSessions.size).to.be.eq(walletKitClientsToCreate);
+    // verify that the number of WalletKit clients is equal to the number of sessions in the dappSessions map
+    expect(walletKitClients.size).to.be.eq(walletKitClientsToCreate);
+
+    // verify that each WalletKit client has a session that matches the session in the dappSessions map
+    for (const [topic] of dappSessions.entries()) {
+      const walletKitClient = walletKitClients.get(topic);
+
+      if (!walletKitClient) {
+        throw new Error(`WalletKit client not found for session topic ${topic}`);
+      }
+      expect(walletKitClient).to.be.exist;
+      expect(walletKitClient.sessionTopic).to.be.eq(topic);
+    }
+  });
+
+  it("should restart walletkit clients", async () => {
+    // close all transports
+    for (const client of walletKitClients.values()) {
+      expect(client).to.be.exist;
+      await client.core.relayer.transportClose();
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    // clear the global Core - as if the instance was restarted
+    globalThis._walletConnectCore_ = undefined;
+    // clear the walletkit clients map
+    walletKitClients.clear();
+
+    expect(walletKitClients.size).to.be.eq(0);
+
+    // reinitialize the walletkit clients
+    for (let i = 0; i < walletKitClientsToCreate; i++) {
+      const walletInstance = await createWalletKitClient(i + 1, true);
+
+      const sessionTopic = walletKitIdToSessionTopic.get(walletInstance.clientId);
+      if (!sessionTopic) {
+        throw new Error(`Session topic not found for wallet instance ${walletInstance.clientId}`);
+      }
+      walletInstance.sessionTopic = sessionTopic;
+      walletKitClients.set(sessionTopic, walletInstance);
+    }
+
+    // verify that the number of WalletKit clients is equal to the number of sessions in the dappSessions map
+    expect(walletKitClients.size).to.be.eq(dappSessions.size);
+    expect(walletKitClients.size).to.be.eq(walletKitClientsToCreate);
+
+    // verify that each WalletKit client has a session that matches the session in the dappSessions map
+    for (const session of dappSessions.values()) {
+      const walletKitClient = walletKitClients.get(session.topic);
+      if (!walletKitClient) {
+        throw new Error(`WalletKit client not found for session topic ${session.topic}`);
+      }
+      expect(walletKitClient).to.be.exist;
+      expect(walletKitClient.sessionTopic).to.be.eq(session.topic);
+    }
+
+    // verify that each WalletKit client has correctly loaded its session
+    for (const walletKitClient of walletKitClients.values()) {
+      const sessionTopic = walletKitClient.sessionTopic;
+      const session = walletKitClient.wallet.getActiveSessions()[sessionTopic];
+      expect(session).to.be.exist;
+      expect(session.topic).to.be.eq(sessionTopic);
+    }
+  });
+
+  it("should receive session requests", async () => {
+    const onSessionRequest = (walletKitClient: IClientInstance) => {
+      walletKitClient.wallet.on("session_request", async (sessionRequest) => {
+        const { id, topic: requestTopic } = sessionRequest;
+        // count the number of session requests received by this client
+        sessionRequestsReceived.set(walletKitClient.clientId, {
+          instanceId: walletKitClient.clientId,
+          count: (sessionRequestsReceived.get(walletKitClient.clientId)?.count || 0) + 1,
+          payload: sessionRequest.params.request.params[0],
+        });
+        if (requestTopic !== walletKitClient.sessionTopic) {
+          console.warn("session_request not intended for this client, skipping...");
+          return;
+        }
+
+        // count the number of session requests responded by this client
+        sessionRequestsResponded.set(walletKitClient.clientId, {
+          instanceId: walletKitClient.clientId,
+          count: (sessionRequestsResponded.get(walletKitClient.clientId)?.count || 0) + 1,
+          payload: sessionRequest.params.request.params[0],
+        });
+
+        await walletKitClient.wallet.respondSessionRequest({
+          topic: requestTopic,
+          response: formatJsonRpcResult(id, `0x_${walletKitClient.clientId}`),
+        });
+      });
+    };
+
+    for (const walletKitClient of walletKitClients.values()) {
+      onSessionRequest(walletKitClient);
+    }
+
+    const dappSessionsArray = [...dappSessions.values()];
+
+    for (let i = 0; i < sessionRequestsToSend; i++) {
+      const sessionToSendRequestTo = dappSessionsArray[i];
+
+      if (!sessionToSendRequestTo) {
+        throw new Error(`Dapp session not found for random request: ${i + 1}`);
+      }
+      // i+1 is the intended clientId for this request
+      const requestPayload = `request_for_client_${i + 1}`;
+      const result = await dapp.request({
+        topic: sessionToSendRequestTo.topic,
+        request: {
+          method: "eth_signTransaction",
+          params: [requestPayload, "0x"],
+        },
+        chainId: TEST_ETHEREUM_CHAIN,
+      });
+      expect(result).to.be.exist;
+      expect(result).to.be.a("string");
+      // verify that this request was responded by the correct WalletKit client - clientId = i+1
+      expect(result).to.be.eq(`0x_${i + 1}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    console.log("sessionRequestsReceived", sessionRequestsReceived.values());
+    console.log("sessionRequestsResponded", sessionRequestsResponded.values());
+    // verify that each WalletKit client received every session request at least once
+    for (const requestReceived of sessionRequestsReceived.values()) {
+      expect(requestReceived.count).to.be.greaterThan(1);
+    }
+
+    // verify that each WalletKit client responded to its intended request
+    for (const requestResponded of sessionRequestsResponded.values()) {
+      expect(requestResponded.count).to.be.eq(1);
+      expect(requestResponded.payload).to.be.eq(
+        `request_for_client_${requestResponded.instanceId}`,
+      );
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  });
+});
+</file>
+
+<file path="packages/walletkit/test/sign.spec.ts">
+import { TEST_METADATA } from "./shared/values";
+import { Core, RELAYER_EVENTS } from "@walletconnect/core";
+import {
+  JsonRpcPayload,
+  formatJsonRpcResult,
+  isJsonRpcRequest,
+} from "@walletconnect/jsonrpc-utils";
+import { SignClient, ENGINE_RPC_OPTS } from "@walletconnect/sign-client";
+import { CoreTypes, ICore, ISignClient, SessionTypes } from "@walletconnect/types";
+import { buildApprovedNamespaces, buildAuthObject, getSdkError } from "@walletconnect/utils";
+import { toMiliseconds } from "@walletconnect/time";
+import { Wallet as CryptoWallet } from "@ethersproject/wallet";
+
+import { expect, describe, it, beforeEach, vi, beforeAll, afterEach } from "vitest";
+import { WalletKit, IWalletKit } from "../src";
+import {
+  disconnect,
+  TEST_CORE_OPTIONS,
+  TEST_ETHEREUM_CHAIN,
+  TEST_NAMESPACES,
+  TEST_REQUIRED_NAMESPACES,
+  TEST_UPDATED_NAMESPACES,
+} from "./shared";
+
+describe("Sign Integration", () => {
+  let core: ICore;
+  let wallet: IWalletKit;
+  let dapp: ISignClient;
+  let uriString: string;
+  let sessionApproval: () => Promise<any>;
+  let session: SessionTypes.Struct;
+  let cryptoWallet: CryptoWallet;
+
+  beforeAll(() => {
+    cryptoWallet = CryptoWallet.createRandom();
+  });
+
+  afterEach(async () => {
+    await disconnect(wallet.core);
+    await disconnect(dapp.core);
+  });
+
+  beforeEach(async () => {
+    core = new Core(TEST_CORE_OPTIONS);
+    dapp = await SignClient.init({ ...TEST_CORE_OPTIONS, name: "Dapp", metadata: TEST_METADATA });
+    const { uri, approval } = await dapp.connect({
+      requiredNamespaces: TEST_REQUIRED_NAMESPACES,
+    });
+    uriString = uri || "";
+    sessionApproval = approval;
+    const signConfig = { disableRequestQueue: true };
+    wallet = await WalletKit.init({
+      core,
+      name: "wallet",
+      metadata: TEST_METADATA,
+      signConfig,
+    });
+    expect(wallet).to.be.exist;
+    expect(dapp).to.be.exist;
+    expect(core).to.be.exist;
+    expect(wallet.metadata.redirect).to.not.exist;
+    expect(dapp.metadata.redirect).to.not.exist;
+    expect(wallet.engine.signClient.signConfig).to.toMatchObject(signConfig);
+  });
+
+  it("should approve session proposal", async () => {
+    const sessionConfig = { disableDeepLink: false };
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_proposal", async (sessionProposal) => {
+          const { id, params, verifyContext } = sessionProposal;
+          expect(verifyContext.verified.validation).to.eq("UNKNOWN");
+          expect(verifyContext.verified.isScam).to.eq(undefined);
+          session = await wallet.approveSession({
+            id,
+            namespaces: TEST_NAMESPACES,
+            sessionConfig,
+          });
+          expect(params.requiredNamespaces).to.toMatchObject(TEST_REQUIRED_NAMESPACES);
+          resolve(session);
+        });
+      }),
+      new Promise(async (resolve) => {
+        resolve(await sessionApproval());
+      }),
+      wallet.pair({ uri: uriString }),
+    ]);
+    expect(session).to.be.exist;
+    expect(session.topic).to.be.exist;
+    expect(session.sessionConfig).to.eql(sessionConfig);
+  });
+  it("should reject session proposal", async () => {
+    const rejectionError = getSdkError("USER_REJECTED");
+    await Promise.all([
+      new Promise<void>((resolve) => {
+        wallet.on("session_proposal", async (sessionProposal) => {
+          const { params } = sessionProposal;
+          expect(params.requiredNamespaces).to.toMatchObject(TEST_REQUIRED_NAMESPACES);
+          await wallet.rejectSession({
+            id: params.id,
+            reason: rejectionError,
+          });
+          resolve();
+        });
+      }),
+      new Promise<void>(async (resolve) => {
+        // catch the rejection and compare
+        try {
+          await sessionApproval();
+        } catch (err) {
+          expect(err).to.toMatchObject(rejectionError);
+        }
+        resolve();
+      }),
+      wallet.pair({ uri: uriString }),
+    ]);
+  });
+  it("should update session", async () => {
+    // first pair and approve session
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_proposal", async (sessionProposal) => {
+          const { id, params, verifyContext } = sessionProposal;
+          expect(verifyContext.verified.validation).to.eq("UNKNOWN");
+          session = await wallet.approveSession({
+            id,
+            namespaces: TEST_NAMESPACES,
+          });
+          expect(params.requiredNamespaces).to.toMatchObject(TEST_REQUIRED_NAMESPACES);
+          resolve(session);
+        });
+      }),
+      sessionApproval(),
+      wallet.pair({ uri: uriString }),
+    ]);
+
+    expect(TEST_NAMESPACES).not.toMatchObject(TEST_UPDATED_NAMESPACES);
+    // update the session
+    await Promise.all([
+      new Promise((resolve) => {
+        dapp.events.on("session_update", (session) => {
+          const { params } = session;
+          expect(params.namespaces).to.toMatchObject(TEST_UPDATED_NAMESPACES);
+          resolve(session);
+        });
+      }),
+      wallet.updateSession({ topic: session.topic, namespaces: TEST_UPDATED_NAMESPACES }),
+    ]);
+  });
+
+  it("should update session while peer is offline", async () => {
+    // first pair and approve session
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_proposal", async (sessionProposal) => {
+          const { id, params, verifyContext } = sessionProposal;
+          expect(verifyContext.verified.validation).to.eq("UNKNOWN");
+          session = await wallet.approveSession({
+            id,
+            namespaces: TEST_NAMESPACES,
+          });
+          expect(params.requiredNamespaces).to.toMatchObject(TEST_REQUIRED_NAMESPACES);
+          resolve(session);
+        });
+      }),
+      sessionApproval(),
+      wallet.pair({ uri: uriString }),
+    ]);
+
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    expect(TEST_NAMESPACES).not.toMatchObject(TEST_UPDATED_NAMESPACES);
+    // close the transport to simulate peer being offline
+    await dapp.core.relayer.transportClose();
+    const updatedChain = "eip155:55";
+    const updatedAddress = `${updatedChain}:${cryptoWallet.address}`;
+    // update the session
+    await new Promise<void>(async (resolve) => {
+      await wallet.updateSession({
+        topic: session.topic,
+        namespaces: {
+          eip155: {
+            ...TEST_UPDATED_NAMESPACES.eip155,
+            accounts: [...TEST_UPDATED_NAMESPACES.eip155.accounts, updatedAddress],
+          },
+        },
+      });
+      await wallet.emitSessionEvent({
+        topic: session.topic,
+        event: {
+          name: "chainChanged",
+          data: updatedChain,
+        },
+        chainId: updatedChain,
+      });
+      await wallet.emitSessionEvent({
+        topic: session.topic,
+        event: {
+          name: "accountsChanged",
+          data: [updatedAddress],
+        },
+        chainId: updatedChain,
+      });
+      resolve();
+    });
+    await Promise.all([
+      new Promise((resolve) => {
+        dapp.events.on("session_update", (session) => {
+          resolve(session);
+        });
+      }),
+      new Promise((resolve) => {
+        dapp.events.on("session_event", (event) => {
+          const { params } = event;
+          if (params.event.name === "chainChanged") {
+            expect(params.event.data).to.equal(updatedChain);
+            resolve(event);
+          }
+        });
+      }),
+      new Promise((resolve) => {
+        dapp.events.on("session_event", (event) => {
+          const { params } = event;
+          if (params.event.name === "accountsChanged") {
+            console;
+            expect(params.event.data[0]).to.equal(updatedAddress);
+            resolve(event);
+          }
+        });
+      }),
+      dapp.core.relayer.transportOpen(),
+    ]);
+  });
+
+  it("should extend session", async () => {
+    // first pair and approve session
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_proposal", async (sessionProposal) => {
+          const { id, params } = sessionProposal;
+          session = await wallet.approveSession({
+            id,
+            namespaces: TEST_NAMESPACES,
+          });
+          expect(params.requiredNamespaces).to.toMatchObject(TEST_REQUIRED_NAMESPACES);
+          resolve(session);
+        });
+      }),
+      sessionApproval(),
+      wallet.pair({ uri: uriString }),
+    ]);
+
+    const prevExpiry = session.expiry;
+    const topic = session.topic;
+    vi.useFakeTimers();
+    // Fast-forward system time by 60 seconds after expiry was first set.
+    vi.setSystemTime(Date.now() + 60_000);
+    await wallet.extendSession({ topic });
+    const updatedExpiry = wallet.engine.signClient.session.get(topic).expiry;
+    expect(updatedExpiry).to.be.greaterThan(prevExpiry);
+    vi.useRealTimers();
+  });
+
+  it("should respond to session request", async () => {
+    // first pair and approve session
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_proposal", async (sessionProposal) => {
+          const { id, params } = sessionProposal;
+          session = await wallet.approveSession({
+            id,
+            namespaces: {
+              eip155: {
+                ...TEST_NAMESPACES.eip155,
+                accounts: [`${TEST_ETHEREUM_CHAIN}:${cryptoWallet.address}`],
+              },
+            },
+          });
+          expect(params.requiredNamespaces).to.toMatchObject(TEST_REQUIRED_NAMESPACES);
+          resolve(session);
+        });
+      }),
+      sessionApproval(),
+      wallet.pair({ uri: uriString }),
+    ]);
+
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_request", async (sessionRequest) => {
+          const { id, params, verifyContext } = sessionRequest;
+          expect(verifyContext.verified.validation).to.eq("UNKNOWN");
+          const signTransaction = params.request.params[0];
+          const signature = await cryptoWallet.signTransaction(signTransaction);
+          const response = await wallet.respondSessionRequest({
+            topic: session.topic,
+            response: formatJsonRpcResult(id, signature),
+          });
+          resolve(response);
+        });
+      }),
+      new Promise<void>(async (resolve) => {
+        const result = await dapp.request({
+          topic: session.topic,
+          request: {
+            method: "eth_signTransaction",
+            params: [
+              {
+                from: cryptoWallet.address,
+                to: cryptoWallet.address,
+                data: "0x",
+                nonce: "0x01",
+                gasPrice: "0x020a7ac094",
+                gasLimit: "0x5208",
+                value: "0x00",
+              },
+            ],
+          },
+          chainId: TEST_ETHEREUM_CHAIN,
+        });
+        expect(result).to.be.exist;
+        expect(result).to.be.a("string");
+        resolve();
+      }),
+    ]);
+  });
+
+  it("should disconnect from session", async () => {
+    // first pair and approve session
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_proposal", async (sessionProposal) => {
+          const { id, params } = sessionProposal;
+          session = await wallet.approveSession({
+            id,
+            namespaces: {
+              eip155: {
+                ...TEST_NAMESPACES.eip155,
+                accounts: [`${TEST_ETHEREUM_CHAIN}:${cryptoWallet.address}`],
+              },
+            },
+          });
+          expect(params.requiredNamespaces).to.toMatchObject(TEST_REQUIRED_NAMESPACES);
+          resolve(session);
+        });
+      }),
+      sessionApproval(),
+      wallet.pair({ uri: uriString }),
+    ]);
+
+    const reason = getSdkError("USER_DISCONNECTED");
+    await Promise.all([
+      new Promise<void>((resolve) => {
+        dapp.events.on("session_delete", (sessionDelete) => {
+          const { topic } = sessionDelete;
+          expect(topic).to.be.eq(session.topic);
+          resolve();
+        });
+      }),
+      wallet.disconnectSession({ topic: session.topic, reason }),
+    ]);
+  });
+
+  it("should receive session_disconnect", async () => {
+    // first pair and approve session
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_proposal", async (sessionProposal) => {
+          const { id, params } = sessionProposal;
+          session = await wallet.approveSession({
+            id,
+            namespaces: {
+              eip155: {
+                ...TEST_NAMESPACES.eip155,
+                accounts: [`${TEST_ETHEREUM_CHAIN}:${cryptoWallet.address}`],
+              },
+            },
+          });
+          expect(params.requiredNamespaces).to.toMatchObject(TEST_REQUIRED_NAMESPACES);
+          resolve(session);
+        });
+      }),
+      sessionApproval(),
+      wallet.pair({ uri: uriString }),
+    ]);
+
+    const reason = getSdkError("USER_DISCONNECTED");
+    await Promise.all([
+      new Promise<void>((resolve) => {
+        wallet.on("session_delete", (sessionDelete) => {
+          const { topic } = sessionDelete;
+          expect(topic).to.be.eq(session.topic);
+          resolve();
+        });
+      }),
+      dapp.disconnect({ topic: session.topic, reason }),
+    ]);
+  });
+
+  it("should emit session event", async () => {
+    // first pair and approve session
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_proposal", async (sessionProposal) => {
+          const { id, params } = sessionProposal;
+          session = await wallet.approveSession({
+            id,
+            namespaces: {
+              eip155: {
+                ...TEST_NAMESPACES.eip155,
+                accounts: [`${TEST_ETHEREUM_CHAIN}:${cryptoWallet.address}`],
+              },
+            },
+          });
+          expect(params.requiredNamespaces).to.toMatchObject(TEST_REQUIRED_NAMESPACES);
+          resolve(session);
+        });
+      }),
+      sessionApproval(),
+      wallet.pair({ uri: uriString }),
+    ]);
+    const sessionEvent = {
+      topic: session.topic,
+      event: {
+        name: "chainChanged",
+      },
+      chainId: TEST_REQUIRED_NAMESPACES.eip155.chains[0],
+    };
+    await Promise.all([
+      new Promise<void>((resolve) => {
+        dapp.events.on("session_event", (eventPayload) => {
+          const { topic, params } = eventPayload;
+          expect(topic).to.be.eq(sessionEvent.topic);
+          expect(params.event).to.toMatchObject(sessionEvent.event);
+          resolve();
+        });
+      }),
+      wallet.emitSessionEvent(sessionEvent),
+    ]);
+  });
+
+  it("should get active sessions", async () => {
+    // first pair and approve session
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_proposal", async (sessionProposal) => {
+          const { id, params } = sessionProposal;
+          session = await wallet.approveSession({
+            id,
+            namespaces: {
+              eip155: {
+                ...TEST_NAMESPACES.eip155,
+                accounts: [`${TEST_ETHEREUM_CHAIN}:${cryptoWallet.address}`],
+              },
+            },
+          });
+          expect(params.requiredNamespaces).to.toMatchObject(TEST_REQUIRED_NAMESPACES);
+          resolve(session);
+        });
+      }),
+      sessionApproval(),
+      wallet.pair({ uri: uriString }),
+    ]);
+
+    const sessions = wallet.getActiveSessions();
+    expect(sessions).to.be.exist;
+    expect(Object.values(sessions).length).to.be.eq(1);
+    expect(Object.keys(sessions)[0]).to.be.eq(session.topic);
+  });
+
+  it("should handle multiple session proposal listeners correctly", async () => {
+    const firstHandler = vi.fn();
+    const secondHandler = vi.fn();
+
+    await Promise.all([
+      new Promise<void>((resolve) => {
+        wallet.on("session_proposal", firstHandler);
+        wallet.on("session_proposal", secondHandler);
+        wallet.on("session_proposal", () => {
+          resolve();
+        });
+      }),
+      wallet.pair({ uri: uriString }),
+    ]);
+
+    expect(firstHandler.mock.calls).toHaveLength(1);
+    expect(secondHandler.mock.calls).toHaveLength(1);
+  });
+
+  it("should get pending session proposals", async () => {
+    // first pair and approve session
+    await Promise.all([
+      new Promise<void>((resolve) => {
+        wallet.on("session_proposal", () => {
+          const proposals = wallet.getPendingSessionProposals();
+          expect(proposals).to.be.exist;
+          expect(Object.values(proposals).length).to.be.eq(1);
+          expect(proposals[0].requiredNamespaces).to.toMatchObject(TEST_REQUIRED_NAMESPACES);
+          resolve();
+        });
+      }),
+      wallet.pair({ uri: uriString }),
+    ]);
+  });
+
+  it.skip("receive proposal_expire event", async () => {
+    const { uri: uriString } = await dapp.connect({ requiredNamespaces: TEST_REQUIRED_NAMESPACES });
+
+    // first pair and approve session
+    await Promise.all([
+      new Promise<void>((resolve) => {
+        wallet.once("session_proposal", () => {
+          vi.useFakeTimers({
+            shouldAdvanceTime: true,
+          });
+          // Fast-forward system time by 4 min 58 seconds after expiry was first set.
+          vi.setSystemTime(
+            Date.now() + toMiliseconds(ENGINE_RPC_OPTS.wc_sessionPropose.req.ttl - 2),
+          );
+        });
+        wallet.on("session_proposal", async (event) => {
+          const { id } = event;
+          const startTimer = Date.now();
+          await new Promise<void>((resolve) => {
+            wallet.on("proposal_expire", (event) => {
+              const { id: expiredId } = event;
+              if (id === expiredId) {
+                expect(startTimer).to.be.approximately(Date.now(), 5000); // 5 seconds delta for heartbeat
+                resolve();
+              }
+            });
+          });
+          resolve();
+        });
+      }),
+      wallet.pair({ uri: uriString! }),
+    ]);
+    vi.useRealTimers();
+  });
+
+  it("should get pending session requests", async () => {
+    // first pair and approve session
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_proposal", async (sessionProposal) => {
+          const { id, params } = sessionProposal;
+          session = await wallet.approveSession({
+            id,
+            namespaces: {
+              eip155: {
+                ...TEST_NAMESPACES.eip155,
+                accounts: [`${TEST_ETHEREUM_CHAIN}:${cryptoWallet.address}`],
+              },
+            },
+          });
+          expect(params.requiredNamespaces).to.toMatchObject(TEST_REQUIRED_NAMESPACES);
+          resolve(session);
+        });
+      }),
+      sessionApproval(),
+      wallet.pair({ uri: uriString }),
+    ]);
+
+    const requestParams = {
+      method: "eth_signTransaction",
+      params: [
+        {
+          from: cryptoWallet.address,
+          to: cryptoWallet.address,
+          data: "0x",
+          nonce: "0x01",
+          gasPrice: "0x020a7ac094",
+          gasLimit: "0x5208",
+          value: "0x00",
+        },
+      ],
+    };
+
+    await Promise.all([
+      new Promise((resolve) => {
+        wallet.on("session_request", async () => {
+          const pendingRequests = wallet.getPendingSessionRequests();
+          const request = pendingRequests[0];
+          const signTransaction = request.params.request.params[0];
+          const signature = await cryptoWallet.signTransaction(signTransaction);
+          const response = await wallet.respondSessionRequest({
+            topic: session.topic,
+            response: formatJsonRpcResult(request.id, signature),
+          });
+          resolve(response);
+          resolve(pendingRequests);
+        });
+      }),
+      new Promise<void>(async (resolve) => {
+        const result = await dapp.request({
+          topic: session.topic,
+          request: requestParams,
+          chainId: TEST_ETHEREUM_CHAIN,
+        });
+        expect(result).to.be.exist;
+        expect(result).to.be.a("string");
+        resolve();
+        resolve();
+      }),
+    ]);
+  });
+
+  describe("Decrypted notifications", () => {
+    it("should get session metadata", async () => {
+      const initMetadata: CoreTypes.Metadata = {
+        name: "Test Dapp",
+        description: "Test Dapp Description",
+        url: "https://walletconnect.com",
+        icons: ["https://walletconnect.com/walletconnect-logo.png"],
+      };
+      const dappTable = "./test/tmp/dapp";
+      const walletTable = "./test/tmp/wallet";
+      const dapp = await SignClient.init({
+        ...TEST_CORE_OPTIONS,
+        name: "Dapp",
+        metadata: initMetadata,
+        storageOptions: {
+          database: dappTable,
+        },
+      });
+      const wallet = await WalletKit.init({
+        core: new Core({
+          ...TEST_CORE_OPTIONS,
+          storageOptions: { database: walletTable },
+        }),
+        name: "wallet",
+        metadata: initMetadata,
+      });
+
+      const { uri: uriString, approval } = await dapp.connect({});
+      let session: SessionTypes.Struct;
+      await Promise.all([
+        new Promise((resolve) => {
+          wallet.on("session_proposal", async (sessionProposal) => {
+            const { id, params, verifyContext } = sessionProposal;
+            expect(verifyContext.verified.validation).to.eq("UNKNOWN");
+            expect(verifyContext.verified.isScam).to.eq(undefined);
+            session = await wallet.approveSession({
+              id,
+              namespaces: TEST_NAMESPACES,
+            });
+            resolve(session);
+          });
+        }),
+        new Promise(async (resolve) => {
+          resolve(await approval());
+        }),
+        wallet.pair({ uri: uriString! }),
+      ]);
+
+      const metadata = await WalletKit.notifications.getMetadata({
+        topic: session?.topic,
+        storageOptions: { database: walletTable },
+      });
+
+      expect(metadata).to.be.exist;
+      expect(metadata).to.be.a("object");
+      expect(metadata).to.toMatchObject(initMetadata);
+      await disconnect(wallet.core);
+      await disconnect(dapp.core);
+    });
+
+    it("should decrypt payload with pairing topic", async () => {
+      const initMetadata: CoreTypes.Metadata = {
+        name: "Test Dapp",
+        description: "Test Dapp Description",
+        url: "https://walletconnect.com",
+        icons: ["https://walletconnect.com/walletconnect-logo.png"],
+      };
+      const dappTable = "./test/tmp/dapp";
+      const walletTable = "./test/tmp/wallet";
+      const dapp = await SignClient.init({
+        ...TEST_CORE_OPTIONS,
+        name: "Dapp",
+        metadata: initMetadata,
+        storageOptions: {
+          database: dappTable,
+        },
+      });
+      const wallet = await WalletKit.init({
+        core: new Core({
+          ...TEST_CORE_OPTIONS,
+          storageOptions: { database: walletTable },
+        }),
+        name: "wallet",
+        metadata: initMetadata,
+      });
+
+      const { uri: uriString = "", approval } = await dapp.connect({});
+      let encryptedMessage = "";
+      let decryptedMessage: JsonRpcPayload = {} as any;
+      let pairingTopic = "";
+      await Promise.all([
+        new Promise<void>((resolve) => {
+          wallet.core.relayer.on(RELAYER_EVENTS.message, async (payload) => {
+            const { topic, message } = payload;
+            const decrypted = await wallet.core.crypto.decode(topic, message);
+            expect(decrypted).to.be.exist;
+            if (decrypted?.method === "wc_sessionPropose" && isJsonRpcRequest(decrypted)) {
+              encryptedMessage = message;
+              decryptedMessage = decrypted;
+              pairingTopic = topic;
+              resolve();
+            }
+          });
+        }),
+        new Promise<void>((resolve) => {
+          wallet.on("session_proposal", async (sessionProposal) => {
+            const { id, params, verifyContext } = sessionProposal;
+            expect(verifyContext.verified.validation).to.eq("UNKNOWN");
+            expect(verifyContext.verified.isScam).to.eq(undefined);
+            await wallet.approveSession({
+              id,
+              namespaces: TEST_NAMESPACES,
+            });
+            resolve();
+          });
+        }),
+        new Promise(async (resolve) => {
+          resolve(await approval());
+        }),
+        wallet.pair({ uri: uriString }),
+      ]);
+
+      const decrypted = await WalletKit.notifications.decryptMessage({
+        topic: pairingTopic,
+        encryptedMessage,
+        storageOptions: { database: walletTable },
+      });
+      expect(decrypted).to.be.exist;
+      expect(decrypted).to.be.a("object");
+      expect(decrypted).to.toMatchObject(decryptedMessage);
+      await disconnect(wallet.core);
+      await disconnect(dapp.core);
+    });
+    it("should decrypt payload with session topic", async () => {
+      const initMetadata: CoreTypes.Metadata = {
+        name: "Test Dapp",
+        description: "Test Dapp Description",
+        url: "https://walletconnect.com",
+        icons: ["https://walletconnect.com/walletconnect-logo.png"],
+      };
+      const dappTable = "./test/tmp/dapp";
+      const walletTable = "./test/tmp/wallet";
+      const dapp = await SignClient.init({
+        ...TEST_CORE_OPTIONS,
+        name: "Dapp",
+        metadata: initMetadata,
+        storageOptions: {
+          database: dappTable,
+        },
+      });
+      const wallet = await WalletKit.init({
+        core: new Core({
+          ...TEST_CORE_OPTIONS,
+          storageOptions: { database: walletTable },
+        }),
+        name: "wallet",
+        metadata: initMetadata,
+      });
+
+      const { uri: uriString = "", approval } = await dapp.connect({});
+
+      let session: SessionTypes.Struct = {} as any;
+      // pair and approve session
+      await Promise.all([
+        new Promise<void>((resolve) => {
+          wallet.on("session_proposal", async (sessionProposal) => {
+            const { id, params, verifyContext } = sessionProposal;
+            expect(verifyContext.verified.validation).to.eq("UNKNOWN");
+            expect(verifyContext.verified.isScam).to.eq(undefined);
+            session = await wallet.approveSession({
+              id,
+              namespaces: TEST_NAMESPACES,
+            });
+            resolve();
+          });
+        }),
+        new Promise(async (resolve) => {
+          resolve(await approval());
+        }),
+        wallet.pair({ uri: uriString }),
+      ]);
+
+      let encryptedMessage = "";
+      let decryptedMessage: JsonRpcPayload = {} as any;
+      await Promise.all([
+        new Promise<void>((resolve) => {
+          wallet.core.relayer.on(RELAYER_EVENTS.message, async (payload) => {
+            const { topic, message } = payload;
+            const decrypted = await wallet.core.crypto.decode(topic, message);
+            expect(decrypted).to.be.exist;
+            if (decrypted?.method === "wc_sessionRequest" && isJsonRpcRequest(decrypted)) {
+              encryptedMessage = message;
+              decryptedMessage = decrypted;
+              resolve();
+            }
+          });
+        }),
+        new Promise<void>((resolve) => {
+          wallet.on("session_request", async (payload) => {
+            const { id, params, topic, verifyContext } = payload;
+            await wallet.respondSessionRequest({
+              topic,
+              response: formatJsonRpcResult(id, "0x"),
+            });
+            resolve();
+          });
+        }),
+        dapp.request({
+          topic: session.topic,
+          request: {
+            method: "eth_signTransaction",
+            params: [
+              {
+                from: cryptoWallet.address,
+                to: cryptoWallet.address,
+                data: "0x",
+                nonce: "0x01",
+                gasPrice: "0x020a7ac094",
+                gasLimit: "0x5208",
+                value: "0x00",
+              },
+            ],
+          },
+          chainId: TEST_ETHEREUM_CHAIN,
+        }),
+      ]);
+      const decrypted = await WalletKit.notifications.decryptMessage({
+        topic: session.topic,
+        encryptedMessage,
+        storageOptions: { database: walletTable },
+      });
+      expect(decrypted).to.be.exist;
+      expect(decrypted).to.be.a("object");
+      expect(decrypted).to.toMatchObject(decryptedMessage);
+      await disconnect(wallet.core);
+      await disconnect(dapp.core);
+    });
+  });
+
+  describe("Sign 2.5", () => {
+    it("should establish authenticated session", async () => {
+      const dapp = await SignClient.init({
+        ...TEST_CORE_OPTIONS,
+        name: "Dapp",
+        metadata: TEST_METADATA,
+      });
+      expect(dapp).to.be.exist;
+      const { uri, response } = await dapp.authenticate({
+        chains: ["eip155:1", "eip155:2"],
+        domain: "localhost",
+        nonce: "1",
+        uri: "aud",
+        methods: ["personal_sign"],
+        resources: [],
+      });
+      const walletkit = await WalletKit.init({
+        name: "wallet",
+        core: new Core(TEST_CORE_OPTIONS),
+        metadata: TEST_METADATA,
+      });
+      await Promise.all([
+        new Promise<void>((resolve) => {
+          walletkit.on("session_authenticate", async (payload) => {
+            const verifyContext = payload.verifyContext;
+            expect(verifyContext).to.exist;
+            expect(verifyContext.verified.validation).to.eq("UNKNOWN");
+
+            const auths: any[] = [];
+            for (const chain of payload.params.authPayload.chains) {
+              const message = walletkit.formatAuthMessage({
+                request: payload.params.authPayload,
+                iss: `${chain}:${cryptoWallet.address}`,
+              });
+              const sig = await cryptoWallet.signMessage(message);
+              const auth = buildAuthObject(
+                payload.params.authPayload,
+                {
+                  t: "eip191",
+                  s: sig,
+                },
+                `${chain}:${cryptoWallet.address}`,
+              );
+              auths.push(auth);
+            }
+
+            const result = await walletkit.approveSessionAuthenticate({
+              id: payload.id,
+              auths,
+            });
+            const { session } = result;
+            expect(session).to.exist;
+            resolve();
+          });
+        }),
+        new Promise<void>(async (resolve) => {
+          await walletkit.pair({ uri });
+          resolve();
+        }),
+      ]);
+      const { session, auths } = await response();
+      expect(auths).to.exist;
+      expect(auths).to.be.an("array");
+      const walletSessions = walletkit.getActiveSessions();
+      expect(walletSessions).to.exist;
+      expect(walletSessions).to.be.an("object");
+      const walletSession = walletSessions[session.topic];
+      // approved namespaces on both sides must be equal
+      expect(JSON.stringify(session.namespaces)).to.eq(JSON.stringify(walletSession.namespaces));
+      expect(session.topic).to.eq(walletSession.topic);
+      await Promise.all([
+        new Promise<void>((resolve) => {
+          walletkit.on("session_request", async (payload) => {
+            const { id, topic } = payload;
+            await walletkit.respondSessionRequest({
+              topic,
+              response: formatJsonRpcResult(
+                id,
+                await cryptoWallet.signMessage(payload.params.request.params[0]),
+              ),
+            });
+            resolve();
+          });
+        }),
+        new Promise<void>(async (resolve) => {
+          await dapp.request({
+            chainId: "eip155:1",
+            topic: session.topic,
+            request: {
+              method: "personal_sign",
+              params: ["hey, sup"],
+            },
+          });
+          resolve();
+        }),
+      ]);
+      await disconnect(walletkit.core);
+      await disconnect(dapp.core);
+    });
+    it("should fallback to session_proposal when no listener for `session_authenticate` exists", async () => {
+      const dapp = await SignClient.init({
+        ...TEST_CORE_OPTIONS,
+        name: "Dapp",
+        metadata: TEST_METADATA,
+      });
+      expect(dapp).to.be.exist;
+      const { uri, response } = await dapp.authenticate({
+        chains: ["eip155:1", "eip155:2"],
+        domain: "localhost",
+        nonce: "1",
+        uri: "aud",
+        methods: ["personal_sign"],
+        resources: [],
+      });
+      const walletkit = await WalletKit.init({
+        name: "wallet",
+        core: new Core(TEST_CORE_OPTIONS),
+        metadata: TEST_METADATA,
+      });
+      await Promise.all([
+        new Promise<void>((resolve) => {
+          walletkit.on("session_proposal", (payload) => {
+            const approved = buildApprovedNamespaces({
+              supportedNamespaces: {
+                eip155: {
+                  methods: ["personal_sign", "eth_signTransaction", "eth_signTypedData_v4"],
+                  chains: ["eip155:1", "eip155:2", "eip155:3"],
+                  accounts: [
+                    "eip155:1:" + cryptoWallet.address,
+                    "eip155:2:" + cryptoWallet.address,
+                    "eip155:3:" + cryptoWallet.address,
+                  ],
+                  events: [],
+                },
+              },
+              proposal: payload.params,
+            });
+            walletkit.approveSession({
+              id: payload.id,
+              namespaces: approved,
+            });
+            resolve();
+          });
+        }),
+        new Promise<void>(async (resolve) => {
+          await walletkit.pair({ uri });
+          resolve();
+        }),
+      ]);
+      const { session, auths } = await response();
+      expect(auths).to.be.undefined;
+      const walletSessions = walletkit.getActiveSessions();
+      expect(walletSessions).to.exist;
+      expect(walletSessions).to.be.an("object");
+      const walletSession = walletSessions[session.topic];
+      // approved namespaces on both sides must be equal
+      expect(JSON.stringify(session.namespaces)).to.eq(JSON.stringify(walletSession.namespaces));
+      expect(session.topic).to.eq(walletSession.topic);
+      await Promise.all([
+        new Promise<void>((resolve) => {
+          walletkit.on("session_request", async (payload) => {
+            const { id, topic } = payload;
+            await walletkit.respondSessionRequest({
+              topic,
+              response: formatJsonRpcResult(
+                id,
+                await cryptoWallet.signMessage(payload.params.request.params[0]),
+              ),
+            });
+            resolve();
+          });
+        }),
+        new Promise<void>(async (resolve) => {
+          await dapp.request({
+            chainId: "eip155:1",
+            topic: session.topic,
+            request: {
+              method: "personal_sign",
+              params: ["hey, sup"],
+            },
+          });
+          resolve();
+        }),
+      ]);
+      await disconnect(walletkit.core);
+      await disconnect(dapp.core);
+    });
+  });
+
+  it("should send core init event when walletkit initializes", async () => {
+    process.env.IS_VITEST = false as any;
+    const core = new Core({ ...TEST_CORE_OPTIONS, telemetryEnabled: false });
+    let initCalled = false;
+    expect(initCalled).to.be.false;
+    // @ts-expect-error - accessing private properties
+    core.eventClient.sendEvent = async (payload: any) => {
+      initCalled = true;
+      expect(payload).toBeDefined();
+      expect(payload.length).to.eql(1);
+      expect(payload[0].props.event).to.eql("INIT");
+      expect(payload[0].props.properties.client_id).to.eql(await core.crypto.getClientId());
+    };
+    await WalletKit.init({
+      core,
+      name: "wallet",
+      metadata: TEST_METADATA,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(initCalled).to.be.true;
+    process.env.IS_VITEST = true as any;
+  });
+});
+</file>
+
+<file path="packages/walletkit/.npmignore">
+*.log
+npm-debug.log*
+
+# Coverage directory used by tools like istanbul
+coverage
+.nyc_output
+
+# Dependency directories
+node_modules
+
+# npm package lock
+package-lock.json
+yarn.lock
+
+# project files
+src
+test
+CHANGELOG.md
+.travis.yml
+.editorconfig
+.eslintignore
+.eslintrc
+.babelrc
+.gitignore
+.watchmanconfig
+</file>
+
+<file path="packages/walletkit/LICENSE">
+Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   Copyright 2021 WalletConnect, Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+</file>
+
+<file path="packages/walletkit/package.json">
+{
+  "name": "@reown/walletkit",
+  "description": "WalletKit for WalletConnect Protocol",
+  "version": "1.2.3",
+  "private": false,
+  "author": "Reown, Inc.",
+  "homepage": "https://github.com/reown-com/",
+  "license": "Apache-2.0",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.es.js",
+  "unpkg": "dist/index.umd.js",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "wallet",
+    "walletconnect",
+    "reown",
+    "walletkit"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build:pre": "npm run clean",
+    "build:types": "tsc",
+    "build:source": "rollup --config rollup.config.js",
+    "build": "npm run build:pre; npm run build:source; npm run build:types",
+    "test": "vitest run --dir test --no-threads",
+    "lint": "eslint -c '../../.eslintrc' --fix './src/**/*.ts'",
+    "prettier": "prettier --check '{src,test}/**/*.{js,ts,jsx,tsx}'"
+  },
+  "dependencies": {
+    "@walletconnect/core": "2.19.2",
+    "@walletconnect/jsonrpc-provider": "1.0.14",
+    "@walletconnect/jsonrpc-utils": "1.0.8",
+    "@walletconnect/logger": "2.1.2",
+    "@walletconnect/sign-client": "2.19.2",
+    "@walletconnect/types": "2.19.2",
+    "@walletconnect/utils": "2.19.2"
+  },
+  "devDependencies": {
+    "@ethersproject/wallet": "5.7.0"
+  }
+}
+</file>
+
+<file path="packages/walletkit/README.md">
+# @reown/walletkit
+
+## Description
+
+The WalletKit SDK streamlines the integration process, making it easier for wallet developers to include the authentication and transaction signing features necessary for their users to connect and interact with all sorts of apps — now and in the future.
+
+## Getting Started
+
+### Install
+
+```
+npm install @reown/walletkit
+```
+
+### Wallet Usage
+
+1. Initialization
+
+```javascript
+import { Core } from "@walletconnect/core";
+import { WalletKit } from "@reown/walletkit";
+
+const core = new Core({
+  projectId: process.env.PROJECT_ID,
+});
+
+const walletkit = await WalletKit.init({
+  core, // <- pass the shared `core` instance
+  metadata: {
+    name: "Demo app",
+    description: "Demo Client as Wallet/Peer",
+    url: "www.walletconnect.com",
+    icons: [],
+  },
+});
+```
+
+2. Sign Session Approval
+
+```javascript
+walletkit.on("session_proposal", async (proposal) => {
+  const session = await walletkit.approveSession({
+    id: proposal.id,
+    namespaces,
+  });
+});
+await walletkit.pair({ uri });
+```
+
+3. Sign Session Rejection
+
+```javascript
+walletkit.on("session_proposal", async (proposal) => {
+  const session = await walletkit.rejectSession({
+    id: proposal.id,
+    reason: getSdkError("USER_REJECTED_METHODS"),
+  });
+});
+```
+
+4. Sign Session Disconnect
+
+```javascript
+await walletkit.disconnectSession({
+  topic,
+  reason: getSdkError("USER_DISCONNECTED"),
+});
+```
+
+5. Responding to Sign Session Requests
+
+```javascript
+walletkit.on("session_request", async (event) => {
+  const { id, method, params } = event.request;
+  await walletkit.respondSessionRequest({ id, result: response });
+});
+```
+
+6. Updating a Sign Session
+
+```javascript
+await walletkit.updateSession({ topic, namespaces: newNs });
+```
+
+7. Updating a Sign Session
+
+```javascript
+await walletkit.extendSession({ topic });
+```
+
+8. Emit Sign Session Events
+
+```javascript
+await walletkit.emitSessionEvent({
+  topic,
+  event: {
+    name: "accountsChanged",
+    data: ["0xab16a96D359eC26a11e2C2b3d8f8B8942d5Bfcdb"],
+  },
+  chainId: "eip155:1",
+});
+```
+
+9. Handle Sign Events
+
+```javascript
+walletkit.on("session_proposal", handler);
+walletkit.on("session_request", handler);
+walletkit.on("session_delete", handler);
+```
+</file>
+
+<file path="packages/walletkit/rollup.config.js">
+import { name, dependencies } from "./package.json";
+import createConfig from "../../rollup.config";
+
+export default createConfig(name, Object.keys(dependencies));
+</file>
+
+<file path="packages/walletkit/tsconfig.json">
+{
+  "extends": "../../tsconfig.json",
+  "include": ["./src/**/*"],
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "./dist/types",
+    "emitDeclarationOnly": true
+  }
+}
+</file>
+
+<file path=".eslintrc">
+{
+  "rules": {
+    "@typescript-eslint/ban-ts-ignore": ["off"],
+    "@typescript-eslint/camelcase": ["off"],
+    "@typescript-eslint/explicit-function-return-type": ["off"],
+    "@typescript-eslint/interface-name-prefix": ["off"],
+    "@typescript-eslint/no-explicit-any": ["off"],
+    "@typescript-eslint/no-unused-expressions": ["off"],
+    "@typescript-eslint/no-var-requires": ["off"],
+    "@typescript-eslint/no-use-before-define": ["off"],
+    "@typescript-eslint/no-unused-vars": ["off"],
+    "@typescript-eslint/no-namespace": ["off"],
+    "@typescript-eslint/ban-ts-comment": "off",
+    "camelcase": "off",
+    "no-unused-expressions": "off",
+    "comma-dangle": ["error", "always-multiline"],
+    "require-await": "warn",
+    "no-async-promise-executor": ["off"],
+    "no-empty-pattern": ["off"],
+    "no-undef": ["error"],
+    "no-var": ["error"],
+    "object-curly-spacing": ["error", "always"],
+    "quotes": ["error", "double", { "allowTemplateLiterals": true }],
+    "semi": ["error", "always"],
+    "spaced-comment": ["off"],
+    "no-prototype-builtins": ["off"],
+    "sort-keys": ["off"],
+    "space-before-function-paren": ["off"],
+    "indent": ["off"],
+    "promise/param-names": "off",
+    "no-console": ["error", { "allow": ["warn"] }],
+    "no-useless-constructor": "off",
+    "no-use-before-define": "off",
+    "curly": "off",
+    "prefer-promise-reject-errors": "off"
+  },
+  "ignorePatterns": ["dist", "**/node_modules/*"],
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "globals": {
+    "NodeJS": true
+  },
+  "extends": [
+    "standard",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["prettier", "@typescript-eslint"]
+}
+</file>
+
+<file path=".gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+lerna-debug.log
+*.lerna_backup
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+# Dependency directories
+**/node_modules
+jspm_packages
+# Optional npm cache directory
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+**/dist
+**/build
+.DS_Store
+.makeFlags*
+.env
+zip
+.idea
+.rts2_cache_*
+.nyc_output
+tsconfig.tsbuildinfo
+test.db
+test.db-journal
+**/tmp
+setup
+result*
+ops/grafana/grafana.ini
+.rollup.cache
+
+# react native module
+## Android/IJ
+.classpath
+.cxx
+.gradle
+.idea
+.project
+.settings
+local.properties
+android.iml
+
+## Xcode
+build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+project.xcworkspace
+</file>
+
+<file path=".prettierrc">
+{
+  "tabWidth": 2,
+  "useTabs": false,
+  "trailingComma": "all",
+  "printWidth": 100
+}
+</file>
+
+<file path="lerna.json">
+{
+  "npmClient": "npm",
+  "packages": [
+    "packages/walletkit"
+  ],
+  "version": "1.2.3"
+}
+</file>
+
+<file path="package.json">
+{
+  "name": "reown-js",
+  "description": "Monorepo for reown",
+  "private": true,
+  "keywords": [
+    "wallet",
+    "walletconnect",
+    "ethereum",
+    "jsonrpc",
+    "mobile",
+    "qrcode",
+    "web3",
+    "crypto",
+    "cryptocurrency",
+    "dapp",
+    "reown",
+    "walletkit"
+  ],
+  "author": "Reown, Inc.",
+  "homepage": "https://github.com/reown-com/",
+  "license": "Apache-2.0",
+  "workspaces": [
+    "packages/walletkit"
+  ],
+  "scripts": {
+    "clean": "npm run clean --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "prettier": "npm run prettier --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:ignoreUnhandled": "npm run test:ignoreUnhandled --workspaces --if-present",
+    "check": "npm run lint; npm run build; npm run test",
+    "reset": "npm run clean; npm run check",
+    "new-version": "lerna version --no-private --no-git-tag-version --exact",
+    "pre-publish": "npm run new-version; npm run reset",
+    "npm-publish:rc": "lerna exec --no-private -- npm publish --access public --tag rc",
+    "npm-publish:latest": "lerna exec --no-private -- npm publish --access public --tag latest",
+    "npm-publish:next": "lerna exec --no-private -- npm publish --access public --tag next",
+    "npm-publish:canary": "lerna exec --no-private -- npm publish --access public --tag canary"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reown-com.git"
+  },
+  "bugs": {
+    "url": "https://github.com/reown-com/issues"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "22.0.2",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "13.3.0",
+    "@types/node": "18.7.3",
+    "@types/sinon": "10.0.13",
+    "@typescript-eslint/eslint-plugin": "5.33.0",
+    "@typescript-eslint/parser": "5.33.0",
+    "esbuild": "0.17.19",
+    "eslint": "8.22.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-config-standard": "17.0.0",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-n": "15.7.0",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-promise": "6.0.0",
+    "eslint-plugin-react": "7.30.1",
+    "eslint-plugin-standard": "5.0.0",
+    "lerna": "7.1.4",
+    "prettier": "2.7.1",
+    "rollup": "2.78.0",
+    "rollup-plugin-esbuild": "4.9.3",
+    "sinon": "14.0.0",
+    "typescript": "4.7.4",
+    "vitest": "0.22.1"
+  }
+}
+</file>
+
+<file path="README.md">
+# Reown-js
+
+Open protocol for connecting Wallets to Dapps
+
+## Setup
+
+1. Ensure [nodejs and npm](https://nodejs.org/en/)
+2. Clone the repository
+3. Install all package dependencies, by running `npm install` from the root folder
+
+## Running checks for all packages
+
+To ensure all packages lint, build and test correctly, we can run the following command from the root folder:
+
+> **For tests to pass in the following command, you will need your own `TEST_PROJECT_ID` value**,
+> which will be generated for you when you set up a new project on [WalletConnect Cloud](https://cloud.walletconnect.com).
+
+```zsh
+TEST_PROJECT_ID=YOUR_PROJECT_ID npm run check
+```
+
+## Command Overview
+
+- `clean` - Removes build folders from all packages
+- `lint` - Runs [eslint](https://eslint.org/) checks
+- `prettier` - Runs [prettier](https://prettier.io/) checks
+- `build` - Builds all packages
+- `test` - Tests all packages
+- `check` - Shorthand to run lint, build and test commands
+- `reset` - Shorthand to run clean and check commands
+
+## Troubleshooting
+
+1. If you are experiencing issues with installation ensure you install `npm i -g node-gyp`
+2. You will need to have xcode command line tools installed
+3. If there are issues with xcode command line tools try running
+
+```zsh
+sudo xcode-select --switch /Library/Developer/CommandLineTools
+sudo xcode-select --reset
+```
+
+## License
+
+Apache 2.0
+</file>
+
+<file path="renovate.json">
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":disableDevDependencies",
+    ":prConcurrentLimit10",
+    ":prHourlyLimit2",
+    ":semanticCommits",
+    ":semanticCommitScope(deps)"
+  ],
+  "updateInternalDeps": true,
+  "rollbackPrs": false,
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["*"],
+      "schedule": ["every weekend"]
+    },
+    {
+      "matchPackagePatterns": ["@walletconnect/*"],
+      "schedule": ["at any time"]
+    }
+  ],
+  "ignorePaths": ["**/android/**", "**/ios/**"]
+}
+</file>
+
+<file path="rollup.config.js">
+import esbuild from "rollup-plugin-esbuild";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
+
+const input = "./src/index.ts";
+const plugins = [
+  nodeResolve({ preferBuiltins: false, browser: true }),
+  json(),
+  commonjs(),
+  esbuild({
+    minify: true,
+    tsconfig: "./tsconfig.json",
+    loaders: {
+      ".json": "json",
+    },
+  }),
+];
+
+export default function createConfig(
+  packageName,
+  packageDependencies,
+  umd = {},
+  cjs = {},
+  es = {},
+) {
+  return [
+    {
+      input,
+      plugins,
+      output: {
+        file: "./dist/index.umd.js",
+        format: "umd",
+        exports: "named",
+        name: packageName,
+        sourcemap: true,
+        ...umd,
+      },
+    },
+    {
+      input,
+      plugins,
+      external: packageDependencies,
+      output: [
+        {
+          file: "./dist/index.cjs.js",
+          format: "cjs",
+          exports: "named",
+          name: packageName,
+          sourcemap: true,
+          ...cjs,
+        },
+        {
+          file: "./dist/index.es.js",
+          format: "es",
+          exports: "named",
+          name: packageName,
+          sourcemap: true,
+          ...es,
+        },
+      ],
+    },
+  ];
+}
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "downlevelIteration": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
+    "lib": ["ES2020", "DOM"],
+    "module": "ES2020",
+    "target": "ES2020",
+    "moduleResolution": "Node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noLib": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "preserveSymlinks": true,
+    "removeComments": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "suppressImplicitAnyIndexErrors": true
+  },
+  "include": ["**/package.json", "packages", "providers"]
+}
+</file>
+
+<file path="vitest.config.ts">
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  define: {
+    "process.env.IS_VITEST": true,
+    "process.env.DISABLE_GLOBAL_CORE": true,
+  },
+  test: {
+    testTimeout: 800_000,
+    hookTimeout: 800_000,
+  },
+});
+</file>
+
+</files>
