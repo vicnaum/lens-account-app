@@ -1,0 +1,30 @@
+---
+description: 
+globs: src/contexts/WalletConnectProvider.tsx,src/services/walletConnectService.ts,src/components/Wc*.tsx,src/hooks/useWcRequestHandler.ts
+alwaysApply: false
+---
+---
+description: Rules for implementing WalletConnect v2 using @reown/walletkit or @walletconnect/web3wallet, where this app acts AS the wallet for the Lens Account.
+globs: src/contexts/WalletConnectProvider.tsx,src/services/walletConnectService.ts,src/components/Wc*.tsx,src/hooks/useWcRequestHandler.ts
+alwaysApply: false
+---
+
+# WalletConnect v2 (Acting as Wallet for Lens Account)
+
+- Use `@reown/walletkit` or the underlying `@walletconnect/web3wallet` v2 SDK, likely abstracted in `services/walletConnectService.ts` and managed via `contexts/WalletConnectProvider.tsx`.
+- **Initialization:** Initialize `Web3Wallet` with the `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`.
+- **Pairing:** Use `web3wallet.core.pairing.pair({ uri })` to initiate connection from a WC URI.
+- **Session Proposals:** Listen for `session_proposal`. In the handler:
+    - **MUST** approve **only** the Lens Chain (`eip155:232`).
+    - Construct `approvedNamespaces` with the Lens Account address (e.g., `eip155:232:{lensAccountAddress}`) and required methods/events (`eth_sendTransaction`, `personal_sign`, `accountsChanged`, etc.).
+    - Call `web3wallet.approveSession`.
+    - Store active session details in context.
+- **Session Requests:** Listen for `session_request`. In the handler:
+    - Store the pending request details (`topic`, `id`, `params.request`) in context.
+    - Primarily handle `eth_sendTransaction`.
+    - **Do NOT execute directly.** Prepare the call to the *Lens Account's* `executeTransaction(address target, uint256 value, bytes calldata data)` function.
+    - Trigger this `executeTransaction` call using **Wagmi's `useWriteContract`** signed by the **Owner EOA**.
+- **Session Responses:** Use `web3wallet.respondSessionRequest` to send results back to the dApp:
+    - On successful `executeTransaction` mining (check receipt status): Send `{ id, result: txHash, jsonrpc: '2.0' }`.
+    - On Owner EOA rejection or transaction revert: Send an appropriate JSON-RPC error response (e.g., code 5000 for user rejection, -32000 for revert).
+- **State Management:** Use `WalletConnectContext` to manage the `web3wallet` instance, active sessions, pending requests, and UI states.

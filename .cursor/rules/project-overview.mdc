@@ -1,0 +1,28 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: High-level overview of the Lens Account Web Interface project, its goals, and key concepts.
+globs:
+alwaysApply: true
+---
+
+# Project: Lens Account Web Interface (MVP)
+
+**Goal:** Build a web interface for users (Owners) to interact with their Lens Account (a custom EVM Smart Account) on the **Lens Chain (ID 232)**.
+
+**Core Functionality:**
+1.  **Account Discovery:** Find Lens Account via username or address.
+2.  **Owner Login:** Connect the controlling Owner EOA wallet and verify ownership.
+3.  **Basic Dashboard:** Display Lens Account address and WGHO balance.
+4.  **WalletConnect v2 (Act as Wallet):** Allow the interface to connect *to* external dApps *on behalf of* the Lens Account using WalletConnect v2.
+5.  **Transaction Handling:** Relay transaction requests from connected dApps to the Owner EOA for approval via the Lens Account's `executeTransaction` method.
+
+**Key Concepts:**
+-   **Lens Account:** The smart contract wallet being managed.
+-   **Owner EOA:** The external wallet (e.g., MetaMask) that controls the Lens Account. Signs `executeTransaction`.
+-   **Lens Chain:** ID 232. All interactions target this chain.
+-   **WalletConnect (As Wallet):** This app *acts as the wallet* for the Lens Account when connecting to dApps. Uses `@reown/walletkit` or `@walletconnect/web3wallet`.
+-   **Wallet Connection (Owner):** Standard EOA connection to *this* app using ConnectKit/Wagmi.

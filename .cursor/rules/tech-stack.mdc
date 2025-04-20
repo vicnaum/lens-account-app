@@ -1,0 +1,24 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Specifies the core technology stack and versions for the project.
+globs:
+alwaysApply: true
+---
+
+# Technology Stack & Versions
+
+- **Framework:** Next.js 15+ (App Router **only**)
+- **Language:** TypeScript (strict mode enabled)
+- **Styling:** **Tailwind CSS v4**. Use v4 syntax and utilities. Do *not* use v3 syntax.
+- **Web3 Core:**
+    - **Wagmi v2.x:** For React hooks (Owner EOA connection, contract calls initiated by Owner).
+    - **Viem v2.x:** Primary low-level library (used by Wagmi v2). **Do not use EthersJS unless Viem doesn't support the functionality - ask user first if that's the case.**
+    - **ConnectKit:** For Owner EOA wallet connection UI.
+    - **@reown/walletkit (or @walletconnect/web3wallet v2):** For acting *as a wallet* via WalletConnect v2.
+- **State Management:** Primarily React Context API / `useState` / `useReducer`. Avoid Redux/Zustand for MVP.
+- **Query Management:** `@tanstack/react-query` (peer dep for Wagmi).
+- **Package Manager:** pnpm

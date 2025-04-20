@@ -1,0 +1,20 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Instructs the AI to always refer to the project specification documents.
+globs:
+alwaysApply: true
+---
+
+# Project Specifications
+
+**ALWAYS** refer to the following documents in the project root for detailed requirements, user flows, and technical implementation details:
+
+1.  **`Spec.functional.md`**: Defines user-facing features and scenarios.
+2.  **`Spec.technical.md`**: Outlines architecture, components, state management, and implementation specifics.
+3.  **`DEVELOPMENT_PLAN.md`**: Describes the phased development stages and verification steps. Fill in the checkboxes after user confirms the task works.
+
+Base your implementation plan and code generation on the details within these files. If a requirement is unclear or conflicts, ask for clarification referencing the specific document.

@@ -1,0 +1,23 @@
+---
+description: 
+globs: src/**/*.*
+alwaysApply: false
+---
+---
+description: Defines the standard project directory structure.
+globs: src/**/*.*
+alwaysApply: false
+---
+
+# Project Structure Guidelines
+
+Organize code according to the structure outlined in `Spec.technical.md`, generally:
+
+- All the code is located in the `src` folder - no code is outside of `src` folder! (just `public` for resources)
+-   `app/`: Next.js App Router routes, layouts, pages.
+-   `components/`: Reusable React components (UI, layout).
+-   `contexts/`: React Context providers (e.g., `WalletConnectProvider`, `LensAccountProvider`).
+-   `hooks/`: Custom React Hooks (e.g., `useLensLookup`, `useWcRequestHandler`).
+-   `lib/`: Core configuration (`wagmi.ts`, `constants.ts`) and general utilities (`utils.ts`).
+-   `services/`: Abstractions for external SDKs/logic (e.g., `walletConnectService.ts`).
+-   `styles/`: Global CSS, Tailwind config.

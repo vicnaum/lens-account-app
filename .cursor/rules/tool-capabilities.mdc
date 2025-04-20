@@ -1,0 +1,19 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Reminder of available tools for context gathering (Firecrawl, context7, local docs).
+globs:
+alwaysApply: true
+---
+
+# Available Tools Reminder
+
+Remember you have access to:
+- **`@firecrawl`:** MCP to fetch and process content from URLs if needed for context.
+- **`@context7`:** MCP for retrieving relevant code examples from library documentation.
+- **`@llms`:** To search the documentation files stored locally within the `llms/` directory of this project.
+
+Utilize these tools when necessary to gather context or find specific implementation details from documentation.

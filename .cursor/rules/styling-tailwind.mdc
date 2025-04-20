@@ -1,0 +1,18 @@
+---
+description: 
+globs: **/*.tsx,**/*.css,tailwind.config.*,postcss.config.*
+alwaysApply: false
+---
+---
+description: Rules for styling using Tailwind CSS v4.
+globs: **/*.tsx,**/*.css,tailwind.config.*,postcss.config.*
+alwaysApply: false
+---
+
+# Styling with Tailwind CSS v4
+
+- Use **Tailwind CSS v4** utility classes directly in components for styling.
+- Avoid writing custom CSS files unless absolutely necessary for complex or global styles.
+- Refer to the `tailwind.config.ts` file (if present) for theme configurations (colors, fonts, etc.).
+- Ensure responsiveness using Tailwind's breakpoint prefixes (sm:, md:, lg:, etc.).
+- Keep class strings readable; consider using a class sorter/formatter plugin if integrated.

@@ -1,0 +1,21 @@
+---
+description: 
+globs: **/*.ts,**/*.tsx
+alwaysApply: false
+---
+---
+description: General TypeScript and React coding conventions.
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# TypeScript & React Conventions
+
+- Use functional components with Hooks. Avoid class components.
+- Use explicit types (`interface` or `type`) for props, state, and function signatures. Prefer `type` for general types and `interface` for object shapes where extension might be needed, but consistency is key.
+- Avoid using `any`. Use `unknown` or specific types.
+- Use descriptive variable and function names (e.g., `isLoadingOwner`, `handleSessionProposal`).
+- Keep components focused (Single Responsibility Principle).
+- Extract reusable logic into custom hooks (`hooks/`) or utility functions (`lib/utils.ts`).
+- Follow ESLint/Prettier rules configured for the project.
+- Add comments to explain complex logic or non-obvious behavior (`// Why, not what`).

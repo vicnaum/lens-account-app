@@ -1,0 +1,18 @@
+---
+description: 
+globs: src/**/*.ts,src/**/*.tsx
+alwaysApply: false
+---
+---
+description: Best practices for using Wagmi v2 and ConnectKit for Owner EOA wallet interactions.
+globs: src/**/*.ts,src/**/*.tsx # Might need refinement based on import usage detection
+alwaysApply: false
+---
+
+# Wagmi v2 & ConnectKit Usage (Owner EOA)
+
+- Use `ConnectKitButton` or related hooks (`useModal`) for the Owner EOA connection UI.
+- Use Wagmi v2 hooks (`useAccount`, `useReadContract`, `useWriteContract`, `useSwitchChain`, `useWaitForTransactionReceipt`) for interacting with the blockchain *as the Owner EOA*.
+- Ensure all Wagmi contract calls (`useReadContract`, `useWriteContract`) specify `chainId: LENS_CHAIN_ID` (or the constant `232`).
+- Leverage Wagmi's built-in state for account details (address, chainId, connection status).
+- Remember Wagmi v2 uses **Viem** internally.
