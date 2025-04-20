@@ -82,168 +82,101 @@ This section contains the contents of the repository's files.
 // app/dashboard/page.tsx
 "use client";
 
-import { useLensAccount } from "@/contexts/LensAccountContext"; // Import context hook
-import { useAccount } from "wagmi";
+import { useLensAccount } from "@/contexts/LensAccountContext";
+import { useAccount, useDisconnect } from "wagmi"; // Import useDisconnect
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function Dashboard() {
-  const { lensAccountAddress, ownerAddress } = useLensAccount();
+  const { lensAccountAddress, ownerAddress, clearAccount } = useLensAccount(); // Get clearAccount
   const { isConnected } = useAccount();
+  const { disconnect } = useDisconnect(); // Get disconnect function
   const router = useRouter();
 
-  // Basic protection: Redirect if not connected or context is missing
+  // Protection effect
   useEffect(() => {
     if (!isConnected || !lensAccountAddress || !ownerAddress) {
       console.log("Redirecting to home: not connected or missing context");
-      router.replace("/"); // Use replace to prevent back navigation to dashboard
+      // Ensure context is cleared if redirecting for missing context state
+      if (!lensAccountAddress || !ownerAddress) {
+        clearAccount();
+      }
+      router.replace("/");
     }
-  }, [isConnected, lensAccountAddress, ownerAddress, router]);
+  }, [isConnected, lensAccountAddress, ownerAddress, router, clearAccount]); // Added clearAccount to dependencies
 
-  // Render placeholder content if authorized
+  // Handler for the logout button
+  const handleLogout = () => {
+    disconnect(); // Disconnect wagmi session
+    clearAccount(); // Clear our custom context
+    // The useEffect above will handle the redirect once isConnected becomes false
+    console.log("Logout initiated");
+  };
+
+  // Conditional rendering while checking auth state or redirecting
   if (!isConnected || !lensAccountAddress || !ownerAddress) {
-    // Render minimal content or null while redirecting
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <p>Loading...</p>
+        <p>Loading or redirecting...</p>
       </div>
     );
   }
 
+  // Main dashboard content
   return (
     <main className="flex min-h-screen flex-col items-center p-6 md:p-24">
-      <div className="w-full max-w-4xl p-8 bg-white rounded-xl shadow-lg">
-        <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-        <p className="mb-2">
-          Connected Owner:{" "}
-          <span className="font-mono text-sm">{ownerAddress}</span>
-        </p>
-        <p className="mb-6">
-          Managing Lens Account:{" "}
-          <span className="font-mono text-sm">{lensAccountAddress}</span>
-        </p>
+      <div className="w-full max-w-4xl p-8 bg-white rounded-xl shadow-lg relative">
+        {" "}
+        {/* Added relative positioning */}
+        {/* Logout Button Top Right */}
+        <button
+          onClick={handleLogout}
+          className="absolute top-4 right-4 px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+        >
+          Logout Owner
+        </button>
+        <h1 className="text-2xl font-bold mb-4 text-center">Dashboard</h1>
+        <div className="space-y-4">
+          <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+            <p className="text-sm font-medium text-gray-700">
+              Connected Owner Wallet:
+            </p>
+            <p className="text-xs text-gray-600 break-words font-mono">
+              {ownerAddress}
+            </p>
+          </div>
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-sm font-medium text-blue-800">
+              Managing Lens Account:
+            </p>
+            <p className="text-xs text-blue-700 break-words font-mono">
+              {lensAccountAddress}
+            </p>
+          </div>
 
-        {/* Placeholder for Stage 3 content (Balance Display) */}
-        <div className="p-4 border rounded-md bg-gray-50">
-          <p className="text-gray-600">
-            Account balance and WalletConnect UI will appear here.
-          </p>
-        </div>
+          {/* Placeholder for Stage 3 content (Balance Display) */}
+          <div className="p-4 border rounded-md bg-gray-50">
+            <p className="text-gray-600">
+              Account balance will appear here (Stage 3).
+            </p>
+          </div>
 
-        {/* Placeholder for Stage 4 content (WC Connect) */}
-        <div className="mt-6 p-4 border rounded-md bg-gray-50">
-          <p className="text-gray-600">
-            WalletConnect pairing section will appear here.
-          </p>
-        </div>
+          {/* Placeholder for Stage 4 content (WC Connect) */}
+          <div className="mt-6 p-4 border rounded-md bg-gray-50">
+            <p className="text-gray-600">
+              WalletConnect pairing section will appear here (Stage 4).
+            </p>
+          </div>
 
-        {/* Placeholder for Stage 5 content (WC Requests) */}
-        <div className="mt-6 p-4 border rounded-md bg-gray-50">
-          <p className="text-gray-600">
-            WalletConnect request display will appear here.
-          </p>
+          {/* Placeholder for Stage 5 content (WC Requests) */}
+          <div className="mt-6 p-4 border rounded-md bg-gray-50">
+            <p className="text-gray-600">
+              WalletConnect request display will appear here (Stage 5).
+            </p>
+          </div>
         </div>
       </div>
     </main>
-  );
-}
-</file>
-
-<file path="src/contexts/LensAccountContext.tsx">
-// contexts/LensAccountContext.tsx
-"use client";
-
-import React, { createContext, useState, useContext, ReactNode } from "react";
-import { type Address } from "viem";
-
-interface LensAccountState {
-  lensAccountAddress: Address | null;
-  ownerAddress: Address | null;
-  setVerifiedAccount: (lensAddress: Address, ownerAddress: Address) => void;
-  clearAccount: () => void;
-}
-
-const LensAccountContext = createContext<LensAccountState | undefined>(
-  undefined
-);
-
-interface LensAccountProviderProps {
-  children: ReactNode;
-}
-
-export function LensAccountProvider({ children }: LensAccountProviderProps) {
-  const [lensAccountAddress, setLensAccountAddress] = useState<Address | null>(
-    null
-  );
-  const [ownerAddress, setOwnerAddress] = useState<Address | null>(null);
-
-  const setVerifiedAccount = (
-    lensAddress: Address,
-    verifiedOwnerAddress: Address
-  ) => {
-    setLensAccountAddress(lensAddress);
-    setOwnerAddress(verifiedOwnerAddress);
-    console.log("Context Updated: Lens Account Set ->", lensAddress);
-    console.log("Context Updated: Owner Set ->", verifiedOwnerAddress);
-  };
-
-  const clearAccount = () => {
-    setLensAccountAddress(null);
-    setOwnerAddress(null);
-    console.log("Context Updated: Account Cleared");
-  };
-
-  const value = {
-    lensAccountAddress,
-    ownerAddress,
-    setVerifiedAccount,
-    clearAccount,
-  };
-
-  return (
-    <LensAccountContext.Provider value={value}>
-      {children}
-    </LensAccountContext.Provider>
-  );
-}
-
-// Custom hook to use the context
-export function useLensAccount() {
-  const context = useContext(LensAccountContext);
-  if (context === undefined) {
-    throw new Error("useLensAccount must be used within a LensAccountProvider");
-  }
-  return context;
-}
-</file>
-
-<file path="src/app/providers.tsx">
-// app/providers.tsx
-"use client";
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider } from "wagmi";
-import { ConnectKitProvider } from "connectkit";
-import { config } from "@/lib/wagmi";
-import React, { useState } from "react";
-import { LensAccountProvider } from "@/contexts/LensAccountContext";
-
-type Props = {
-  children: React.ReactNode;
-};
-
-export function Providers({ children }: Props) {
-  const [queryClient] = useState(() => new QueryClient());
-
-  return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <ConnectKitProvider>
-          {/* Wrap with LensAccountProvider */}
-          <LensAccountProvider>{children}</LensAccountProvider>
-        </ConnectKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
   );
 }
 </file>
@@ -502,6 +435,74 @@ export function DiscoveryForm({
       </div>
     </div>
   );
+}
+</file>
+
+<file path="src/contexts/LensAccountContext.tsx">
+// contexts/LensAccountContext.tsx
+"use client";
+
+import React, { createContext, useState, useContext, ReactNode } from "react";
+import { type Address } from "viem";
+
+interface LensAccountState {
+  lensAccountAddress: Address | null;
+  ownerAddress: Address | null;
+  setVerifiedAccount: (lensAddress: Address, ownerAddress: Address) => void;
+  clearAccount: () => void;
+}
+
+const LensAccountContext = createContext<LensAccountState | undefined>(
+  undefined
+);
+
+interface LensAccountProviderProps {
+  children: ReactNode;
+}
+
+export function LensAccountProvider({ children }: LensAccountProviderProps) {
+  const [lensAccountAddress, setLensAccountAddress] = useState<Address | null>(
+    null
+  );
+  const [ownerAddress, setOwnerAddress] = useState<Address | null>(null);
+
+  const setVerifiedAccount = (
+    lensAddress: Address,
+    verifiedOwnerAddress: Address
+  ) => {
+    setLensAccountAddress(lensAddress);
+    setOwnerAddress(verifiedOwnerAddress);
+    console.log("Context Updated: Lens Account Set ->", lensAddress);
+    console.log("Context Updated: Owner Set ->", verifiedOwnerAddress);
+  };
+
+  const clearAccount = () => {
+    setLensAccountAddress(null);
+    setOwnerAddress(null);
+    console.log("Context Updated: Account Cleared");
+  };
+
+  const value = {
+    lensAccountAddress,
+    ownerAddress,
+    setVerifiedAccount,
+    clearAccount,
+  };
+
+  return (
+    <LensAccountContext.Provider value={value}>
+      {children}
+    </LensAccountContext.Provider>
+  );
+}
+
+// Custom hook to use the context
+export function useLensAccount() {
+  const context = useContext(LensAccountContext);
+  if (context === undefined) {
+    throw new Error("useLensAccount must be used within a LensAccountProvider");
+  }
+  return context;
 }
 </file>
 
@@ -1044,202 +1045,33 @@ export default function RootLayout({
 }
 </file>
 
-<file path="src/app/page.tsx">
-// app/page.tsx
+<file path="src/app/providers.tsx">
+// app/providers.tsx
 "use client";
 
-import { DiscoveryForm } from "@/components/DiscoveryForm";
-import { ConnectOwnerButton } from "@/components/ConnectOwnerButton";
-import { useState, useEffect } from "react";
-import { useAccount, useReadContract } from "wagmi"; // Import useAccount
-import { useRouter } from "next/navigation"; // Import useRouter
-import { type Address, isAddress } from "viem";
-import { useLensAccount } from "@/contexts/LensAccountContext"; // Import the context hook
-import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider } from "wagmi";
+import { ConnectKitProvider } from "connectkit";
+import { config } from "@/lib/wagmi";
+import React, { useState } from "react";
+import { LensAccountProvider } from "@/contexts/LensAccountContext";
 
-export default function Home() {
-  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">(
-    ""
-  );
-  const [expectedOwner, setExpectedOwner] = useState<Address | null>(null);
-  const [ownerFetchError, setOwnerFetchError] = useState<string | null>(null);
-  const [verificationError, setVerificationError] = useState<string | null>(
-    null
-  ); // State for verification errors
+type Props = {
+  children: React.ReactNode;
+};
 
-  const {
-    address: connectedAddress,
-    chainId: connectedChainId,
-    isConnected,
-    isConnecting,
-    isReconnecting,
-  } = useAccount(); // Get connected account info
-  const router = useRouter(); // Initialize router
-  const { setVerifiedAccount, clearAccount: clearContext } = useLensAccount(); // Get context actions
-
-  const handleAccountFound = (address: Address | "") => {
-    console.log("Account Address Updated in Parent:", address);
-    setLensAccountAddress(address);
-    setExpectedOwner(null); // Reset owner when lens account changes
-    setOwnerFetchError(null);
-    setVerificationError(null); // Reset verification error
-    clearContext(); // Clear context if lens account changes
-  };
-
-  const {
-    data: ownerData,
-    error: ownerError,
-    isLoading: isLoadingOwner,
-  } = useReadContract({
-    address: lensAccountAddress || undefined,
-    abi: LENS_ACCOUNT_ABI,
-    functionName: "owner",
-    chainId: LENS_CHAIN_ID,
-    query: {
-      enabled: isAddress(lensAccountAddress),
-    },
-  });
-
-  // Effect to update expectedOwner state
-  useEffect(() => {
-    if (ownerData) {
-      setExpectedOwner(ownerData);
-      setOwnerFetchError(null);
-      console.log("Fetched Expected Owner:", ownerData);
-    }
-  }, [ownerData]);
-
-  // Effect to handle owner fetch errors
-  useEffect(() => {
-    if (ownerError) {
-      console.error("Error fetching owner:", ownerError);
-      setOwnerFetchError(
-        "Could not fetch account owner. Ensure the address is correct and on Lens Chain."
-      );
-      setExpectedOwner(null);
-    } else if (isAddress(lensAccountAddress)) {
-      setOwnerFetchError(null);
-    }
-  }, [ownerError, lensAccountAddress]);
-
-  // Effect for Owner Verification and Navigation
-  useEffect(() => {
-    // Clear verification error on disconnect
-    if (!isConnected) {
-      setVerificationError(null);
-      clearContext(); // Also clear context on disconnect
-      return;
-    }
-
-    if (connectedAddress && expectedOwner && isAddress(lensAccountAddress)) {
-      // Check if on the correct chain first
-      if (connectedChainId !== LENS_CHAIN_ID) {
-        // Wagmi/ConnectKit handles the switch prompt, maybe show a generic message here
-        setVerificationError("Please switch to the Lens Chain in your wallet.");
-        clearContext();
-        return; // Don't proceed further if chain is wrong
-      }
-
-      // Now check if the address matches
-      if (connectedAddress.toLowerCase() === expectedOwner.toLowerCase()) {
-        console.log("Owner verified! Navigating to dashboard...");
-        setVerificationError(null); // Clear error on success
-        // Set the verified account details in context before navigating
-        setVerifiedAccount(lensAccountAddress, connectedAddress);
-        router.push("/dashboard");
-      } else {
-        console.log("Owner mismatch:", {
-          connected: connectedAddress,
-          expected: expectedOwner,
-        });
-        setVerificationError(
-          `Incorrect owner connected. Please connect with wallet: ${expectedOwner}`
-        );
-        clearContext();
-      }
-    }
-  }, [
-    connectedAddress,
-    connectedChainId,
-    expectedOwner,
-    lensAccountAddress,
-    isConnected,
-    router,
-    setVerifiedAccount,
-    clearContext,
-  ]);
-
-  const showConnectButton =
-    expectedOwner && !isLoadingOwner && !ownerFetchError;
-  const connectButtonDisabled =
-    !!verificationError || connectedChainId !== LENS_CHAIN_ID; // Disable if error or wrong chain
+export function Providers({ children }: Props) {
+  const [queryClient] = useState(() => new QueryClient());
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      <div className="w-full max-w-lg p-8 space-y-6 bg-white rounded-xl shadow-lg">
-        <h1 className="text-2xl font-bold text-center text-gray-800">
-          Lens Account Interface
-        </h1>
-        <p className="text-center text-gray-600">
-          Find your Lens Account by username or address.
-        </p>
-
-        <DiscoveryForm onAccountAddressFound={handleAccountFound} />
-
-        <div className="mt-6 text-center space-y-3">
-          {isAddress(lensAccountAddress) && isLoadingOwner && (
-            <p className="text-gray-500">Fetching owner...</p>
-          )}
-
-          {ownerFetchError && !isLoadingOwner && (
-            <p className="text-red-600">{ownerFetchError}</p>
-          )}
-
-          {expectedOwner && !isLoadingOwner && !ownerFetchError && (
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-sm font-medium text-blue-800">
-                Identified Account Owner:
-              </p>
-              <p className="text-xs text-blue-700 break-words font-mono">
-                {expectedOwner}
-              </p>
-              {!isConnected && (
-                <p className="text-xs text-blue-600 mt-1">
-                  Connect this wallet to proceed.
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Verification Error Display */}
-          {verificationError && (
-            <p className="text-sm text-red-600 mt-2">{verificationError}</p>
-          )}
-
-          {/* Only show Connect Button when expected owner is loaded and no fetch error */}
-          {showConnectButton && (
-            <div className="pt-2">
-              {/* ConnectKit handles its own disabled state based on connection status */}
-              <ConnectOwnerButton />
-              {isConnected && connectedChainId !== LENS_CHAIN_ID && (
-                <p className="text-xs text-orange-600 mt-1">
-                  Waiting for network switch...
-                </p>
-              )}
-            </div>
-          )}
-
-          {!isAddress(lensAccountAddress) &&
-            !expectedOwner &&
-            !isLoadingOwner && (
-              <p className="text-sm text-gray-500">
-                Enter a Lens username or account address above to find the
-                owner.
-              </p>
-            )}
-        </div>
-      </div>
-    </main>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <ConnectKitProvider>
+          {/* Wrap with LensAccountProvider */}
+          <LensAccountProvider>{children}</LensAccountProvider>
+        </ConnectKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
 </file>
@@ -1576,6 +1408,206 @@ src/
 - Potential integration of Safe SDKs if the Lens Account implements Safe compatibility layers.
 </file>
 
+<file path="src/app/page.tsx">
+// app/page.tsx
+"use client";
+
+import { DiscoveryForm } from "@/components/DiscoveryForm";
+import { ConnectOwnerButton } from "@/components/ConnectOwnerButton";
+import { useState, useEffect } from "react";
+import { useAccount, useReadContract } from "wagmi"; // Import useAccount
+import { useRouter } from "next/navigation"; // Import useRouter
+import { type Address, isAddress } from "viem";
+import { useLensAccount } from "@/contexts/LensAccountContext"; // Import the context hook
+import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants";
+
+export default function Home() {
+  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">(
+    ""
+  );
+  const [expectedOwner, setExpectedOwner] = useState<Address | null>(null);
+  const [ownerFetchError, setOwnerFetchError] = useState<string | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(
+    null
+  ); // State for verification errors
+
+  const {
+    address: connectedAddress,
+    chainId: connectedChainId,
+    isConnected,
+    isConnecting,
+    isReconnecting,
+  } = useAccount(); // Get connected account info
+  const router = useRouter(); // Initialize router
+  const { setVerifiedAccount, clearAccount: clearContext } = useLensAccount(); // Get context actions
+
+  const handleAccountFound = (address: Address | "") => {
+    console.log("Account Address Updated in Parent:", address);
+    setLensAccountAddress(address);
+    setExpectedOwner(null); // Reset owner when lens account changes
+    setOwnerFetchError(null);
+    setVerificationError(null); // Reset verification error
+    clearContext(); // Clear context if lens account changes
+  };
+
+  const {
+    data: ownerData,
+    error: ownerError,
+    isLoading: isLoadingOwner,
+  } = useReadContract({
+    address: lensAccountAddress || undefined,
+    abi: LENS_ACCOUNT_ABI,
+    functionName: "owner",
+    chainId: LENS_CHAIN_ID,
+    query: {
+      enabled: isAddress(lensAccountAddress),
+    },
+  });
+
+  // Effect to update expectedOwner state
+  useEffect(() => {
+    if (ownerData) {
+      setExpectedOwner(ownerData);
+      setOwnerFetchError(null);
+      console.log("Fetched Expected Owner:", ownerData);
+    }
+  }, [ownerData]);
+
+  // Effect to handle owner fetch errors
+  useEffect(() => {
+    if (ownerError) {
+      console.error("Error fetching owner:", ownerError);
+      setOwnerFetchError(
+        "Could not fetch account owner. Ensure the address is correct and on Lens Chain."
+      );
+      setExpectedOwner(null);
+    } else if (isAddress(lensAccountAddress)) {
+      setOwnerFetchError(null);
+    }
+  }, [ownerError, lensAccountAddress]);
+
+  // Effect for Owner Verification and Navigation
+  useEffect(() => {
+    // Clear verification error on disconnect
+    if (!isConnected) {
+      setVerificationError(null);
+      clearContext(); // Also clear context on disconnect
+      return;
+    }
+
+    if (connectedAddress && expectedOwner && isAddress(lensAccountAddress)) {
+      // Check if on the correct chain first
+      if (connectedChainId !== LENS_CHAIN_ID) {
+        // Wagmi/ConnectKit handles the switch prompt, maybe show a generic message here
+        setVerificationError("Please switch to the Lens Chain in your wallet.");
+        clearContext();
+        return; // Don't proceed further if chain is wrong
+      }
+
+      // Now check if the address matches
+      if (connectedAddress.toLowerCase() === expectedOwner.toLowerCase()) {
+        console.log("Owner verified! Navigating to dashboard...");
+        setVerificationError(null); // Clear error on success
+        // Set the verified account details in context before navigating
+        setVerifiedAccount(lensAccountAddress, connectedAddress);
+        router.push("/dashboard");
+      } else {
+        console.log("Owner mismatch:", {
+          connected: connectedAddress,
+          expected: expectedOwner,
+        });
+        setVerificationError(
+          `Incorrect owner connected. Please connect with wallet: ${expectedOwner}`
+        );
+        clearContext();
+      }
+    }
+  }, [
+    connectedAddress,
+    connectedChainId,
+    expectedOwner,
+    lensAccountAddress,
+    isConnected,
+    router,
+    setVerifiedAccount,
+    clearContext,
+  ]);
+
+  const showConnectButton =
+    expectedOwner && !isLoadingOwner && !ownerFetchError;
+  const connectButtonDisabled =
+    !!verificationError || connectedChainId !== LENS_CHAIN_ID; // Disable if error or wrong chain
+
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+      <div className="w-full max-w-lg p-8 space-y-6 bg-white rounded-xl shadow-lg">
+        <h1 className="text-2xl font-bold text-center text-gray-800">
+          Lens Account Interface
+        </h1>
+        <p className="text-center text-gray-600">
+          Find your Lens Account by username or address.
+        </p>
+
+        <DiscoveryForm onAccountAddressFound={handleAccountFound} />
+
+        <div className="mt-6 text-center space-y-3">
+          {isAddress(lensAccountAddress) && isLoadingOwner && (
+            <p className="text-gray-500">Fetching owner...</p>
+          )}
+
+          {ownerFetchError && !isLoadingOwner && (
+            <p className="text-red-600">{ownerFetchError}</p>
+          )}
+
+          {expectedOwner && !isLoadingOwner && !ownerFetchError && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm font-medium text-blue-800">
+                Identified Account Owner:
+              </p>
+              <p className="text-xs text-blue-700 break-words font-mono">
+                {expectedOwner}
+              </p>
+              {!isConnected && (
+                <p className="text-xs text-blue-600 mt-1">
+                  Connect this wallet to proceed.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Verification Error Display */}
+          {verificationError && (
+            <p className="text-sm text-red-600 mt-2">{verificationError}</p>
+          )}
+
+          {/* Only show Connect Button when expected owner is loaded and no fetch error */}
+          {showConnectButton && (
+            <div className="pt-2">
+              {/* ConnectKit handles its own disabled state based on connection status */}
+              <ConnectOwnerButton />
+              {isConnected && connectedChainId !== LENS_CHAIN_ID && (
+                <p className="text-xs text-orange-600 mt-1">
+                  Waiting for network switch...
+                </p>
+              )}
+            </div>
+          )}
+
+          {!isAddress(lensAccountAddress) &&
+            !expectedOwner &&
+            !isLoadingOwner && (
+              <p className="text-sm text-gray-500">
+                Enter a Lens username or account address above to find the
+                owner.
+              </p>
+            )}
+        </div>
+      </div>
+    </main>
+  );
+}
+</file>
+
 <file path="DEVELOPMENT_PLAN.md">
 **Version:** 1.0
 **Date:** 2025-04-19
@@ -1649,14 +1681,14 @@ We will follow an incremental development approach, building and verifying core 
   - [x] **Implement Navigation:**
     - Use `useRouter` from `next/navigation`.
     - When verification passes (addresses match, correct chain), call `router.push('/dashboard')`.
-  - [ ] **Create Context (Optional but Recommended):** Create `contexts/LensAccountProvider.tsx` to store the verified `lensAccountAddress` and `ownerAddress` so the dashboard can access them. Wrap the root layout or dashboard layout with this provider. Update `app/page.tsx` to set context values upon successful verification before navigating.
+  - [x] **Create Context (Optional but Recommended):** Create `contexts/LensAccountProvider.tsx` to store the verified `lensAccountAddress` and `ownerAddress` so the dashboard can access them. Wrap the root layout or dashboard layout with this provider. Update `app/page.tsx` to set context values upon successful verification before navigating.
 - **Verification:**
   - [x] "Connect Wallet" button appears/enables only when a Lens Account address is set and `owner()` has been potentially fetched. Expected owner address is displayed.
   - [x] Clicking "Connect Wallet" opens the ConnectKit modal.
-  - [ ] Connecting the _correct_ Owner EOA wallet on the wrong network prompts a "Switch Network" request to Lens Chain.
-  - [ ] Connecting the _correct_ Owner EOA wallet on the Lens Chain navigates the user to `/dashboard`.
+  - [x] Connecting the _correct_ Owner EOA wallet on the wrong network prompts a "Switch Network" request to Lens Chain.
+  - [x] Connecting the _correct_ Owner EOA wallet on the Lens Chain navigates the user to `/dashboard`.
   - [x] Connecting an _incorrect_ EOA wallet (not the owner) on the Lens Chain displays a clear error message and _does not_ navigate.
-  - [ ] Disconnecting the wallet returns the user to the login/discovery state or clears the owner state.
+  - [x] Disconnecting the wallet returns the user to the login/discovery state or clears the owner state.
 
 ### Stage 3: Basic Dashboard Display
 

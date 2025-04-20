@@ -70,14 +70,14 @@ We will follow an incremental development approach, building and verifying core 
   - [x] **Implement Navigation:**
     - Use `useRouter` from `next/navigation`.
     - When verification passes (addresses match, correct chain), call `router.push('/dashboard')`.
-  - [ ] **Create Context (Optional but Recommended):** Create `contexts/LensAccountProvider.tsx` to store the verified `lensAccountAddress` and `ownerAddress` so the dashboard can access them. Wrap the root layout or dashboard layout with this provider. Update `app/page.tsx` to set context values upon successful verification before navigating.
+  - [x] **Create Context (Optional but Recommended):** Create `contexts/LensAccountProvider.tsx` to store the verified `lensAccountAddress` and `ownerAddress` so the dashboard can access them. Wrap the root layout or dashboard layout with this provider. Update `app/page.tsx` to set context values upon successful verification before navigating.
 - **Verification:**
   - [x] "Connect Wallet" button appears/enables only when a Lens Account address is set and `owner()` has been potentially fetched. Expected owner address is displayed.
   - [x] Clicking "Connect Wallet" opens the ConnectKit modal.
-  - [ ] Connecting the _correct_ Owner EOA wallet on the wrong network prompts a "Switch Network" request to Lens Chain.
-  - [ ] Connecting the _correct_ Owner EOA wallet on the Lens Chain navigates the user to `/dashboard`.
+  - [x] Connecting the _correct_ Owner EOA wallet on the wrong network prompts a "Switch Network" request to Lens Chain.
+  - [x] Connecting the _correct_ Owner EOA wallet on the Lens Chain navigates the user to `/dashboard`.
   - [x] Connecting an _incorrect_ EOA wallet (not the owner) on the Lens Chain displays a clear error message and _does not_ navigate.
-  - [ ] Disconnecting the wallet returns the user to the login/discovery state or clears the owner state.
+  - [x] Disconnecting the wallet returns the user to the login/discovery state or clears the owner state.
 
 ### Stage 3: Basic Dashboard Display
 
