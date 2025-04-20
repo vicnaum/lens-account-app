@@ -231,13 +231,13 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
     if (!serviceRef.current?.isInitialized() || !pendingProposal || !lensAccountAddress) {
       const reason = !isInitialized ? "Service not ready." : !pendingProposal ? "No proposal." : "No Lens address.";
       setError(`Cannot approve: ${reason}`);
+      console.error("WalletConnectProvider: Approve failed prerequisite check - ", reason);
       return;
     }
-    console.log(`%cWalletConnectProvider: approveSession called`, "color: cyan");
-    setError(null);
+    console.log(`%cWalletConnectProvider: approveSession called for proposal ${pendingProposal.id}`, "color: cyan");
+    setError(null); // Clear previous errors
 
     try {
-      // ... (namespace building logic remains the same)
       const requiredNamespaces = pendingProposal.params.requiredNamespaces || {};
       const optionalNamespaces = pendingProposal.params.optionalNamespaces || {};
       const requestedMethods = [...(requiredNamespaces.eip155?.methods || []), ...(optionalNamespaces.eip155?.methods || [])];
@@ -256,11 +256,24 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
           },
         },
       });
-      await serviceRef.current.approveSession(pendingProposal, approvedNamespaces);
-      setPendingProposal(null); // Still clear proposal state here
+
+      // Capture the returned session object
+      const session = await serviceRef.current.approveSession(pendingProposal, approvedNamespaces);
+
+      console.log(`%cWalletConnectProvider: approveSession successful, received session:`, "color: green", session);
+
+      // Manually update the Provider's state
+      setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
+      setPendingProposal(null); // Clear proposal after successful approval
+      setIsPairing(false); // Ensure pairing state is false now we're connected
+      setError(null); // Clear any previous errors
     } catch (e) {
       console.error(`%cWalletConnectProvider: approveSession failed:`, "color: red", e);
+      // Error should also be emitted by the service and caught by the listener
+      // Consider clearing pending proposal on error too if appropriate for UX
+      // setPendingProposal(null);
     }
+    // The IS_LOADING event emitted by the service handles setIsProcessingAction(false)
   }, [isInitialized, pendingProposal, lensAccountAddress]);
 
   const rejectSession = useCallback(async () => {
@@ -283,12 +296,36 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
   const disconnect = useCallback(
     async (topic: string) => {
       // Use serviceRef.current
-      if (!serviceRef.current?.isInitialized()) return setError("Service not initialized");
-      console.log(`%cWalletConnectProvider: disconnect called`, "color: cyan");
-      setError(null);
-      await serviceRef.current.disconnectSession(topic, getSdkError("USER_DISCONNECTED"));
+      if (!serviceRef.current?.isInitialized()) {
+        setError("Service not initialized");
+        console.error("WalletConnectProvider: disconnect called before service initialized.");
+        return;
+      }
+      console.log(`%cWalletConnectProvider: disconnect called for topic ${topic}`, "color: cyan");
+      setError(null); // Clear previous errors
+
+      try {
+        await serviceRef.current.disconnectSession(topic, getSdkError("USER_DISCONNECTED"));
+        console.log(`%cWalletConnectProvider: disconnect service call succeeded for topic ${topic}`, "color: green");
+
+        // Manually update the Provider's state AFTER successful call
+        setActiveSessions((prev) => {
+          const { [topic]: _, ...rest } = prev;
+          console.log(`%cWalletConnectProvider: Manually removing session ${topic} from state.`, "color: brown");
+          return rest;
+        });
+        // Ensure other related states are cleared if necessary
+        setIsPairing(false);
+        if (pendingProposal?.params?.pairingTopic === topic) {
+          setPendingProposal(null);
+        }
+      } catch (e) {
+        console.error(`%cWalletConnectProvider: disconnect failed for topic ${topic}:`, "color: red", e);
+        // Error should be emitted by the service and caught by listener
+      }
+      // Loading state is handled by service events
     },
-    [isInitialized],
+    [isInitialized, pendingProposal], // Add pendingProposal as dependency if clearing it
   );
 
   // --- Context Value Memoization ---
@@ -298,7 +335,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
       activeSessions,
       pendingProposal,
       pair,
-      disconnect,
+      disconnect, // Pass the updated disconnect function
       approveSession,
       rejectSession,
       isLoading: isInitializing || isPairing || isProcessingAction,
@@ -313,7 +350,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
       activeSessions,
       pendingProposal,
       pair,
-      disconnect,
+      disconnect, // Include updated disconnect in dependencies
       approveSession,
       rejectSession,
       isInitializing,
