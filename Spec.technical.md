@@ -70,7 +70,7 @@ The application will be a single-page application (SPA) built with Next.js. The 
 ## 4. Project Structure (App Router Example)
 
 ```
-/
+src/
 ├── app/
 │   ├── dashboard/             # Dashboard page (requires auth)
 │   │   └── page.tsx
