@@ -4,13 +4,8 @@
 import React, { useState, useEffect } from "react";
 import { useReadContract } from "wagmi";
 import { isAddress } from "viem";
-import { normalize } from "viem/ens";
 import { useDebounce } from "@/hooks/useDebounce";
-import {
-  LENS_CHAIN_ID,
-  LENS_GLOBAL_NAMESPACE_ADDRESS,
-  LENS_GLOBAL_NAMESPACE_ABI,
-} from "@/lib/constants";
+import { LENS_CHAIN_ID, LENS_GLOBAL_NAMESPACE_ADDRESS, LENS_GLOBAL_NAMESPACE_ABI } from "@/lib/constants";
 
 interface DiscoveryFormProps {
   // Allow empty string or null when no valid address is found
@@ -19,18 +14,12 @@ interface DiscoveryFormProps {
   initialAddress?: string;
 }
 
-export function DiscoveryForm({
-  onAccountAddressFound,
-  initialUsername = "",
-  initialAddress = "",
-}: DiscoveryFormProps) {
+export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", initialAddress = "" }: DiscoveryFormProps) {
   const [username, setUsername] = useState(initialUsername);
   const [address, setAddress] = useState(initialAddress);
   const [lookupError, setLookupError] = useState<string | null>(null);
 
-  const [lastEdited, setLastEdited] = useState<"username" | "address" | null>(
-    initialUsername ? "username" : initialAddress ? "address" : null
-  );
+  const [lastEdited, setLastEdited] = useState<"username" | "address" | null>(initialUsername ? "username" : initialAddress ? "address" : null);
 
   const debouncedUsername = useDebounce(username, 500);
   const debouncedAddress = useDebounce(address, 500);
@@ -44,7 +33,7 @@ export function DiscoveryForm({
     address: LENS_GLOBAL_NAMESPACE_ADDRESS,
     abi: LENS_GLOBAL_NAMESPACE_ABI,
     functionName: "accountOf",
-    args: [debouncedUsername ? normalize(debouncedUsername) : ""],
+    args: [debouncedUsername || ""],
     chainId: LENS_CHAIN_ID,
     query: {
       enabled: false,
@@ -77,19 +66,11 @@ export function DiscoveryForm({
   }, [debouncedUsername, lastEdited]);
 
   useEffect(() => {
-    if (
-      debouncedAddress &&
-      isAddress(debouncedAddress) &&
-      lastEdited === "address"
-    ) {
+    if (debouncedAddress && isAddress(debouncedAddress) && lastEdited === "address") {
       setLookupError(null);
       console.log(`Looking up username for address: ${debouncedAddress}`);
       refetchUsername();
-    } else if (
-      debouncedAddress &&
-      !isAddress(debouncedAddress) &&
-      lastEdited === "address"
-    ) {
+    } else if (debouncedAddress && !isAddress(debouncedAddress) && lastEdited === "address") {
       setLookupError("Invalid address format");
       onAccountAddressFound(""); // Use empty string
     }
@@ -97,14 +78,8 @@ export function DiscoveryForm({
   }, [debouncedAddress, lastEdited]);
 
   useEffect(() => {
-    if (
-      addressFromUsername &&
-      isAddress(addressFromUsername) &&
-      lastEdited === "username"
-    ) {
-      if (
-        addressFromUsername === "0x0000000000000000000000000000000000000000"
-      ) {
+    if (addressFromUsername && isAddress(addressFromUsername) && lastEdited === "username") {
+      if (addressFromUsername === "0x0000000000000000000000000000000000000000") {
         setLookupError(`No account found for username "${debouncedUsername}"`);
         setAddress("");
         onAccountAddressFound(""); // Use empty string
@@ -132,10 +107,7 @@ export function DiscoveryForm({
       }
       setLookupError(null);
     } else if (usernameError && lastEdited === "address") {
-      console.log(
-        "No primary username found for address or error:",
-        usernameError.message
-      );
+      console.log("No primary username found for address or error:", usernameError.message);
       setUsername("");
       if (isAddress(debouncedAddress)) {
         onAccountAddressFound(debouncedAddress as `0x${string}`);
@@ -176,10 +148,7 @@ export function DiscoveryForm({
   return (
     <div className="space-y-4">
       <div>
-        <label
-          htmlFor="username"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+        <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
           Lens Username
         </label>
         <input
@@ -196,10 +165,7 @@ export function DiscoveryForm({
       </div>
 
       <div>
-        <label
-          htmlFor="address"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
           Account Address
         </label>
         <input
@@ -210,29 +176,19 @@ export function DiscoveryForm({
           onChange={handleAddressChange}
           placeholder="0x..."
           className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-            !lookupError && isAddress(address)
-              ? "border-green-500"
-              : address && !isAddress(address)
-              ? "border-red-500"
-              : "border-gray-300"
+            !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-300"
           }`}
           aria-describedby="address-status"
           disabled={isLoading && lastEdited === "username"}
         />
       </div>
       <div id="username-status" aria-live="polite" className="text-sm h-5">
-        {isLoading && lastEdited === "username" && (
-          <span className="text-gray-500">Checking username...</span>
-        )}
+        {isLoading && lastEdited === "username" && <span className="text-gray-500">Checking username...</span>}
       </div>
       <div id="address-status" aria-live="polite" className="text-sm h-5">
-        {isLoading && lastEdited === "address" && (
-          <span className="text-gray-500">Checking address...</span>
-        )}
+        {isLoading && lastEdited === "address" && <span className="text-gray-500">Checking address...</span>}
         {lookupError && <span className="text-red-600">{lookupError}</span>}
-        {!lookupError && isAddress(address) && lastEdited !== "username" && (
-          <span className="text-green-600">Valid Address</span>
-        )}
+        {!lookupError && isAddress(address) && lastEdited !== "username" && <span className="text-green-600">Valid Address</span>}
       </div>
     </div>
   );

@@ -2,38 +2,35 @@
 "use client";
 
 import React, { useState } from "react";
-import { useWalletConnect } from "@/contexts/WalletConnectProvider";
-import Image from "next/image"; // If using Next.js Image component
+import { useWalletConnect } from "@/contexts/WalletConnectProvider"; // Ensure correct path
+import Image from "next/image";
 
 export function WcConnect() {
-  const { activeSessions, pair, disconnect, isLoading, error } =
-    useWalletConnect();
+  // Destructure necessary state values including isInitialized and specific loading states
+  const { activeSessions, pair, disconnect, isLoading, isInitializing, isPairing, error, isInitialized } = useWalletConnect();
   const [uri, setUri] = useState("");
 
   const handleConnect = () => {
-    if (!uri) return;
+    if (!uri || !isInitialized) return; // Check initialization
     pair(uri);
-    // Don't clear URI immediately, maybe wait for success/error
   };
 
-  // Find the first active session to display (simple approach for MVP)
-  // In a real app, you might want to manage multiple sessions differently
   const activeSessionTopic = Object.keys(activeSessions)[0];
-  const connectedSession = activeSessionTopic
-    ? activeSessions[activeSessionTopic]
-    : null;
+  const connectedSession = activeSessionTopic ? activeSessions[activeSessionTopic] : null;
 
   const handleDisconnect = () => {
-    if (connectedSession) {
+    if (connectedSession && isInitialized) {
+      // Check initialization
       disconnect(connectedSession.topic);
     }
   };
 
+  // Determine overall busy state
+  const isBusy = isLoading || isInitializing || isPairing;
+
   return (
     <div className="p-4 border rounded-md bg-gray-50 space-y-4">
-      <h3 className="text-md font-semibold text-gray-700">
-        Connect to dApp (via Lens Account)
-      </h3>
+      <h3 className="text-md font-semibold text-gray-700">Connect to dApp (via Lens Account)</h3>
 
       {connectedSession ? (
         // Display connected dApp info
@@ -47,39 +44,29 @@ export function WcConnect() {
                 width={40}
                 height={40}
                 className="rounded-full"
-                unoptimized // Add this if icons are external and not optimized by Next.js
+                unoptimized
               />
             )}
             <div>
-              <p className="text-sm font-semibold text-gray-900">
-                {connectedSession.peer.metadata.name}
-              </p>
-              <p className="text-xs text-gray-600 break-all">
-                {connectedSession.peer.metadata.url}
-              </p>
+              <p className="text-sm font-semibold text-gray-900">{connectedSession.peer.metadata.name}</p>
+              <p className="text-xs text-gray-600 break-all">{connectedSession.peer.metadata.url}</p>
             </div>
           </div>
           <p className="text-xs text-gray-500">
-            Topic:{" "}
-            <span className="font-mono break-all">
-              {connectedSession.topic}
-            </span>
+            Topic: <span className="font-mono break-all">{connectedSession.topic}</span>
           </p>
           <button
             onClick={handleDisconnect}
-            disabled={isLoading}
+            disabled={isBusy || !isInitialized} // Use combined busy state
             className="w-full px-4 py-2 mt-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
           >
-            {isLoading ? "Disconnecting..." : "Disconnect"}
+            {isBusy ? "Working..." : "Disconnect"}
           </button>
         </div>
       ) : (
         // Display connection form
         <div className="space-y-2">
-          <label
-            htmlFor="wc-uri"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="wc-uri" className="block text-sm font-medium text-gray-700">
             Paste WalletConnect URI
           </label>
           <div className="flex space-x-2">
@@ -91,25 +78,24 @@ export function WcConnect() {
               onChange={(e) => setUri(e.target.value)}
               placeholder="wc:..."
               className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100"
-              disabled={isLoading}
+              disabled={isBusy || !isInitialized} // Use combined busy state
             />
             <button
               onClick={handleConnect}
-              disabled={!uri || isLoading}
+              disabled={!uri || isBusy || !isInitialized} // Use combined busy state
               className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
             >
-              {isLoading ? "Connecting..." : "Connect"}
+              {isPairing ? "Pairing..." : isInitializing ? "Initializing..." : "Connect"}
             </button>
           </div>
         </div>
       )}
 
-      {error && !isLoading && (
-        <p className="text-red-600 text-sm mt-2">Error: {error}</p>
-      )}
-      {isLoading && (
-        <p className="text-indigo-600 text-sm mt-2">Processing...</p>
-      )}
+      {/* Display appropriate status/error messages */}
+      {error && !isBusy && <p className="text-red-600 text-sm mt-2">Error: {error}</p>}
+      {isPairing && <p className="text-indigo-600 text-sm mt-2">Pairing initiated, check your wallet...</p>}
+      {!isInitialized && !isInitializing && !error && <p className="text-orange-600 text-sm mt-2">WalletConnect service not ready.</p>}
+      {isInitializing && <p className="text-gray-500 text-sm mt-2">Initializing WalletConnect...</p>}
     </div>
   );
 }

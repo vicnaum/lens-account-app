@@ -87,6 +87,10 @@ export class WalletConnectService extends EventEmitter {
       "session_delete",
       (event: { id: number; topic: string }) => {
         console.log("WalletConnectService received session_delete:", event);
+        console.log(
+          ">>> Service: Received session_delete from WalletKit:",
+          event
+        ); // <-- ADD LOG
         this.emit("session_delete", event.topic);
       }
     );
