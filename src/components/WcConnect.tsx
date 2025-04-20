@@ -1,7 +1,7 @@
 // src/components/WcConnect.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useWalletConnect } from "@/contexts/WalletConnectProvider"; // Ensure correct path
 import Image from "next/image";
 
@@ -22,13 +22,23 @@ export function WcConnect() {
   } = useWalletConnect();
   const [uri, setUri] = useState("");
 
+  const activeSessionTopic = Object.keys(activeSessions)[0]; // Assuming only one session for MVP
+  const connectedSession = activeSessionTopic ? activeSessions[activeSessionTopic] : null;
+
+  // --- Add this useEffect ---
+  useEffect(() => {
+    // If there's no connected session (either initially or after disconnect),
+    // clear the URI input field.
+    if (!connectedSession) {
+      setUri("");
+    }
+  }, [connectedSession]); // Run this effect when connectedSession changes
+  // -------------------------
+
   const handleConnect = () => {
     if (!uri || !isInitialized || isLoading) return; // Check initialization and combined loading state
     pair(uri);
   };
-
-  const activeSessionTopic = Object.keys(activeSessions)[0]; // Assuming only one session for MVP
-  const connectedSession = activeSessionTopic ? activeSessions[activeSessionTopic] : null;
 
   const handleDisconnect = () => {
     if (connectedSession && isInitialized && !isLoading) {
