@@ -84,19 +84,20 @@ We will follow an incremental development approach, building and verifying core 
 **Goal:** Create the dashboard page and display the Lens Account address and its WGHO balance.
 
 - **Tasks:**
-  - [ ] **Create Dashboard Page:** Create `app/dashboard/page.tsx`. Ensure it's protected or redirects if owner/lens account state (from Context) is missing.
-  - [ ] **Add WGHO Constants:** Define `WGHO_TOKEN_ADDRESS` and `ERC20_ABI` (with `balanceOf(address)`) in `lib/constants.ts`.
-  - [ ] **Create AccountDisplay Component:** Build `components/AccountDisplay.tsx`.
-  - [ ] **Fetch/Display Data:**
+  - [x] **Create Dashboard Page:** Create `app/dashboard/page.tsx`. Ensure it's protected or redirects if owner/lens account state (from Context) is missing.
+  - [x] **Add WGHO Constants:** Define `WGHO_TOKEN_ADDRESS` and `ERC20_ABI` (with `balanceOf(address)`) in `lib/constants.ts`.
+  - [x] **Create AccountDisplay Component:** Build `components/AccountDisplay.tsx`.
+  - [x] **Fetch/Display Data:**
     - In `AccountDisplay.tsx`, retrieve the `lensAccountAddress` from context (e.g., `useContext(LensAccountContext)`).
     - Use `useReadContract` (Wagmi) to call `balanceOf(lensAccountAddress)` on the `WGHO_TOKEN_ADDRESS`.
     - Pass `chainId: LENS_CHAIN_ID`.
     - Use Viem's `formatUnits` to format the returned balance (assuming WGHO has 18 decimals).
     - Display the `lensAccountAddress` and the formatted WGHO balance. Handle loading/error states for the balance fetch.
-  - [ ] **Integrate Component:** Add `AccountDisplay` to the dashboard page.
+  - [x] **Integrate Component:** Add `AccountDisplay` to the dashboard page.
+  - [x] Do the same for native GHO
 - **Verification:**
-  - [ ] Navigating to `/dashboard` after successful login shows the correct Lens Account address.
-  - [ ] The WGHO balance for the Lens Account is fetched and displayed correctly (or shows loading/error state).
+  - [x] Navigating to `/dashboard` after successful login shows the correct Lens Account address.
+  - [x] The GHO/WGHO balance for the Lens Account is fetched and displayed correctly (or shows loading/error state).
 
 ### Stage 4: WalletConnect v2 Pairing (Act as Wallet)
 
