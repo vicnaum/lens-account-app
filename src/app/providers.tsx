@@ -1,29 +1,27 @@
 // app/providers.tsx
-"use client"; // Mark this as a Client Component
+"use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
-import { ConnectKitProvider } from "connectkit"; // Import ConnectKitProvider
-import { config } from "@/lib/wagmi"; // Adjust path if needed
+import { ConnectKitProvider } from "connectkit";
+import { config } from "@/lib/wagmi";
 import React, { useState } from "react";
+import { LensAccountProvider } from "@/contexts/LensAccountContext";
 
 type Props = {
   children: React.ReactNode;
-  // If using SSR with cookie storage in wagmi.ts, you'll add `initialState` here later
-  // initialState: State | undefined,
 };
 
-export function Providers({ children /*, initialState*/ }: Props) {
-  // Use useState to ensure QueryClient is only created once
+export function Providers({ children }: Props) {
   const [queryClient] = useState(() => new QueryClient());
 
   return (
-    // Pass config to WagmiProvider
-    // If using SSR hydration, pass initialState={initialState}
-    <WagmiProvider config={config} /*initialState={initialState}*/>
+    <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        {/* Wrap with ConnectKitProvider */}
-        <ConnectKitProvider>{children}</ConnectKitProvider>
+        <ConnectKitProvider>
+          {/* Wrap with LensAccountProvider */}
+          <LensAccountProvider>{children}</LensAccountProvider>
+        </ConnectKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

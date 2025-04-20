@@ -2,54 +2,63 @@
 "use client";
 
 import { DiscoveryForm } from "@/components/DiscoveryForm";
-import { ConnectOwnerButton } from "@/components/ConnectOwnerButton"; // Import the button
+import { ConnectOwnerButton } from "@/components/ConnectOwnerButton";
 import { useState, useEffect } from "react";
-import { useReadContract } from "wagmi"; // Import useReadContract
-import { type Address, isAddress } from "viem"; // Import Address type and isAddress
-import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants"; // Import ABI and Chain ID
+import { useAccount, useReadContract } from "wagmi"; // Import useAccount
+import { useRouter } from "next/navigation"; // Import useRouter
+import { type Address, isAddress } from "viem";
+import { useLensAccount } from "@/contexts/LensAccountContext"; // Import the context hook
+import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants";
 
 export default function Home() {
   const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">(
     ""
   );
-  const [expectedOwner, setExpectedOwner] = useState<Address | null>(null); // State for the expected owner
-  const [ownerFetchError, setOwnerFetchError] = useState<string | null>(null); // State for owner fetch error
+  const [expectedOwner, setExpectedOwner] = useState<Address | null>(null);
+  const [ownerFetchError, setOwnerFetchError] = useState<string | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(
+    null
+  ); // State for verification errors
 
-  // Handler from DiscoveryForm
+  const {
+    address: connectedAddress,
+    chainId: connectedChainId,
+    isConnected,
+    isConnecting,
+    isReconnecting,
+  } = useAccount(); // Get connected account info
+  const router = useRouter(); // Initialize router
+  const { setVerifiedAccount, clearAccount: clearContext } = useLensAccount(); // Get context actions
+
   const handleAccountFound = (address: Address | "") => {
     console.log("Account Address Updated in Parent:", address);
     setLensAccountAddress(address);
-    // Reset expected owner when the lens account changes
-    setExpectedOwner(null);
+    setExpectedOwner(null); // Reset owner when lens account changes
     setOwnerFetchError(null);
+    setVerificationError(null); // Reset verification error
+    clearContext(); // Clear context if lens account changes
   };
 
-  // Hook to fetch the owner of the identified Lens Account
   const {
     data: ownerData,
     error: ownerError,
     isLoading: isLoadingOwner,
-    refetch: refetchOwner, // Added refetch in case address changes
   } = useReadContract({
-    address: lensAccountAddress || undefined, // Pass address only if it's valid
+    address: lensAccountAddress || undefined,
     abi: LENS_ACCOUNT_ABI,
     functionName: "owner",
     chainId: LENS_CHAIN_ID,
     query: {
-      // Only run the query if lensAccountAddress is a valid address
       enabled: isAddress(lensAccountAddress),
     },
   });
 
-  // Effect to update expectedOwner state when ownerData changes
+  // Effect to update expectedOwner state
   useEffect(() => {
     if (ownerData) {
       setExpectedOwner(ownerData);
-      setOwnerFetchError(null); // Clear error on success
+      setOwnerFetchError(null);
       console.log("Fetched Expected Owner:", ownerData);
-    } else {
-      // Don't reset expectedOwner here immediately, wait for error or loading state change
-      // setExpectedOwner(null);
     }
   }, [ownerData]);
 
@@ -60,14 +69,63 @@ export default function Home() {
       setOwnerFetchError(
         "Could not fetch account owner. Ensure the address is correct and on Lens Chain."
       );
-      setExpectedOwner(null); // Clear owner on error
-    } else {
-      // Clear error if the query is re-enabled and potentially succeeds later
-      if (isAddress(lensAccountAddress)) {
-        setOwnerFetchError(null);
-      }
+      setExpectedOwner(null);
+    } else if (isAddress(lensAccountAddress)) {
+      setOwnerFetchError(null);
     }
   }, [ownerError, lensAccountAddress]);
+
+  // Effect for Owner Verification and Navigation
+  useEffect(() => {
+    // Clear verification error on disconnect
+    if (!isConnected) {
+      setVerificationError(null);
+      clearContext(); // Also clear context on disconnect
+      return;
+    }
+
+    if (connectedAddress && expectedOwner && isAddress(lensAccountAddress)) {
+      // Check if on the correct chain first
+      if (connectedChainId !== LENS_CHAIN_ID) {
+        // Wagmi/ConnectKit handles the switch prompt, maybe show a generic message here
+        setVerificationError("Please switch to the Lens Chain in your wallet.");
+        clearContext();
+        return; // Don't proceed further if chain is wrong
+      }
+
+      // Now check if the address matches
+      if (connectedAddress.toLowerCase() === expectedOwner.toLowerCase()) {
+        console.log("Owner verified! Navigating to dashboard...");
+        setVerificationError(null); // Clear error on success
+        // Set the verified account details in context before navigating
+        setVerifiedAccount(lensAccountAddress, connectedAddress);
+        router.push("/dashboard");
+      } else {
+        console.log("Owner mismatch:", {
+          connected: connectedAddress,
+          expected: expectedOwner,
+        });
+        setVerificationError(
+          `Incorrect owner connected. Please connect with wallet: ${expectedOwner}`
+        );
+        clearContext();
+      }
+    }
+  }, [
+    connectedAddress,
+    connectedChainId,
+    expectedOwner,
+    lensAccountAddress,
+    isConnected,
+    router,
+    setVerifiedAccount,
+    clearContext,
+  ]);
+
+  const showConnectButton =
+    expectedOwner && !isLoadingOwner && !ownerFetchError;
+  const connectButtonDisabled =
+    !!verificationError || connectedChainId !== LENS_CHAIN_ID; // Disable if error or wrong chain
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
@@ -81,17 +139,15 @@ export default function Home() {
 
         <DiscoveryForm onAccountAddressFound={handleAccountFound} />
 
-        {/* Section for Owner Info & Connect Button */}
         <div className="mt-6 text-center space-y-3">
-          {/* Display loading state for owner fetch */}
           {isAddress(lensAccountAddress) && isLoadingOwner && (
             <p className="text-gray-500">Fetching owner...</p>
           )}
 
-          {/* Display owner fetch error */}
-          {ownerFetchError && <p className="text-red-600">{ownerFetchError}</p>}
+          {ownerFetchError && !isLoadingOwner && (
+            <p className="text-red-600">{ownerFetchError}</p>
+          )}
 
-          {/* Display expected owner if found */}
           {expectedOwner && !isLoadingOwner && !ownerFetchError && (
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
               <p className="text-sm font-medium text-blue-800">
@@ -100,25 +156,40 @@ export default function Home() {
               <p className="text-xs text-blue-700 break-words font-mono">
                 {expectedOwner}
               </p>
-              <p className="text-xs text-blue-600 mt-1">
-                Connect this wallet to proceed.
-              </p>
+              {!isConnected && (
+                <p className="text-xs text-blue-600 mt-1">
+                  Connect this wallet to proceed.
+                </p>
+              )}
             </div>
           )}
 
-          {/* Conditionally render the Connect Button */}
-          {expectedOwner && !isLoadingOwner && !ownerFetchError && (
+          {/* Verification Error Display */}
+          {verificationError && (
+            <p className="text-sm text-red-600 mt-2">{verificationError}</p>
+          )}
+
+          {/* Only show Connect Button when expected owner is loaded and no fetch error */}
+          {showConnectButton && (
             <div className="pt-2">
+              {/* ConnectKit handles its own disabled state based on connection status */}
               <ConnectOwnerButton />
+              {isConnected && connectedChainId !== LENS_CHAIN_ID && (
+                <p className="text-xs text-orange-600 mt-1">
+                  Waiting for network switch...
+                </p>
+              )}
             </div>
           )}
 
-          {/* Show initial prompt if no valid address is entered yet */}
-          {!isAddress(lensAccountAddress) && (
-            <p className="text-sm text-gray-500">
-              Enter a Lens username or account address above to find the owner.
-            </p>
-          )}
+          {!isAddress(lensAccountAddress) &&
+            !expectedOwner &&
+            !isLoadingOwner && (
+              <p className="text-sm text-gray-500">
+                Enter a Lens username or account address above to find the
+                owner.
+              </p>
+            )}
         </div>
       </div>
     </main>

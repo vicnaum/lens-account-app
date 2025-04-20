@@ -58,7 +58,7 @@ We will follow an incremental development approach, building and verifying core 
     - Store the result in state (`expectedOwner`).
   - [x] **Display Expected Owner:** Show the `expectedOwner` address clearly near the `ConnectOwnerButton`.
   - [x] **Integrate Connect Button:** Add `ConnectOwnerButton` to `app/page.tsx`, potentially disabling it until `expectedOwner` is fetched.
-  - [ ] **Implement Verification Logic:**
+  - [x] **Implement Verification Logic:**
     - In `app/page.tsx`, use `useAccount` (Wagmi) to get the connected EOA's `address` and `chainId`.
     - Use `useEffect` to monitor changes in the connected `address`, `chainId`, and the `expectedOwner`.
     - Inside the effect:
@@ -67,16 +67,16 @@ We will follow an incremental development approach, building and verifying core 
         - If `address.toLowerCase() === expectedOwner.toLowerCase()` and `chainId === LENS_CHAIN_ID`, proceed to navigation.
         - If `address.toLowerCase() !== expectedOwner.toLowerCase()` and `chainId === LENS_CHAIN_ID`, set an error state ("Incorrect owner connected...").
       - If `address` is disconnected, clear any error state.
-  - [ ] **Implement Navigation:**
+  - [x] **Implement Navigation:**
     - Use `useRouter` from `next/navigation`.
     - When verification passes (addresses match, correct chain), call `router.push('/dashboard')`.
   - [ ] **Create Context (Optional but Recommended):** Create `contexts/LensAccountProvider.tsx` to store the verified `lensAccountAddress` and `ownerAddress` so the dashboard can access them. Wrap the root layout or dashboard layout with this provider. Update `app/page.tsx` to set context values upon successful verification before navigating.
 - **Verification:**
-  - [ ] "Connect Wallet" button appears/enables only when a Lens Account address is set and `owner()` has been potentially fetched. Expected owner address is displayed.
-  - [ ] Clicking "Connect Wallet" opens the ConnectKit modal.
+  - [x] "Connect Wallet" button appears/enables only when a Lens Account address is set and `owner()` has been potentially fetched. Expected owner address is displayed.
+  - [x] Clicking "Connect Wallet" opens the ConnectKit modal.
   - [ ] Connecting the _correct_ Owner EOA wallet on the wrong network prompts a "Switch Network" request to Lens Chain.
   - [ ] Connecting the _correct_ Owner EOA wallet on the Lens Chain navigates the user to `/dashboard`.
-  - [ ] Connecting an _incorrect_ EOA wallet (not the owner) on the Lens Chain displays a clear error message and _does not_ navigate.
+  - [x] Connecting an _incorrect_ EOA wallet (not the owner) on the Lens Chain displays a clear error message and _does not_ navigate.
   - [ ] Disconnecting the wallet returns the user to the login/discovery state or clears the owner state.
 
 ### Stage 3: Basic Dashboard Display
