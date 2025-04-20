@@ -7,8 +7,6 @@ import { ConnectKitProvider } from "connectkit";
 import { config } from "@/lib/wagmi";
 import React, { useState } from "react";
 import { LensAccountProvider } from "@/contexts/LensAccountContext";
-// Corrected import path:
-import { WalletConnectProvider } from "@/contexts/WalletConnectProvider";
 
 type Props = {
   children: React.ReactNode;
@@ -24,7 +22,7 @@ export function Providers({ children }: Props) {
           {/* Wrap with LensAccountProvider */}
           <LensAccountProvider>
             {/* Wrap with WalletConnectProvider */}
-            <WalletConnectProvider>{children}</WalletConnectProvider>
+            {children}
           </LensAccountProvider>
         </ConnectKitProvider>
       </QueryClientProvider>

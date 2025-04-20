@@ -1,26 +1,31 @@
 // src/contexts/WalletConnectProvider.tsx
 "use client";
 
-import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback, useMemo } from "react";
-import { WalletConnectService } from "@/services/walletConnectService";
+import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback, useMemo, useRef } from "react";
+// Import the CLASS and types
+import { WalletConnectService, ServiceEvents, type WalletConnectServiceEvents } from "@/services/walletConnectService";
 import { SessionTypes } from "@walletconnect/types";
 import { IWalletKit, WalletKitTypes } from "@reown/walletkit";
 import { buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
 import { useLensAccount } from "./LensAccountContext";
 import { LENS_CHAIN_ID } from "@/lib/constants";
+import { ErrorResponse } from "@walletconnect/jsonrpc-utils";
 
-// Define the state including initialization status
+// Keep the context state definition
 interface WalletConnectContextState {
-  walletConnectService: WalletConnectService | null;
   walletKitInstance: IWalletKit | null;
   activeSessions: Record<string, SessionTypes.Struct>;
+  pendingProposal: WalletKitTypes.SessionProposal | null;
   pair: (uri: string) => Promise<void>;
   disconnect: (topic: string) => Promise<void>;
-  isLoading: boolean; // General loading/busy state
-  isInitializing: boolean; // Specific initialization state
-  isPairing: boolean; // Specific pairing state
+  approveSession: () => Promise<void>;
+  rejectSession: () => Promise<void>;
+  isLoading: boolean;
+  isInitializing: boolean;
+  isPairing: boolean;
+  isProcessingAction: boolean;
   error: string | null;
-  isInitialized: boolean; // Track service readiness
+  isInitialized: boolean;
 }
 
 const WalletConnectContext = createContext<WalletConnectContextState | undefined>(undefined);
@@ -36,225 +41,298 @@ const DAPP_METADATA: WalletKitTypes.Metadata = {
   icons: ["/favicon.ico"],
 };
 
+// --- WalletConnectProvider Component ---
 export function WalletConnectProvider({ children }: WalletConnectProviderProps) {
-  const [walletConnectService, setWalletConnectService] = useState<WalletConnectService | null>(null);
-  const [walletKitInstance, setWalletKitInstance] = useState<IWalletKit | null>(null);
-  const [activeSessions, setActiveSessions] = useState<Record<string, SessionTypes.Struct>>({});
-  const [isInitializing, setIsInitializing] = useState(true); // Start initializing
-  const [isPairing, setIsPairing] = useState(false); // Track pairing status separately
-  const [error, setError] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false); // Track service readiness
-
-  const { lensAccountAddress } = useLensAccount();
   const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 
-  // --- Initialization Effect ---
+  // --- State Management ---
+  // Use useRef to hold the service instance - persists across renders without causing re-renders itself
+  const serviceRef = useRef<WalletConnectService | null>(null);
+  // State derived from service events or actions
+  const [walletKitInstance, setWalletKitInstance] = useState<IWalletKit | null>(null);
+  const [activeSessions, setActiveSessions] = useState<Record<string, SessionTypes.Struct>>({});
+  const [pendingProposal, setPendingProposal] = useState<WalletKitTypes.SessionProposal | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true); // Start as initializing
+  const [isPairing, setIsPairing] = useState(false);
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false); // Service readiness
+
+  const { lensAccountAddress } = useLensAccount();
+
+  console.log(
+    `%cWalletConnectProvider Render: isInitialized=${isInitialized}, isInitializing=${isInitializing}, isPairing=${isPairing}, isProcessing=${isProcessingAction}, serviceExists=${!!serviceRef.current}, pendingProposal=${!!pendingProposal}`,
+    "color: blue",
+  );
+
+  // --- Effect to Create Instance, Initialize, and Attach Listeners ONCE on Mount ---
   useEffect(() => {
     if (!projectId) {
-      console.error("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set!");
+      console.error("WalletConnectProvider: Project ID missing. Cannot initialize service.");
       setError("WalletConnect Project ID is missing.");
       setIsInitializing(false);
-      setIsInitialized(false); // Mark as not initialized
+      setIsInitialized(false);
       return;
     }
 
-    // Only run initialization once
-    if (!walletConnectService && !isInitialized && isInitializing) {
-      console.log("Creating and initializing WalletConnectService...");
+    // Prevent re-initialization if instance already exists in ref (e.g., due to HMR preserving ref)
+    if (serviceRef.current) {
+      console.log(
+        `%cWalletConnectProvider Mount Effect: Service instance already exists in ref. Skipping creation/init. isInitialized=${serviceRef.current.isInitialized()}`,
+        "color: yellow",
+      );
+      // Sync state if needed (e.g. HMR occurred after init finished)
+      if (serviceRef.current.isInitialized() && !isInitialized) {
+        setIsInitialized(true);
+        setIsInitializing(false);
+        setWalletKitInstance(serviceRef.current.getWalletKitInstance() ?? null);
+        setActiveSessions(serviceRef.current.getActiveSessions());
+      } else if (serviceRef.current.isInitializing() && !isInitializing) {
+        setIsInitializing(true);
+      }
+      // Listeners should ideally already be attached if instance exists, but re-attaching defensively
+      // might cause issues if not cleaned up properly. Let's rely on cleanup below.
+    } else {
+      console.log(`%cWalletConnectProvider Mount Effect: Creating NEW service instance and initializing...`, "color: orange");
+      setIsInitializing(true);
+      setError(null);
       const service = new WalletConnectService(projectId, DAPP_METADATA);
-      setWalletConnectService(service); // Set service instance immediately
+      serviceRef.current = service; // Store the instance in the ref
 
-      service
-        .init() // init now returns the instance or undefined
-        .then((instance) => {
-          if (instance) {
-            setWalletKitInstance(instance);
-            setActiveSessions(instance.getActiveSessions() || {});
-            setIsInitialized(true); // Mark as initialized *after* successful init
-            console.log("WalletConnectService initialized successfully in Provider.");
-          } else {
-            setError("Failed to initialize WalletKit instance.");
-            setIsInitialized(false);
-          }
-        })
-        .catch((initError: unknown) => {
-          console.error("Initialization failed:", initError);
-          setError(`Initialization failed: ${(initError as Error).message}`);
-          setIsInitialized(false);
-        })
-        .finally(() => {
-          setIsInitializing(false); // Stop initializing state regardless of outcome
-        });
-    }
-    // Only depend on projectId. service instance is set inside.
-    // isInitialized and isInitializing prevent re-running.
-  }, [projectId, walletConnectService, isInitialized, isInitializing]);
-
-  // --- Event Listener Effect ---
-  useEffect(() => {
-    // Crucially, only attach listeners *after* the service is fully initialized
-    if (!walletConnectService || !isInitialized) {
-      console.log(">>> Provider: Skipping listener setup - service not initialized yet.");
-      return;
+      // Call init immediately after creation
+      service.init().catch((initError: Error | unknown) => {
+        console.error("WalletConnectProvider Mount Effect: service.init() rejected.", initError);
+        // Error state is set via the 'error'/'initialized' event listener below
+      });
     }
 
-    console.log(">>> Provider: Setting up event listeners (service initialized).");
+    // --- Attach listeners to the current instance in the ref ---
+    const currentService = serviceRef.current;
+    if (!currentService) return; // Should not happen if projectId exists
 
-    const handlePairStatus = (status: string, message?: string) => {
-      console.log(">>> Provider: handlePairStatus:", status, message);
+    console.log(`%cWalletConnectProvider Mount Effect: Attaching listeners to service instance.`, "color: purple");
+
+    // Define handlers (update provider's state based on service events)
+    const handleInitialized: WalletConnectServiceEvents[ServiceEvents.Initialized] = ({ success, instance }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.Initialized} received (success=${success})`, "color: purple");
+      setIsInitialized(success);
+      setWalletKitInstance(success ? instance : null);
+      if (currentService) setActiveSessions(currentService.getActiveSessions()); // Use currentService here
+      setIsInitializing(false);
+      if (!success && !error) setError("Initialization failed via event");
+    };
+    // ... (Keep other handlers: handlePairStatus, handleSessionProposal, etc. - they remain the same) ...
+    const handlePairStatus: WalletConnectServiceEvents[ServiceEvents.PairStatus] = ({ status, message }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.PairStatus} received: ${status}`, "color: purple", message);
       setIsPairing(status === "pairing");
       if (status === "error") {
         setError(message || "Pairing failed");
-      } else if (status === "paired") {
-        // Optional: can clear pairing status here, but session_connect is better indicator
-        // setIsPairing(false);
-      } else {
-        setError(null); // Clear error on non-error status
+        setIsPairing(false);
+      } else if (status !== "pairing") {
+        setError(null);
       }
     };
 
-    const handleSessionProposal = (proposal: WalletKitTypes.SessionProposal) => {
-      console.log(">>> Provider: handleSessionProposal received:", proposal.id);
-      if (!lensAccountAddress) {
-        setError("Cannot approve session: Lens Account Address missing.");
-        walletConnectService
-          .rejectSession(proposal, getSdkError("USER_REJECTED"))
-          .catch((rejectError) => console.error("Failed to reject session:", rejectError));
-        return;
-      }
-      try {
-        const approvedNamespaces = buildApprovedNamespaces({
-          proposal: proposal.params,
-          supportedNamespaces: {
-            eip155: {
-              chains: [`eip155:${LENS_CHAIN_ID}`],
-              methods: ["eth_sendTransaction", "personal_sign", "eth_signTypedData", "eth_signTypedData_v4"],
-              events: ["chainChanged", "accountsChanged"],
-              accounts: [`eip155:${LENS_CHAIN_ID}:${lensAccountAddress}`],
-            },
-          },
-        });
-        console.log(">>> Provider: Approving session:", proposal.id);
-        walletConnectService
-          .approveSession(proposal, approvedNamespaces)
-          .then((session) => {
-            console.log(">>> Provider: Session approved and acknowledged:", session.topic);
-            // session_connect handler below updates state
-          })
-          .catch((approveError: unknown) => {
-            console.error(">>> Provider: Failed to approve session:", approveError);
-            setError(`Failed to approve session: ${(approveError as Error).message}`);
-            walletConnectService
-              .rejectSession(proposal, getSdkError("USER_REJECTED"))
-              .catch((rejectError) => console.error(">>> Provider: Failed to reject session after approve error:", rejectError));
-          });
-      } catch (error: unknown) {
-        console.error(">>> Provider: Error building namespaces/approving:", error);
-        setError(`Error during session approval: ${(error as Error).message}`);
-        walletConnectService
-          .rejectSession(proposal, getSdkError("USER_REJECTED"))
-          .catch((rejectError) => console.error(">>> Provider: Failed to reject session after catch:", rejectError));
-      }
-    };
-
-    const handleSessionConnect = (session: SessionTypes.Struct) => {
-      console.log(">>> Provider: handleSessionConnect called:", session.topic);
-      setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
-      setIsPairing(false); // Pairing process is complete
+    const handleSessionProposal: WalletConnectServiceEvents[ServiceEvents.SessionProposal] = ({ proposal }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.SessionProposal} received:`, "color: purple", proposal.id);
+      setPendingProposal(proposal);
+      setIsPairing(false);
       setError(null);
     };
 
-    const handleSessionDelete = (topic: string) => {
-      console.log(">>> Provider: handleSessionDelete called:", topic);
+    const handleSessionConnect: WalletConnectServiceEvents[ServiceEvents.SessionConnect] = ({ session }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.SessionConnect} received:`, "color: purple", session.topic);
+      setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
+      setIsPairing(false);
+      setError(null);
+      setPendingProposal(null);
+    };
+
+    const handleSessionDelete: WalletConnectServiceEvents[ServiceEvents.SessionDelete] = ({ topic }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.SessionDelete} received:`, "color: purple", topic);
       setActiveSessions((prev) => {
-        const newSessions = { ...prev };
-        delete newSessions[topic];
-        return newSessions;
+        const { [topic]: _, ...rest } = prev;
+        return rest;
       });
-      setIsPairing(false); // Ensure pairing state is reset on disconnect
+      setIsPairing(false);
+      if (pendingProposal && pendingProposal.params.pairingTopic === topic) {
+        console.log("%cProvider: Clearing pending proposal due to session delete event.", "color: brown");
+        setPendingProposal(null);
+      }
+    };
+
+    const handleSessionsUpdated: WalletConnectServiceEvents[ServiceEvents.SessionsUpdated] = ({ sessions }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.SessionsUpdated} received`, "color: purple", sessions);
+      setActiveSessions(sessions);
+    };
+
+    const handleError: WalletConnectServiceEvents[ServiceEvents.Error] = ({ message }) => {
+      console.error(`%cProvider Listener: ${ServiceEvents.Error} received:`, "color: red", message);
+      setError(message);
+      setIsPairing(false);
+      setIsProcessingAction(false);
+      // Potentially reset initializing state on critical init errors
+      // if (!isInitialized) setIsInitializing(false);
+    };
+
+    const handleIsLoading: WalletConnectServiceEvents[ServiceEvents.IS_LOADING] = ({ isLoading }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.IS_LOADING} received: ${isLoading}`, "color: purple");
+      setIsProcessingAction(isLoading);
+    };
+
+    const handleIsPairing: WalletConnectServiceEvents[ServiceEvents.IS_PAIRING] = ({ isPairing }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.IS_PAIRING} received: ${isPairing}`, "color: purple");
+      setIsPairing(isPairing);
     };
 
     // Attach listeners
-    console.log(">>> Provider: Attaching listeners.");
-    walletConnectService.on("pair_status", handlePairStatus);
-    walletConnectService.on("session_proposal", handleSessionProposal);
-    walletConnectService.on("session_connect", handleSessionConnect);
-    walletConnectService.on("session_delete", handleSessionDelete);
+    currentService.on(ServiceEvents.Initialized, handleInitialized);
+    currentService.on(ServiceEvents.PairStatus, handlePairStatus);
+    currentService.on(ServiceEvents.SessionProposal, handleSessionProposal);
+    currentService.on(ServiceEvents.SessionConnect, handleSessionConnect);
+    currentService.on(ServiceEvents.SessionDelete, handleSessionDelete);
+    currentService.on(ServiceEvents.SessionsUpdated, handleSessionsUpdated);
+    currentService.on(ServiceEvents.Error, handleError);
+    currentService.on(ServiceEvents.IS_LOADING, handleIsLoading);
+    currentService.on(ServiceEvents.IS_PAIRING, handleIsPairing);
 
-    // Cleanup function
+    // Cleanup function: Remove listeners from the instance in the ref
     return () => {
-      console.log(">>> Provider: Cleaning up event listeners.");
-      if (walletConnectService) {
-        walletConnectService.off("pair_status", handlePairStatus);
-        walletConnectService.off("session_proposal", handleSessionProposal);
-        walletConnectService.off("session_connect", handleSessionConnect);
-        walletConnectService.off("session_delete", handleSessionDelete);
+      console.log("%cWalletConnectProvider Mount Effect: Cleaning up listeners.", "color: orange");
+      if (serviceRef.current) {
+        console.log("%cDetaching listeners from service instance in ref.", "color: orange");
+        serviceRef.current.off(ServiceEvents.Initialized, handleInitialized);
+        serviceRef.current.off(ServiceEvents.PairStatus, handlePairStatus);
+        serviceRef.current.off(ServiceEvents.SessionProposal, handleSessionProposal);
+        serviceRef.current.off(ServiceEvents.SessionConnect, handleSessionConnect);
+        serviceRef.current.off(ServiceEvents.SessionDelete, handleSessionDelete);
+        serviceRef.current.off(ServiceEvents.SessionsUpdated, handleSessionsUpdated);
+        serviceRef.current.off(ServiceEvents.Error, handleError);
+        serviceRef.current.off(ServiceEvents.IS_LOADING, handleIsLoading);
+        serviceRef.current.off(ServiceEvents.IS_PAIRING, handleIsPairing);
       }
     };
-    // Rerun ONLY when service initialization status changes or lensAccountAddress changes
-  }, [walletConnectService, isInitialized, lensAccountAddress]);
+  }, [projectId]); // Run ONLY once when projectId is available
 
-  // --- Exposed Context Functions ---
+  // --- Context Methods (Interact with the service instance via ref) ---
   const pair = useCallback(
     async (uri: string) => {
-      if (!walletConnectService || !isInitialized) {
-        // Check initialization status
-        setError("WalletConnect Service not ready for pairing.");
-        console.error("Attempted to pair before service was initialized.");
-        return;
-      }
-      setIsPairing(true); // Set specific pairing state
+      // Use serviceRef.current
+      if (!serviceRef.current?.isInitialized()) return setError("Service not initialized");
+      console.log(`%cWalletConnectProvider: pair called`, "color: cyan");
       setError(null);
-      try {
-        await walletConnectService.pair(uri);
-        // Let handlePairStatus and handleSessionConnect manage loading/error state
-      } catch (e: unknown) {
-        console.error("Pairing failed in provider callback:", e);
-        // Error is handled by handlePairStatus listener
-      }
+      await serviceRef.current.pair(uri);
     },
-    [walletConnectService, isInitialized], // Add isInitialized dependency
+    [isInitialized], // Depend on react state `isInitialized` for enabling the action
   );
+
+  const approveSession = useCallback(async () => {
+    // Use serviceRef.current
+    if (!serviceRef.current?.isInitialized() || !pendingProposal || !lensAccountAddress) {
+      const reason = !isInitialized ? "Service not ready." : !pendingProposal ? "No proposal." : "No Lens address.";
+      setError(`Cannot approve: ${reason}`);
+      return;
+    }
+    console.log(`%cWalletConnectProvider: approveSession called`, "color: cyan");
+    setError(null);
+
+    try {
+      // ... (namespace building logic remains the same)
+      const requiredNamespaces = pendingProposal.params.requiredNamespaces || {};
+      const optionalNamespaces = pendingProposal.params.optionalNamespaces || {};
+      const requestedMethods = [...(requiredNamespaces.eip155?.methods || []), ...(optionalNamespaces.eip155?.methods || [])];
+      const requestedEvents = [...(requiredNamespaces.eip155?.events || []), ...(optionalNamespaces.eip155?.events || [])];
+      const methods = requestedMethods.length > 0 ? requestedMethods : ["eth_sendTransaction", "personal_sign", "eth_signTypedData_v4"];
+      const events = requestedEvents.length > 0 ? requestedEvents : ["chainChanged", "accountsChanged"];
+
+      const approvedNamespaces = buildApprovedNamespaces({
+        proposal: pendingProposal.params,
+        supportedNamespaces: {
+          eip155: {
+            chains: [`eip155:${LENS_CHAIN_ID}`],
+            methods: methods,
+            events: events,
+            accounts: [`eip155:${LENS_CHAIN_ID}:${lensAccountAddress}`],
+          },
+        },
+      });
+      await serviceRef.current.approveSession(pendingProposal, approvedNamespaces);
+      setPendingProposal(null); // Still clear proposal state here
+    } catch (e) {
+      console.error(`%cWalletConnectProvider: approveSession failed:`, "color: red", e);
+    }
+  }, [isInitialized, pendingProposal, lensAccountAddress]);
+
+  const rejectSession = useCallback(async () => {
+    // Use serviceRef.current
+    if (!serviceRef.current?.isInitialized() || !pendingProposal) {
+      const reason = !isInitialized ? "Service not ready." : "No proposal.";
+      setError(`Cannot reject: ${reason}`);
+      return;
+    }
+    console.log(`%cWalletConnectProvider: rejectSession called`, "color: cyan");
+    setError(null);
+    try {
+      await serviceRef.current.rejectSession(pendingProposal, getSdkError("USER_REJECTED"));
+      setPendingProposal(null);
+    } catch (e) {
+      console.error(`%cWalletConnectProvider: rejectSession failed:`, "color: red", e);
+    }
+  }, [isInitialized, pendingProposal]);
 
   const disconnect = useCallback(
     async (topic: string) => {
-      if (!walletConnectService || !isInitialized) {
-        // Check initialization
-        setError("WalletConnect Service not ready for disconnecting.");
-        return;
-      }
-      // Don't set isLoading/isPairing here, let session_delete handle UI
+      // Use serviceRef.current
+      if (!serviceRef.current?.isInitialized()) return setError("Service not initialized");
+      console.log(`%cWalletConnectProvider: disconnect called`, "color: cyan");
       setError(null);
-      try {
-        await walletConnectService.disconnectSession(topic, getSdkError("USER_DISCONNECTED"));
-        // State update happens via session_delete listener
-      } catch (e: unknown) {
-        setError((e as Error).message || "Failed to disconnect");
-      }
+      await serviceRef.current.disconnectSession(topic, getSdkError("USER_DISCONNECTED"));
     },
-    [walletConnectService, isInitialized], // Add isInitialized dependency
+    [isInitialized],
   );
 
+  // --- Context Value Memoization ---
   const contextValue = useMemo(
     () => ({
-      walletConnectService,
       walletKitInstance,
       activeSessions,
+      pendingProposal,
       pair,
       disconnect,
-      isLoading: isInitializing || isPairing, // Use combined loading state
-      isInitializing, // Expose specific initializing state
-      isPairing, // Expose specific pairing state
+      approveSession,
+      rejectSession,
+      isLoading: isInitializing || isPairing || isProcessingAction,
+      isInitializing,
+      isPairing,
+      isProcessingAction,
       error,
-      isInitialized, // Expose initialization status
+      isInitialized,
     }),
-    [walletConnectService, walletKitInstance, activeSessions, pair, disconnect, isInitializing, isPairing, error, isInitialized],
+    [
+      walletKitInstance,
+      activeSessions,
+      pendingProposal,
+      pair,
+      disconnect,
+      approveSession,
+      rejectSession,
+      isInitializing,
+      isPairing,
+      isProcessingAction,
+      error,
+      isInitialized,
+    ],
   );
 
-  return <WalletConnectContext.Provider value={contextValue}>{children}</WalletConnectContext.Provider>;
+  // Only render children when projectId is available, otherwise show error/loading
+  return projectId ? (
+    <WalletConnectContext.Provider value={contextValue}>{children}</WalletConnectContext.Provider>
+  ) : (
+    <div>Error: WalletConnect Project ID is missing. Cannot initialize WalletConnect.</div>
+  );
 }
 
-// Custom hook to use the context
+// Keep your existing hook
 export function useWalletConnect() {
   const context = useContext(WalletConnectContext);
   if (context === undefined) {

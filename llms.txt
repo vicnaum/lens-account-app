@@ -85,22 +85,6 @@ tsconfig.json
 <files>
 This section contains the contents of the repository's files.
 
-<file path="src/app/dashboard/layout.tsx">
-// src/app/dashboard/layout.tsx
-"use client"; // Context providers require client components
-
-import { WalletConnectProvider } from "@/contexts/WalletConnectProvider";
-
-// This layout wraps the content of `/dashboard/page.tsx` and any other
-// potential pages under the /dashboard route (e.g., /dashboard/settings).
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  // We assume LensAccountProvider is already wrapping the RootLayout
-  // in src/app/layout.tsx via src/app/providers.tsx.
-  // Therefore, we only need to add the WalletConnectProvider here.
-  return <WalletConnectProvider>{children}</WalletConnectProvider>;
-}
-</file>
-
 <file path="src/components/ConnectOwnerButton.tsx">
 // components/ConnectOwnerButton.tsx
 "use client";
@@ -113,63 +97,6 @@ export function ConnectOwnerButton() {
       <ConnectKitButton />
     </div>
   );
-}
-</file>
-
-<file path="src/contexts/LensAccountContext.tsx">
-// contexts/LensAccountContext.tsx
-"use client";
-
-import React, { createContext, useState, useContext, ReactNode } from "react";
-import { type Address } from "viem";
-
-interface LensAccountState {
-  lensAccountAddress: Address | null;
-  ownerAddress: Address | null;
-  setVerifiedAccount: (lensAddress: Address, ownerAddress: Address) => void;
-  clearAccount: () => void;
-}
-
-const LensAccountContext = createContext<LensAccountState | undefined>(undefined);
-
-interface LensAccountProviderProps {
-  children: ReactNode;
-}
-
-export function LensAccountProvider({ children }: LensAccountProviderProps) {
-  const [lensAccountAddress, setLensAccountAddress] = useState<Address | null>(null);
-  const [ownerAddress, setOwnerAddress] = useState<Address | null>(null);
-
-  const setVerifiedAccount = (lensAddress: Address, verifiedOwnerAddress: Address) => {
-    setLensAccountAddress(lensAddress);
-    setOwnerAddress(verifiedOwnerAddress);
-    console.log("Context Updated: Lens Account Set ->", lensAddress);
-    console.log("Context Updated: Owner Set ->", verifiedOwnerAddress);
-  };
-
-  const clearAccount = () => {
-    setLensAccountAddress(null);
-    setOwnerAddress(null);
-    console.log("Context Updated: Account Cleared");
-  };
-
-  const value = {
-    lensAccountAddress,
-    ownerAddress,
-    setVerifiedAccount,
-    clearAccount,
-  };
-
-  return <LensAccountContext.Provider value={value}>{children}</LensAccountContext.Provider>;
-}
-
-// Custom hook to use the context
-export function useLensAccount() {
-  const context = useContext(LensAccountContext);
-  if (context === undefined) {
-    throw new Error("useLensAccount must be used within a LensAccountProvider");
-  }
-  return context;
 }
 </file>
 
@@ -194,51 +121,6 @@ export function useDebounce<T>(value: T, delay: number): T {
 
   return debouncedValue;
 }
-</file>
-
-<file path="src/lib/wagmi.ts">
-// lib/wagmi.ts
-import { http, createConfig } from "wagmi";
-import { getDefaultConfig } from "connectkit"; // Correct import
-import { lensChain } from "./constants";
-
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
-
-if (!projectId) {
-  throw new Error("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set in .env.local");
-}
-
-export const config = createConfig(
-  // Use ConnectKit's getDefaultConfig
-  getDefaultConfig({
-    // Correct function name
-    // Required API Keys
-    walletConnectProjectId: projectId,
-
-    // Required App Info
-    appName: "Lens Account Interface",
-    appDescription: "Interact with your Lens Account",
-    appUrl: typeof window !== "undefined" ? window.location.origin : "https://example.com",
-    appIcon: "/favicon.ico",
-
-    // Chains to support
-    chains: [lensChain],
-
-    // Transports (ensure http is configured for your chain)
-    transports: {
-      [lensChain.id]: http(lensChain.rpcUrls.default.http[0]),
-    },
-
-    // ssr: true, // Keep commented unless SSR hydration with cookies is needed
-  }),
-);
-
-// Optional: Register config for global type inference
-// declare module 'wagmi' {
-//   interface Register {
-//     config: typeof config
-//   }
-// }
 </file>
 
 <file path="src/styles/globals.css">
@@ -343,7 +225,7 @@ export default eslintConfig;
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  reactStrictMode: false,
 };
 
 export default nextConfig;
@@ -671,149 +553,22 @@ This specification is intended for developers, QA testers, and product managers 
 }
 </file>
 
-<file path="src/app/layout.tsx">
-import type { Metadata } from "next";
-import "@/styles/globals.css";
-import { Geist, Geist_Mono } from "next/font/google";
-import { Providers } from "./providers"; // Import the Providers component
+<file path="src/app/dashboard/layout.tsx">
+// src/app/dashboard/layout.tsx
+"use client"; // Context providers require client components
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import { WalletConnectProvider } from "@/contexts/WalletConnectProvider";
+// No need to import useLensAccount here if it's not used directly in this layout
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// This layout wraps the content of `/dashboard/page.tsx` and any other
+// potential pages under the /dashboard route (e.g., /dashboard/settings).
 
-export const metadata: Metadata = {
-  title: "Lens Account Interface", // Updated title
-  description: "Manage your Lens Account", // Updated description
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  // If using SSR hydration, you would get initialState here from headers/cookies
-  // const initialState = cookieToInitialState(...) etc.
-
-  return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}>
-        {/* Wrap children with Providers */}
-        <Providers /*initialState={initialState}*/>{children}</Providers>
-      </body>
-    </html>
-  );
-}
-</file>
-
-<file path="src/components/AccountDisplay.tsx">
-// components/AccountDisplay.tsx
-"use client";
-
-import React from "react";
-import { useReadContract, useBalance } from "wagmi"; // Import useBalance
-import { formatUnits, type BaseError, type Address } from "viem";
-import { useLensAccount } from "@/contexts/LensAccountContext";
-import {
-  ERC20_ABI,
-  WGHO_TOKEN_ADDRESS,
-  LENS_CHAIN_ID,
-  lensChain, // Import the chain definition
-} from "@/lib/constants";
-
-export function AccountDisplay() {
-  const { lensAccountAddress } = useLensAccount();
-
-  // Fetch native GHO balance
-  const {
-    data: nativeBalanceData,
-    error: nativeBalanceError,
-    isLoading: isLoadingNativeBalance,
-  } = useBalance({
-    address: lensAccountAddress as Address | undefined, // useBalance needs Address | undefined
-    chainId: LENS_CHAIN_ID,
-    query: {
-      enabled: !!lensAccountAddress,
-      // Enable watching for updates (refetches on new blocks)
-      refetchInterval: 5000, // Optional: Adjust polling interval if needed
-      refetchOnWindowFocus: true,
-    },
-  });
-
-  // Fetch WGHO (ERC20) balance
-  const {
-    data: wghoBalanceData,
-    error: wghoBalanceError,
-    isLoading: isLoadingWghoBalance,
-  } = useReadContract({
-    address: WGHO_TOKEN_ADDRESS as Address, // Add type assertion if needed or ensure it's typed correctly in constants
-    abi: ERC20_ABI,
-    functionName: "balanceOf",
-    args: [lensAccountAddress!],
-    chainId: LENS_CHAIN_ID,
-    query: {
-      enabled: !!lensAccountAddress,
-      // Enable watching for updates (refetches on new blocks)
-      refetchInterval: 5000, // Optional: Adjust polling interval if needed
-      refetchOnWindowFocus: true,
-    },
-  });
-
-  // Format balances safely
-  const formattedNativeBalance =
-    nativeBalanceData?.value !== undefined
-      ? parseFloat(formatUnits(nativeBalanceData.value, lensChain.nativeCurrency.decimals)).toFixed(4)
-      : "0.0000";
-
-  const formattedWghoBalance =
-    typeof wghoBalanceData === "bigint"
-      ? parseFloat(formatUnits(wghoBalanceData, 18)).toFixed(4) // Assuming WGHO also has 18 decimals
-      : "0.0000";
-
-  const isLoading = isLoadingNativeBalance || isLoadingWghoBalance;
-
-  return (
-    <div className="p-4 border rounded-md bg-gray-50">
-      <h2 className="text-lg font-semibold mb-3 text-gray-700">Account Balances</h2>
-      {isLoading && <p className="text-gray-500 text-sm">Loading balances...</p>}
-
-      {/* Native GHO Balance */}
-      <div className="mb-2">
-        {nativeBalanceError && !isLoadingNativeBalance && (
-          <p className="text-red-600 text-sm">
-            Error loading GHO balance: {(nativeBalanceError as BaseError).shortMessage || nativeBalanceError.message}
-          </p>
-        )}
-        {!nativeBalanceError && !isLoadingNativeBalance && lensAccountAddress && (
-          <p className="text-gray-800">
-            <span className="font-medium">Native GHO:</span> <span className="font-mono text-lg">{formattedNativeBalance}</span>{" "}
-            {lensChain.nativeCurrency.symbol}
-          </p>
-        )}
-      </div>
-
-      {/* WGHO Balance */}
-      <div>
-        {wghoBalanceError && !isLoadingWghoBalance && (
-          <p className="text-red-600 text-sm">
-            Error loading WGHO balance: {(wghoBalanceError as BaseError).shortMessage || wghoBalanceError.message}
-          </p>
-        )}
-        {!wghoBalanceError && !isLoadingWghoBalance && lensAccountAddress && (
-          <p className="text-gray-800">
-            <span className="font-medium">WGHO Token:</span> <span className="font-mono text-lg">{formattedWghoBalance}</span> GHO
-          </p>
-        )}
-      </div>
-
-      {!lensAccountAddress && !isLoading && <p className="text-gray-500 text-sm mt-2">Cannot fetch balances without Lens Account address.</p>}
-    </div>
-  );
+// Add the default export
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // We assume LensAccountProvider is already wrapping the RootLayout
+  // in src/app/layout.tsx via src/app/providers.tsx.
+  // Therefore, we only need to add the WalletConnectProvider here.
+  return <WalletConnectProvider>{children}</WalletConnectProvider>;
 }
 </file>
 
@@ -1024,35 +779,100 @@ import { useWalletConnect } from "@/contexts/WalletConnectProvider"; // Ensure c
 import Image from "next/image";
 
 export function WcConnect() {
-  // Destructure necessary state values including isInitialized and specific loading states
-  const { activeSessions, pair, disconnect, isLoading, isInitializing, isPairing, error, isInitialized } = useWalletConnect();
+  // Destructure states from the refactored provider, including isInitializing
+  const {
+    activeSessions,
+    pair,
+    disconnect,
+    isLoading, // Use the combined loading state
+    isPairing,
+    error,
+    isInitialized, // Use the service readiness flag
+    pendingProposal, // Get the pending proposal
+    approveSession, // Get approve action
+    rejectSession, // Get reject action
+    isInitializing, // <<<--- ADDED isInitializing HERE ---<<<
+  } = useWalletConnect();
   const [uri, setUri] = useState("");
 
   const handleConnect = () => {
-    if (!uri || !isInitialized) return; // Check initialization
+    if (!uri || !isInitialized || isLoading) return; // Check initialization and combined loading state
     pair(uri);
   };
 
-  const activeSessionTopic = Object.keys(activeSessions)[0];
+  const activeSessionTopic = Object.keys(activeSessions)[0]; // Assuming only one session for MVP
   const connectedSession = activeSessionTopic ? activeSessions[activeSessionTopic] : null;
 
   const handleDisconnect = () => {
-    if (connectedSession && isInitialized) {
-      // Check initialization
+    if (connectedSession && isInitialized && !isLoading) {
+      // Check initialization and combined loading state
       disconnect(connectedSession.topic);
     }
   };
 
-  // Determine overall busy state
-  const isBusy = isLoading || isInitializing || isPairing;
+  const handleApprove = () => {
+    if (pendingProposal && !isLoading) {
+      approveSession();
+    }
+  };
+
+  const handleReject = () => {
+    if (pendingProposal && !isLoading) {
+      rejectSession();
+    }
+  };
+
+  // Display loading states more granularly if needed, otherwise use `isLoading`
+  const connectButtonText = isPairing ? "Pairing..." : isLoading ? "Working..." : "Connect";
+  const disconnectButtonText = isLoading ? "Working..." : "Disconnect";
+  const approveButtonText = isLoading ? "Working..." : "Approve Session";
+  const rejectButtonText = isLoading ? "Working..." : "Reject Session";
 
   return (
     <div className="p-4 border rounded-md bg-gray-50 space-y-4">
       <h3 className="text-md font-semibold text-gray-700">Connect to dApp (via Lens Account)</h3>
 
-      {connectedSession ? (
-        // Display connected dApp info
+      {/* --- Session Proposal Modal (Simplified Inline) --- */}
+      {pendingProposal && (
+        <div className="p-3 border border-yellow-300 bg-yellow-50 rounded-md space-y-2">
+          <p className="text-sm font-medium text-yellow-800">Connection Request from:</p>
+          <div className="flex items-center space-x-2">
+            {pendingProposal.params.proposer.metadata.icons?.[0] && (
+              <Image
+                src={pendingProposal.params.proposer.metadata.icons[0]}
+                alt={`${pendingProposal.params.proposer.metadata.name} icon`}
+                width={30}
+                height={30}
+                className="rounded-full"
+                unoptimized
+              />
+            )}
+            <span className="text-sm text-gray-700">{pendingProposal.params.proposer.metadata.name}</span>
+          </div>
+          {/* TODO: Display requested permissions details if needed */}
+          <div className="flex space-x-2 pt-2">
+            <button
+              onClick={handleApprove}
+              disabled={isLoading || !isInitialized}
+              className="flex-1 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50"
+            >
+              {approveButtonText}
+            </button>
+            <button
+              onClick={handleReject}
+              disabled={isLoading || !isInitialized}
+              className="flex-1 px-3 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+            >
+              {rejectButtonText}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- Connected Session Display --- */}
+      {connectedSession && !pendingProposal && (
         <div className="space-y-3 p-3 bg-green-50 border border-green-200 rounded-md">
+          {/* Display connected dApp info */}
           <p className="text-green-800 font-medium">Connected to:</p>
           <div className="flex items-center space-x-3">
             {connectedSession.peer.metadata.icons?.[0] && (
@@ -1075,14 +895,16 @@ export function WcConnect() {
           </p>
           <button
             onClick={handleDisconnect}
-            disabled={isBusy || !isInitialized} // Use combined busy state
+            disabled={isLoading || !isInitialized} // Use combined loading state
             className="w-full px-4 py-2 mt-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
           >
-            {isBusy ? "Working..." : "Disconnect"}
+            {disconnectButtonText}
           </button>
         </div>
-      ) : (
-        // Display connection form
+      )}
+
+      {/* --- Pairing/Connection Form --- */}
+      {!connectedSession && !pendingProposal && (
         <div className="space-y-2">
           <label htmlFor="wc-uri" className="block text-sm font-medium text-gray-700">
             Paste WalletConnect URI
@@ -1096,525 +918,131 @@ export function WcConnect() {
               onChange={(e) => setUri(e.target.value)}
               placeholder="wc:..."
               className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100"
-              disabled={isBusy || !isInitialized} // Use combined busy state
+              disabled={isLoading || !isInitialized} // Use combined loading state
             />
             <button
               onClick={handleConnect}
-              disabled={!uri || isBusy || !isInitialized} // Use combined busy state
+              disabled={!uri || isLoading || !isInitialized} // Use combined loading state
               className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
             >
-              {isPairing ? "Pairing..." : isInitializing ? "Initializing..." : "Connect"}
+              {connectButtonText}
             </button>
           </div>
         </div>
       )}
 
-      {/* Display appropriate status/error messages */}
-      {error && !isBusy && <p className="text-red-600 text-sm mt-2">Error: {error}</p>}
-      {isPairing && <p className="text-indigo-600 text-sm mt-2">Pairing initiated, check your wallet...</p>}
+      {/* --- Status/Error Messages --- */}
+      {error && !isLoading && <p className="text-red-600 text-sm mt-2">Error: {error}</p>}
+      {isPairing && <p className="text-indigo-600 text-sm mt-2">Pairing initiated, check dApp/wallet if needed...</p>}
+      {/* Check both flags here now */}
       {!isInitialized && !isInitializing && !error && <p className="text-orange-600 text-sm mt-2">WalletConnect service not ready.</p>}
+      {/* And display initializing message correctly */}
       {isInitializing && <p className="text-gray-500 text-sm mt-2">Initializing WalletConnect...</p>}
     </div>
   );
 }
 </file>
 
-<file path="src/contexts/WalletConnectProvider.tsx">
-// src/contexts/WalletConnectProvider.tsx
+<file path="src/contexts/LensAccountContext.tsx">
+// contexts/LensAccountContext.tsx
 "use client";
 
-import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback, useMemo } from "react";
-import { WalletConnectService } from "@/services/walletConnectService";
-import { SessionTypes } from "@walletconnect/types";
-import { IWalletKit, WalletKitTypes } from "@reown/walletkit";
-import { buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
-import { useLensAccount } from "./LensAccountContext";
-import { LENS_CHAIN_ID } from "@/lib/constants";
+import React, { createContext, useState, useContext, ReactNode } from "react";
+import { type Address } from "viem";
 
-// Define the state including initialization status
-interface WalletConnectContextState {
-  walletConnectService: WalletConnectService | null;
-  walletKitInstance: IWalletKit | null;
-  activeSessions: Record<string, SessionTypes.Struct>;
-  pair: (uri: string) => Promise<void>;
-  disconnect: (topic: string) => Promise<void>;
-  isLoading: boolean; // General loading/busy state
-  isInitializing: boolean; // Specific initialization state
-  isPairing: boolean; // Specific pairing state
-  error: string | null;
-  isInitialized: boolean; // Track service readiness
+interface LensAccountState {
+  lensAccountAddress: Address | null;
+  ownerAddress: Address | null;
+  setVerifiedAccount: (lensAddress: Address, ownerAddress: Address) => void;
+  clearAccount: () => void;
 }
 
-const WalletConnectContext = createContext<WalletConnectContextState | undefined>(undefined);
+const LensAccountContext = createContext<LensAccountState | undefined>(undefined);
 
-interface WalletConnectProviderProps {
+interface LensAccountProviderProps {
   children: ReactNode;
 }
 
-const DAPP_METADATA: WalletKitTypes.Metadata = {
-  name: "Lens Account Interface",
-  description: "Interface for managing Lens Account via WalletConnect",
-  url: typeof window !== "undefined" ? window.location.origin : "http://localhost:3000",
-  icons: ["/favicon.ico"],
-};
+export function LensAccountProvider({ children }: LensAccountProviderProps) {
+  const [lensAccountAddress, setLensAccountAddress] = useState<Address | null>(null);
+  const [ownerAddress, setOwnerAddress] = useState<Address | null>(null);
 
-export function WalletConnectProvider({ children }: WalletConnectProviderProps) {
-  const [walletConnectService, setWalletConnectService] = useState<WalletConnectService | null>(null);
-  const [walletKitInstance, setWalletKitInstance] = useState<IWalletKit | null>(null);
-  const [activeSessions, setActiveSessions] = useState<Record<string, SessionTypes.Struct>>({});
-  const [isInitializing, setIsInitializing] = useState(true); // Start initializing
-  const [isPairing, setIsPairing] = useState(false); // Track pairing status separately
-  const [error, setError] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false); // Track service readiness
+  const setVerifiedAccount = (lensAddress: Address, verifiedOwnerAddress: Address) => {
+    setLensAccountAddress(lensAddress);
+    setOwnerAddress(verifiedOwnerAddress);
+    console.log("Context Updated: Lens Account Set ->", lensAddress);
+    console.log("Context Updated: Owner Set ->", verifiedOwnerAddress);
+  };
 
-  const { lensAccountAddress } = useLensAccount();
-  const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
+  const clearAccount = () => {
+    setLensAccountAddress(null);
+    setOwnerAddress(null);
+    console.log("Context Updated: Account Cleared");
+  };
 
-  // --- Initialization Effect ---
-  useEffect(() => {
-    if (!projectId) {
-      console.error("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set!");
-      setError("WalletConnect Project ID is missing.");
-      setIsInitializing(false);
-      setIsInitialized(false); // Mark as not initialized
-      return;
-    }
+  const value = {
+    lensAccountAddress,
+    ownerAddress,
+    setVerifiedAccount,
+    clearAccount,
+  };
 
-    // Only run initialization once
-    if (!walletConnectService && !isInitialized && isInitializing) {
-      console.log("Creating and initializing WalletConnectService...");
-      const service = new WalletConnectService(projectId, DAPP_METADATA);
-      setWalletConnectService(service); // Set service instance immediately
-
-      service
-        .init() // init now returns the instance or undefined
-        .then((instance) => {
-          if (instance) {
-            setWalletKitInstance(instance);
-            setActiveSessions(instance.getActiveSessions() || {});
-            setIsInitialized(true); // Mark as initialized *after* successful init
-            console.log("WalletConnectService initialized successfully in Provider.");
-          } else {
-            setError("Failed to initialize WalletKit instance.");
-            setIsInitialized(false);
-          }
-        })
-        .catch((initError: unknown) => {
-          console.error("Initialization failed:", initError);
-          setError(`Initialization failed: ${(initError as Error).message}`);
-          setIsInitialized(false);
-        })
-        .finally(() => {
-          setIsInitializing(false); // Stop initializing state regardless of outcome
-        });
-    }
-    // Only depend on projectId. service instance is set inside.
-    // isInitialized and isInitializing prevent re-running.
-  }, [projectId, walletConnectService, isInitialized, isInitializing]);
-
-  // --- Event Listener Effect ---
-  useEffect(() => {
-    // Crucially, only attach listeners *after* the service is fully initialized
-    if (!walletConnectService || !isInitialized) {
-      console.log(">>> Provider: Skipping listener setup - service not initialized yet.");
-      return;
-    }
-
-    console.log(">>> Provider: Setting up event listeners (service initialized).");
-
-    const handlePairStatus = (status: string, message?: string) => {
-      console.log(">>> Provider: handlePairStatus:", status, message);
-      setIsPairing(status === "pairing");
-      if (status === "error") {
-        setError(message || "Pairing failed");
-      } else if (status === "paired") {
-        // Optional: can clear pairing status here, but session_connect is better indicator
-        // setIsPairing(false);
-      } else {
-        setError(null); // Clear error on non-error status
-      }
-    };
-
-    const handleSessionProposal = (proposal: WalletKitTypes.SessionProposal) => {
-      console.log(">>> Provider: handleSessionProposal received:", proposal.id);
-      if (!lensAccountAddress) {
-        setError("Cannot approve session: Lens Account Address missing.");
-        walletConnectService
-          .rejectSession(proposal, getSdkError("USER_REJECTED"))
-          .catch((rejectError) => console.error("Failed to reject session:", rejectError));
-        return;
-      }
-      try {
-        const approvedNamespaces = buildApprovedNamespaces({
-          proposal: proposal.params,
-          supportedNamespaces: {
-            eip155: {
-              chains: [`eip155:${LENS_CHAIN_ID}`],
-              methods: ["eth_sendTransaction", "personal_sign", "eth_signTypedData", "eth_signTypedData_v4"],
-              events: ["chainChanged", "accountsChanged"],
-              accounts: [`eip155:${LENS_CHAIN_ID}:${lensAccountAddress}`],
-            },
-          },
-        });
-        console.log(">>> Provider: Approving session:", proposal.id);
-        walletConnectService
-          .approveSession(proposal, approvedNamespaces)
-          .then((session) => {
-            console.log(">>> Provider: Session approved and acknowledged:", session.topic);
-            // session_connect handler below updates state
-          })
-          .catch((approveError: unknown) => {
-            console.error(">>> Provider: Failed to approve session:", approveError);
-            setError(`Failed to approve session: ${(approveError as Error).message}`);
-            walletConnectService
-              .rejectSession(proposal, getSdkError("USER_REJECTED"))
-              .catch((rejectError) => console.error(">>> Provider: Failed to reject session after approve error:", rejectError));
-          });
-      } catch (error: unknown) {
-        console.error(">>> Provider: Error building namespaces/approving:", error);
-        setError(`Error during session approval: ${(error as Error).message}`);
-        walletConnectService
-          .rejectSession(proposal, getSdkError("USER_REJECTED"))
-          .catch((rejectError) => console.error(">>> Provider: Failed to reject session after catch:", rejectError));
-      }
-    };
-
-    const handleSessionConnect = (session: SessionTypes.Struct) => {
-      console.log(">>> Provider: handleSessionConnect called:", session.topic);
-      setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
-      setIsPairing(false); // Pairing process is complete
-      setError(null);
-    };
-
-    const handleSessionDelete = (topic: string) => {
-      console.log(">>> Provider: handleSessionDelete called:", topic);
-      setActiveSessions((prev) => {
-        const newSessions = { ...prev };
-        delete newSessions[topic];
-        return newSessions;
-      });
-      setIsPairing(false); // Ensure pairing state is reset on disconnect
-    };
-
-    // Attach listeners
-    console.log(">>> Provider: Attaching listeners.");
-    walletConnectService.on("pair_status", handlePairStatus);
-    walletConnectService.on("session_proposal", handleSessionProposal);
-    walletConnectService.on("session_connect", handleSessionConnect);
-    walletConnectService.on("session_delete", handleSessionDelete);
-
-    // Cleanup function
-    return () => {
-      console.log(">>> Provider: Cleaning up event listeners.");
-      if (walletConnectService) {
-        walletConnectService.off("pair_status", handlePairStatus);
-        walletConnectService.off("session_proposal", handleSessionProposal);
-        walletConnectService.off("session_connect", handleSessionConnect);
-        walletConnectService.off("session_delete", handleSessionDelete);
-      }
-    };
-    // Rerun ONLY when service initialization status changes or lensAccountAddress changes
-  }, [walletConnectService, isInitialized, lensAccountAddress]);
-
-  // --- Exposed Context Functions ---
-  const pair = useCallback(
-    async (uri: string) => {
-      if (!walletConnectService || !isInitialized) {
-        // Check initialization status
-        setError("WalletConnect Service not ready for pairing.");
-        console.error("Attempted to pair before service was initialized.");
-        return;
-      }
-      setIsPairing(true); // Set specific pairing state
-      setError(null);
-      try {
-        await walletConnectService.pair(uri);
-        // Let handlePairStatus and handleSessionConnect manage loading/error state
-      } catch (e: unknown) {
-        console.error("Pairing failed in provider callback:", e);
-        // Error is handled by handlePairStatus listener
-      }
-    },
-    [walletConnectService, isInitialized], // Add isInitialized dependency
-  );
-
-  const disconnect = useCallback(
-    async (topic: string) => {
-      if (!walletConnectService || !isInitialized) {
-        // Check initialization
-        setError("WalletConnect Service not ready for disconnecting.");
-        return;
-      }
-      // Don't set isLoading/isPairing here, let session_delete handle UI
-      setError(null);
-      try {
-        await walletConnectService.disconnectSession(topic, getSdkError("USER_DISCONNECTED"));
-        // State update happens via session_delete listener
-      } catch (e: unknown) {
-        setError((e as Error).message || "Failed to disconnect");
-      }
-    },
-    [walletConnectService, isInitialized], // Add isInitialized dependency
-  );
-
-  const contextValue = useMemo(
-    () => ({
-      walletConnectService,
-      walletKitInstance,
-      activeSessions,
-      pair,
-      disconnect,
-      isLoading: isInitializing || isPairing, // Use combined loading state
-      isInitializing, // Expose specific initializing state
-      isPairing, // Expose specific pairing state
-      error,
-      isInitialized, // Expose initialization status
-    }),
-    [walletConnectService, walletKitInstance, activeSessions, pair, disconnect, isInitializing, isPairing, error, isInitialized],
-  );
-
-  return <WalletConnectContext.Provider value={contextValue}>{children}</WalletConnectContext.Provider>;
+  return <LensAccountContext.Provider value={value}>{children}</LensAccountContext.Provider>;
 }
 
 // Custom hook to use the context
-export function useWalletConnect() {
-  const context = useContext(WalletConnectContext);
+export function useLensAccount() {
+  const context = useContext(LensAccountContext);
   if (context === undefined) {
-    throw new Error("useWalletConnect must be used within a WalletConnectProvider");
+    throw new Error("useLensAccount must be used within a LensAccountProvider");
   }
   return context;
 }
 </file>
 
-<file path="src/lib/constants.ts">
-// lib/constants.ts
-import { defineChain, parseAbi } from "viem";
+<file path="src/lib/wagmi.ts">
+// lib/wagmi.ts
+import { http, createConfig } from "wagmi";
+import { getDefaultConfig } from "connectkit"; // Correct import
+import { lensChain } from "./constants";
 
-export const LENS_CHAIN_ID = 232;
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 
-export const lensChain = defineChain({
-  id: LENS_CHAIN_ID,
-  name: "Lens Chain",
-  nativeCurrency: { name: "GHO", symbol: "GHO", decimals: 18 },
-  rpcUrls: {
-    default: {
-      http: ["https://rpc.lens.xyz"],
+if (!projectId) {
+  throw new Error("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set in .env.local");
+}
+
+export const config = createConfig(
+  // Use ConnectKit's getDefaultConfig
+  getDefaultConfig({
+    // Correct function name
+    // Required API Keys
+    walletConnectProjectId: projectId,
+
+    // Required App Info
+    appName: "Lens Account Interface",
+    appDescription: "Interact with your Lens Account",
+    appUrl: typeof window !== "undefined" ? window.location.origin : "https://example.com",
+    appIcon: "/favicon.ico",
+
+    // Chains to support
+    chains: [lensChain],
+
+    // Transports (ensure http is configured for your chain)
+    transports: {
+      [lensChain.id]: http(lensChain.rpcUrls.default.http[0]),
     },
-  },
-  blockExplorers: {
-    default: { name: "Lens Explorer", url: "https://explorer.lens.xyz" },
-  },
-  testnet: false,
-});
 
-// --- Contract Addresses ---
-export const LENS_GLOBAL_NAMESPACE_ADDRESS = "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615";
+    // ssr: true, // Keep commented unless SSR hydration with cookies is needed
+  }),
+);
 
-// --- ABIs ---
-export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
-  "function accountOf(string calldata name) view returns (address)",
-  "function usernameOf(address user) view returns (string)",
-]);
-
-// Added owner() function
-export const LENS_ACCOUNT_ABI = parseAbi([
-  "function owner() view returns (address)",
-  "function executeTransaction(address target, uint256 value, bytes calldata data)",
-]);
-
-export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
-export const ERC20_ABI = parseAbi(["function balanceOf(address owner) view returns (uint256)"]);
-</file>
-
-<file path="src/services/walletConnectService.ts">
-// src/services/walletConnectService.ts
-import { WalletKit, IWalletKit, WalletKitTypes } from "@reown/walletkit";
-import { Core } from "@walletconnect/core";
-import { ICore, SessionTypes, SignClientTypes } from "@walletconnect/types";
-import { ErrorResponse } from "@walletconnect/jsonrpc-utils";
-import EventEmitter from "events";
-
-// Define the events that the service will emit
-export interface WalletConnectServiceEvents {
-  pair_status: (status: "pairing" | "paired" | "error", message?: string) => void;
-  session_proposal: (proposal: WalletKitTypes.SessionProposal) => void;
-  session_connect: (session: SessionTypes.Struct) => void;
-  session_delete: (topic: string) => void;
-}
-
-export class WalletConnectService extends EventEmitter {
-  private core: ICore | undefined;
-  private walletKit: IWalletKit | undefined;
-  private projectId: string;
-  private metadata: WalletKitTypes.Metadata;
-  private isInitialized = false;
-
-  constructor(projectId: string, metadata: WalletKitTypes.Metadata) {
-    super();
-    this.projectId = projectId;
-    this.metadata = JSON.parse(JSON.stringify(metadata));
-  }
-
-  async init(): Promise<IWalletKit | undefined> {
-    if (this.isInitialized) {
-      console.log("WalletConnectService already initialized");
-      return this.walletKit;
-    }
-    if (!this.projectId) {
-      throw new Error("Project ID is not defined for WalletConnectService");
-    }
-
-    try {
-      console.log("Initializing WalletConnect Core...");
-      this.core = new Core({ projectId: this.projectId });
-
-      console.log("Initializing WalletKit...");
-      this.walletKit = await WalletKit.init({
-        core: this.core,
-        metadata: this.metadata,
-      });
-
-      this.setupEventListeners();
-      this.isInitialized = true;
-      console.log("WalletConnectService initialized successfully");
-      return this.walletKit;
-    } catch (error: unknown) {
-      console.error("Failed to initialize WalletConnectService:", error);
-      throw error;
-    }
-  }
-
-  private setupEventListeners() {
-    if (!this.walletKit) {
-      console.error("WalletKit not initialized when setting up listeners.");
-      return;
-    }
-    if (!this.walletKit.engine?.signClient?.events) {
-      console.error("SignClient or its events emitter not available on engine.");
-      return;
-    }
-
-    console.log("Setting up WalletKit event listeners...");
-
-    this.walletKit.on("session_proposal", (proposal: WalletKitTypes.SessionProposal) => {
-      console.log("WalletConnectService received session_proposal:", proposal);
-      this.emit("session_proposal", proposal);
-    });
-
-    this.walletKit.on("session_delete", (event: { id: number; topic: string }) => {
-      console.log("WalletConnectService received session_delete:", event);
-      console.log(">>> Service: Received session_delete from WalletKit:", event); // <-- ADD LOG
-      this.emit("session_delete", event.topic);
-    });
-
-    this.walletKit.engine.signClient.events.on("session_connect", (sessionArgs: SignClientTypes.EventArguments["session_connect"]) => {
-      console.log("WalletConnectService received session_connect from SignClient:", sessionArgs);
-      this.emit("session_connect", sessionArgs.session);
-    });
-  }
-
-  async pair(uri: string) {
-    if (!this.walletKit) {
-      throw new Error("WalletKit is not initialized.");
-    }
-    try {
-      console.log("Attempting to pair with URI:", uri);
-      this.emit("pair_status", "pairing");
-      await this.walletKit.core.pairing.pair({ uri });
-      console.log("Pairing initiated for URI:", uri);
-    } catch (error: unknown) {
-      console.error("Pairing failed:", error);
-      this.emit("pair_status", "error", (error as Error).message || "Pairing failed");
-      throw error;
-    }
-  }
-
-  async approveSession(proposal: WalletKitTypes.SessionProposal, approvedNamespaces: SessionTypes.Namespaces): Promise<SessionTypes.Struct> {
-    if (!this.walletKit) {
-      throw new Error("WalletKit is not initialized.");
-    }
-    try {
-      console.log("Approving session:", proposal.id, approvedNamespaces);
-      const session = await this.walletKit.approveSession({
-        id: proposal.id,
-        namespaces: approvedNamespaces,
-      });
-      console.log("Session approved and acknowledged:", session);
-      return session;
-    } catch (error: unknown) {
-      console.error("Failed to approve session:", error);
-      throw error;
-    }
-  }
-
-  async rejectSession(proposal: WalletKitTypes.SessionProposal, reason: ErrorResponse) {
-    if (!this.walletKit) {
-      throw new Error("WalletKit is not initialized.");
-    }
-    try {
-      console.log("Rejecting session:", proposal.id, reason);
-      await this.walletKit.rejectSession({
-        id: proposal.id,
-        reason: reason,
-      });
-      console.log("Session rejected:", proposal.id);
-    } catch (error: unknown) {
-      console.error("Failed to reject session:", error);
-      throw error;
-    }
-  }
-
-  async disconnectSession(topic: string, reason: ErrorResponse) {
-    if (!this.walletKit) {
-      throw new Error("WalletKit is not initialized.");
-    }
-    try {
-      console.log("Disconnecting session:", topic, reason);
-      await this.walletKit.disconnectSession({
-        topic: topic,
-        reason: reason,
-      });
-      console.log("Session disconnected:", topic);
-    } catch (error: unknown) {
-      console.error("Failed to disconnect session:", error);
-      throw error;
-    }
-  }
-
-  // Typed EventEmitter methods
-  on<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return super.on(event, listener as (...args: any[]) => void);
-  }
-
-  once<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return super.once(event, listener as (...args: any[]) => void);
-  }
-
-  off<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return super.off(event, listener as (...args: any[]) => void);
-  }
-
-  removeListener<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return super.removeListener(event, listener as (...args: any[]) => void);
-  }
-
-  emit<E extends keyof WalletConnectServiceEvents>(event: E, ...args: Parameters<WalletConnectServiceEvents[E]>): boolean {
-    return super.emit(event, ...args);
-  }
-
-  getWalletKitInstance(): IWalletKit | undefined {
-    return this.walletKit;
-  }
-
-  getActiveSessions(): Record<string, SessionTypes.Struct> {
-    if (!this.walletKit) return {};
-    return this.walletKit.getActiveSessions() || {};
-  }
-}
+// Optional: Register config for global type inference
+// declare module 'wagmi' {
+//   interface Register {
+//     config: typeof config
+//   }
+// }
 </file>
 
 <file path="Spec.technical.md">
@@ -1864,6 +1292,46 @@ src/
 - Potential integration of Safe SDKs if the Lens Account implements Safe compatibility layers.
 </file>
 
+<file path="src/app/layout.tsx">
+import type { Metadata } from "next";
+import "@/styles/globals.css";
+import { Geist, Geist_Mono } from "next/font/google";
+import { Providers } from "./providers"; // Import the Providers component
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Lens Account Interface", // Updated title
+  description: "Manage your Lens Account", // Updated description
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  // If using SSR hydration, you would get initialState here from headers/cookies
+  // const initialState = cookieToInitialState(...) etc.
+
+  return (
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}>
+        {/* Wrap children with Providers */}
+        <Providers /*initialState={initialState}*/>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+</file>
+
 <file path="src/app/providers.tsx">
 // src/app/providers.tsx
 "use client";
@@ -1874,8 +1342,6 @@ import { ConnectKitProvider } from "connectkit";
 import { config } from "@/lib/wagmi";
 import React, { useState } from "react";
 import { LensAccountProvider } from "@/contexts/LensAccountContext";
-// Corrected import path:
-import { WalletConnectProvider } from "@/contexts/WalletConnectProvider";
 
 type Props = {
   children: React.ReactNode;
@@ -1891,13 +1357,773 @@ export function Providers({ children }: Props) {
           {/* Wrap with LensAccountProvider */}
           <LensAccountProvider>
             {/* Wrap with WalletConnectProvider */}
-            <WalletConnectProvider>{children}</WalletConnectProvider>
+            {children}
           </LensAccountProvider>
         </ConnectKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );
 }
+</file>
+
+<file path="src/components/AccountDisplay.tsx">
+// components/AccountDisplay.tsx
+"use client";
+
+import React from "react";
+import { useReadContract, useBalance } from "wagmi"; // Import useBalance
+import { formatUnits, type BaseError, type Address } from "viem";
+import { useLensAccount } from "@/contexts/LensAccountContext";
+import {
+  ERC20_ABI,
+  WGHO_TOKEN_ADDRESS,
+  LENS_CHAIN_ID,
+  lensChain, // Import the chain definition
+} from "@/lib/constants";
+
+export function AccountDisplay() {
+  const { lensAccountAddress } = useLensAccount();
+
+  // Fetch native GHO balance
+  const {
+    data: nativeBalanceData,
+    error: nativeBalanceError,
+    isLoading: isLoadingNativeBalance,
+  } = useBalance({
+    address: lensAccountAddress as Address | undefined, // useBalance needs Address | undefined
+    chainId: LENS_CHAIN_ID,
+    query: {
+      enabled: !!lensAccountAddress,
+      // Enable watching for updates (refetches on new blocks)
+      refetchInterval: 5000, // Optional: Adjust polling interval if needed
+      refetchOnWindowFocus: true,
+    },
+  });
+
+  // Fetch WGHO (ERC20) balance
+  const {
+    data: wghoBalanceData,
+    error: wghoBalanceError,
+    isLoading: isLoadingWghoBalance,
+  } = useReadContract({
+    address: WGHO_TOKEN_ADDRESS as Address, // Add type assertion if needed or ensure it's typed correctly in constants
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: [lensAccountAddress!],
+    chainId: LENS_CHAIN_ID,
+    query: {
+      enabled: !!lensAccountAddress,
+      // Enable watching for updates (refetches on new blocks)
+      refetchInterval: 5000, // Optional: Adjust polling interval if needed
+      refetchOnWindowFocus: true,
+    },
+  });
+
+  // Format balances safely
+  const formattedNativeBalance =
+    nativeBalanceData?.value !== undefined
+      ? parseFloat(formatUnits(nativeBalanceData.value, lensChain.nativeCurrency.decimals)).toFixed(4)
+      : "0.0000";
+
+  const formattedWghoBalance =
+    typeof wghoBalanceData === "bigint"
+      ? parseFloat(formatUnits(wghoBalanceData, 18)).toFixed(4) // Assuming WGHO also has 18 decimals
+      : "0.0000";
+
+  const isLoading = isLoadingNativeBalance || isLoadingWghoBalance;
+
+  return (
+    <div className="p-4 border rounded-md bg-gray-50">
+      <h2 className="text-lg font-semibold mb-3 text-gray-700">Account Balances</h2>
+      {isLoading && <p className="text-gray-500 text-sm">Loading balances...</p>}
+
+      {/* Native GHO Balance */}
+      <div className="mb-2">
+        {nativeBalanceError && !isLoadingNativeBalance && (
+          <p className="text-red-600 text-sm">
+            Error loading GHO balance: {(nativeBalanceError as BaseError).shortMessage || nativeBalanceError.message}
+          </p>
+        )}
+        {!nativeBalanceError && !isLoadingNativeBalance && lensAccountAddress && (
+          <p className="text-gray-800">
+            <span className="font-medium">Native GHO:</span> <span className="font-mono text-lg">{formattedNativeBalance}</span>{" "}
+            {lensChain.nativeCurrency.symbol}
+          </p>
+        )}
+      </div>
+
+      {/* WGHO Balance */}
+      <div>
+        {wghoBalanceError && !isLoadingWghoBalance && (
+          <p className="text-red-600 text-sm">
+            Error loading WGHO balance: {(wghoBalanceError as BaseError).shortMessage || wghoBalanceError.message}
+          </p>
+        )}
+        {!wghoBalanceError && !isLoadingWghoBalance && lensAccountAddress && (
+          <p className="text-gray-800">
+            <span className="font-medium">WGHO Token:</span> <span className="font-mono text-lg">{formattedWghoBalance}</span> GHO
+          </p>
+        )}
+      </div>
+
+      {!lensAccountAddress && !isLoading && <p className="text-gray-500 text-sm mt-2">Cannot fetch balances without Lens Account address.</p>}
+    </div>
+  );
+}
+</file>
+
+<file path="src/contexts/WalletConnectProvider.tsx">
+// src/contexts/WalletConnectProvider.tsx
+"use client";
+
+import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback, useMemo, useRef } from "react";
+// Import the CLASS and types
+import { WalletConnectService, ServiceEvents, type WalletConnectServiceEvents } from "@/services/walletConnectService";
+import { SessionTypes } from "@walletconnect/types";
+import { IWalletKit, WalletKitTypes } from "@reown/walletkit";
+import { buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
+import { useLensAccount } from "./LensAccountContext";
+import { LENS_CHAIN_ID } from "@/lib/constants";
+import { ErrorResponse } from "@walletconnect/jsonrpc-utils";
+
+// Keep the context state definition
+interface WalletConnectContextState {
+  walletKitInstance: IWalletKit | null;
+  activeSessions: Record<string, SessionTypes.Struct>;
+  pendingProposal: WalletKitTypes.SessionProposal | null;
+  pair: (uri: string) => Promise<void>;
+  disconnect: (topic: string) => Promise<void>;
+  approveSession: () => Promise<void>;
+  rejectSession: () => Promise<void>;
+  isLoading: boolean;
+  isInitializing: boolean;
+  isPairing: boolean;
+  isProcessingAction: boolean;
+  error: string | null;
+  isInitialized: boolean;
+}
+
+const WalletConnectContext = createContext<WalletConnectContextState | undefined>(undefined);
+
+interface WalletConnectProviderProps {
+  children: ReactNode;
+}
+
+const DAPP_METADATA: WalletKitTypes.Metadata = {
+  name: "Lens Account Interface",
+  description: "Interface for managing Lens Account via WalletConnect",
+  url: typeof window !== "undefined" ? window.location.origin : "http://localhost:3000",
+  icons: ["/favicon.ico"],
+};
+
+// --- WalletConnectProvider Component ---
+export function WalletConnectProvider({ children }: WalletConnectProviderProps) {
+  const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
+
+  // --- State Management ---
+  // Use useRef to hold the service instance - persists across renders without causing re-renders itself
+  const serviceRef = useRef<WalletConnectService | null>(null);
+  // State derived from service events or actions
+  const [walletKitInstance, setWalletKitInstance] = useState<IWalletKit | null>(null);
+  const [activeSessions, setActiveSessions] = useState<Record<string, SessionTypes.Struct>>({});
+  const [pendingProposal, setPendingProposal] = useState<WalletKitTypes.SessionProposal | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true); // Start as initializing
+  const [isPairing, setIsPairing] = useState(false);
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false); // Service readiness
+
+  const { lensAccountAddress } = useLensAccount();
+
+  console.log(
+    `%cWalletConnectProvider Render: isInitialized=${isInitialized}, isInitializing=${isInitializing}, isPairing=${isPairing}, isProcessing=${isProcessingAction}, serviceExists=${!!serviceRef.current}, pendingProposal=${!!pendingProposal}`,
+    "color: blue",
+  );
+
+  // --- Effect to Create Instance, Initialize, and Attach Listeners ONCE on Mount ---
+  useEffect(() => {
+    if (!projectId) {
+      console.error("WalletConnectProvider: Project ID missing. Cannot initialize service.");
+      setError("WalletConnect Project ID is missing.");
+      setIsInitializing(false);
+      setIsInitialized(false);
+      return;
+    }
+
+    // Prevent re-initialization if instance already exists in ref (e.g., due to HMR preserving ref)
+    if (serviceRef.current) {
+      console.log(
+        `%cWalletConnectProvider Mount Effect: Service instance already exists in ref. Skipping creation/init. isInitialized=${serviceRef.current.isInitialized()}`,
+        "color: yellow",
+      );
+      // Sync state if needed (e.g. HMR occurred after init finished)
+      if (serviceRef.current.isInitialized() && !isInitialized) {
+        setIsInitialized(true);
+        setIsInitializing(false);
+        setWalletKitInstance(serviceRef.current.getWalletKitInstance() ?? null);
+        setActiveSessions(serviceRef.current.getActiveSessions());
+      } else if (serviceRef.current.isInitializing() && !isInitializing) {
+        setIsInitializing(true);
+      }
+      // Listeners should ideally already be attached if instance exists, but re-attaching defensively
+      // might cause issues if not cleaned up properly. Let's rely on cleanup below.
+    } else {
+      console.log(`%cWalletConnectProvider Mount Effect: Creating NEW service instance and initializing...`, "color: orange");
+      setIsInitializing(true);
+      setError(null);
+      const service = new WalletConnectService(projectId, DAPP_METADATA);
+      serviceRef.current = service; // Store the instance in the ref
+
+      // Call init immediately after creation
+      service.init().catch((initError: Error | unknown) => {
+        console.error("WalletConnectProvider Mount Effect: service.init() rejected.", initError);
+        // Error state is set via the 'error'/'initialized' event listener below
+      });
+    }
+
+    // --- Attach listeners to the current instance in the ref ---
+    const currentService = serviceRef.current;
+    if (!currentService) return; // Should not happen if projectId exists
+
+    console.log(`%cWalletConnectProvider Mount Effect: Attaching listeners to service instance.`, "color: purple");
+
+    // Define handlers (update provider's state based on service events)
+    const handleInitialized: WalletConnectServiceEvents[ServiceEvents.Initialized] = ({ success, instance }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.Initialized} received (success=${success})`, "color: purple");
+      setIsInitialized(success);
+      setWalletKitInstance(success ? instance : null);
+      if (currentService) setActiveSessions(currentService.getActiveSessions()); // Use currentService here
+      setIsInitializing(false);
+      if (!success && !error) setError("Initialization failed via event");
+    };
+    // ... (Keep other handlers: handlePairStatus, handleSessionProposal, etc. - they remain the same) ...
+    const handlePairStatus: WalletConnectServiceEvents[ServiceEvents.PairStatus] = ({ status, message }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.PairStatus} received: ${status}`, "color: purple", message);
+      setIsPairing(status === "pairing");
+      if (status === "error") {
+        setError(message || "Pairing failed");
+        setIsPairing(false);
+      } else if (status !== "pairing") {
+        setError(null);
+      }
+    };
+
+    const handleSessionProposal: WalletConnectServiceEvents[ServiceEvents.SessionProposal] = ({ proposal }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.SessionProposal} received:`, "color: purple", proposal.id);
+      setPendingProposal(proposal);
+      setIsPairing(false);
+      setError(null);
+    };
+
+    const handleSessionConnect: WalletConnectServiceEvents[ServiceEvents.SessionConnect] = ({ session }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.SessionConnect} received:`, "color: purple", session.topic);
+      setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
+      setIsPairing(false);
+      setError(null);
+      setPendingProposal(null);
+    };
+
+    const handleSessionDelete: WalletConnectServiceEvents[ServiceEvents.SessionDelete] = ({ topic }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.SessionDelete} received:`, "color: purple", topic);
+      setActiveSessions((prev) => {
+        const { [topic]: _, ...rest } = prev;
+        return rest;
+      });
+      setIsPairing(false);
+      if (pendingProposal && pendingProposal.params.pairingTopic === topic) {
+        console.log("%cProvider: Clearing pending proposal due to session delete event.", "color: brown");
+        setPendingProposal(null);
+      }
+    };
+
+    const handleSessionsUpdated: WalletConnectServiceEvents[ServiceEvents.SessionsUpdated] = ({ sessions }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.SessionsUpdated} received`, "color: purple", sessions);
+      setActiveSessions(sessions);
+    };
+
+    const handleError: WalletConnectServiceEvents[ServiceEvents.Error] = ({ message }) => {
+      console.error(`%cProvider Listener: ${ServiceEvents.Error} received:`, "color: red", message);
+      setError(message);
+      setIsPairing(false);
+      setIsProcessingAction(false);
+      // Potentially reset initializing state on critical init errors
+      // if (!isInitialized) setIsInitializing(false);
+    };
+
+    const handleIsLoading: WalletConnectServiceEvents[ServiceEvents.IS_LOADING] = ({ isLoading }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.IS_LOADING} received: ${isLoading}`, "color: purple");
+      setIsProcessingAction(isLoading);
+    };
+
+    const handleIsPairing: WalletConnectServiceEvents[ServiceEvents.IS_PAIRING] = ({ isPairing }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.IS_PAIRING} received: ${isPairing}`, "color: purple");
+      setIsPairing(isPairing);
+    };
+
+    // Attach listeners
+    currentService.on(ServiceEvents.Initialized, handleInitialized);
+    currentService.on(ServiceEvents.PairStatus, handlePairStatus);
+    currentService.on(ServiceEvents.SessionProposal, handleSessionProposal);
+    currentService.on(ServiceEvents.SessionConnect, handleSessionConnect);
+    currentService.on(ServiceEvents.SessionDelete, handleSessionDelete);
+    currentService.on(ServiceEvents.SessionsUpdated, handleSessionsUpdated);
+    currentService.on(ServiceEvents.Error, handleError);
+    currentService.on(ServiceEvents.IS_LOADING, handleIsLoading);
+    currentService.on(ServiceEvents.IS_PAIRING, handleIsPairing);
+
+    // Cleanup function: Remove listeners from the instance in the ref
+    return () => {
+      console.log("%cWalletConnectProvider Mount Effect: Cleaning up listeners.", "color: orange");
+      if (serviceRef.current) {
+        console.log("%cDetaching listeners from service instance in ref.", "color: orange");
+        serviceRef.current.off(ServiceEvents.Initialized, handleInitialized);
+        serviceRef.current.off(ServiceEvents.PairStatus, handlePairStatus);
+        serviceRef.current.off(ServiceEvents.SessionProposal, handleSessionProposal);
+        serviceRef.current.off(ServiceEvents.SessionConnect, handleSessionConnect);
+        serviceRef.current.off(ServiceEvents.SessionDelete, handleSessionDelete);
+        serviceRef.current.off(ServiceEvents.SessionsUpdated, handleSessionsUpdated);
+        serviceRef.current.off(ServiceEvents.Error, handleError);
+        serviceRef.current.off(ServiceEvents.IS_LOADING, handleIsLoading);
+        serviceRef.current.off(ServiceEvents.IS_PAIRING, handleIsPairing);
+      }
+    };
+  }, [projectId]); // Run ONLY once when projectId is available
+
+  // --- Context Methods (Interact with the service instance via ref) ---
+  const pair = useCallback(
+    async (uri: string) => {
+      // Use serviceRef.current
+      if (!serviceRef.current?.isInitialized()) return setError("Service not initialized");
+      console.log(`%cWalletConnectProvider: pair called`, "color: cyan");
+      setError(null);
+      await serviceRef.current.pair(uri);
+    },
+    [isInitialized], // Depend on react state `isInitialized` for enabling the action
+  );
+
+  const approveSession = useCallback(async () => {
+    // Use serviceRef.current
+    if (!serviceRef.current?.isInitialized() || !pendingProposal || !lensAccountAddress) {
+      const reason = !isInitialized ? "Service not ready." : !pendingProposal ? "No proposal." : "No Lens address.";
+      setError(`Cannot approve: ${reason}`);
+      return;
+    }
+    console.log(`%cWalletConnectProvider: approveSession called`, "color: cyan");
+    setError(null);
+
+    try {
+      // ... (namespace building logic remains the same)
+      const requiredNamespaces = pendingProposal.params.requiredNamespaces || {};
+      const optionalNamespaces = pendingProposal.params.optionalNamespaces || {};
+      const requestedMethods = [...(requiredNamespaces.eip155?.methods || []), ...(optionalNamespaces.eip155?.methods || [])];
+      const requestedEvents = [...(requiredNamespaces.eip155?.events || []), ...(optionalNamespaces.eip155?.events || [])];
+      const methods = requestedMethods.length > 0 ? requestedMethods : ["eth_sendTransaction", "personal_sign", "eth_signTypedData_v4"];
+      const events = requestedEvents.length > 0 ? requestedEvents : ["chainChanged", "accountsChanged"];
+
+      const approvedNamespaces = buildApprovedNamespaces({
+        proposal: pendingProposal.params,
+        supportedNamespaces: {
+          eip155: {
+            chains: [`eip155:${LENS_CHAIN_ID}`],
+            methods: methods,
+            events: events,
+            accounts: [`eip155:${LENS_CHAIN_ID}:${lensAccountAddress}`],
+          },
+        },
+      });
+      await serviceRef.current.approveSession(pendingProposal, approvedNamespaces);
+      setPendingProposal(null); // Still clear proposal state here
+    } catch (e) {
+      console.error(`%cWalletConnectProvider: approveSession failed:`, "color: red", e);
+    }
+  }, [isInitialized, pendingProposal, lensAccountAddress]);
+
+  const rejectSession = useCallback(async () => {
+    // Use serviceRef.current
+    if (!serviceRef.current?.isInitialized() || !pendingProposal) {
+      const reason = !isInitialized ? "Service not ready." : "No proposal.";
+      setError(`Cannot reject: ${reason}`);
+      return;
+    }
+    console.log(`%cWalletConnectProvider: rejectSession called`, "color: cyan");
+    setError(null);
+    try {
+      await serviceRef.current.rejectSession(pendingProposal, getSdkError("USER_REJECTED"));
+      setPendingProposal(null);
+    } catch (e) {
+      console.error(`%cWalletConnectProvider: rejectSession failed:`, "color: red", e);
+    }
+  }, [isInitialized, pendingProposal]);
+
+  const disconnect = useCallback(
+    async (topic: string) => {
+      // Use serviceRef.current
+      if (!serviceRef.current?.isInitialized()) return setError("Service not initialized");
+      console.log(`%cWalletConnectProvider: disconnect called`, "color: cyan");
+      setError(null);
+      await serviceRef.current.disconnectSession(topic, getSdkError("USER_DISCONNECTED"));
+    },
+    [isInitialized],
+  );
+
+  // --- Context Value Memoization ---
+  const contextValue = useMemo(
+    () => ({
+      walletKitInstance,
+      activeSessions,
+      pendingProposal,
+      pair,
+      disconnect,
+      approveSession,
+      rejectSession,
+      isLoading: isInitializing || isPairing || isProcessingAction,
+      isInitializing,
+      isPairing,
+      isProcessingAction,
+      error,
+      isInitialized,
+    }),
+    [
+      walletKitInstance,
+      activeSessions,
+      pendingProposal,
+      pair,
+      disconnect,
+      approveSession,
+      rejectSession,
+      isInitializing,
+      isPairing,
+      isProcessingAction,
+      error,
+      isInitialized,
+    ],
+  );
+
+  // Only render children when projectId is available, otherwise show error/loading
+  return projectId ? (
+    <WalletConnectContext.Provider value={contextValue}>{children}</WalletConnectContext.Provider>
+  ) : (
+    <div>Error: WalletConnect Project ID is missing. Cannot initialize WalletConnect.</div>
+  );
+}
+
+// Keep your existing hook
+export function useWalletConnect() {
+  const context = useContext(WalletConnectContext);
+  if (context === undefined) {
+    throw new Error("useWalletConnect must be used within a WalletConnectProvider");
+  }
+  return context;
+}
+</file>
+
+<file path="src/lib/constants.ts">
+// lib/constants.ts
+import { defineChain, parseAbi } from "viem";
+
+export const LENS_CHAIN_ID = 232;
+
+export const lensChain = defineChain({
+  id: LENS_CHAIN_ID,
+  name: "Lens Chain",
+  nativeCurrency: { name: "GHO", symbol: "GHO", decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.lens.xyz"],
+    },
+  },
+  blockExplorers: {
+    default: { name: "Lens Explorer", url: "https://explorer.lens.xyz" },
+  },
+  testnet: false,
+});
+
+// --- Contract Addresses ---
+export const LENS_GLOBAL_NAMESPACE_ADDRESS = "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615";
+
+// --- ABIs ---
+export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
+  "function accountOf(string calldata name) view returns (address)",
+  "function usernameOf(address user) view returns (string)",
+]);
+
+// Added owner() function
+export const LENS_ACCOUNT_ABI = parseAbi([
+  "function owner() view returns (address)",
+  "function executeTransaction(address target, uint256 value, bytes calldata data)",
+]);
+
+export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
+export const ERC20_ABI = parseAbi(["function balanceOf(address owner) view returns (uint256)"]);
+</file>
+
+<file path="src/services/walletConnectService.ts">
+// src/services/walletConnectService.ts
+import { WalletKit, IWalletKit, WalletKitTypes } from "@reown/walletkit";
+import { Core } from "@walletconnect/core";
+import { ICore, SessionTypes, SignClientTypes } from "@walletconnect/types";
+import { ErrorResponse } from "@walletconnect/jsonrpc-utils";
+import EventEmitter from "events";
+
+// --- Export Enums and Interfaces ---
+export enum ServiceEvents {
+  Initialized = "initialized",
+  PairStatus = "pair_status",
+  SessionProposal = "session_proposal",
+  SessionConnect = "session_connect",
+  SessionDelete = "session_delete",
+  SessionRequest = "session_request",
+  Error = "error",
+  SessionsUpdated = "sessions_updated",
+  IS_LOADING = "is_loading",
+  IS_PAIRING = "is_pairing",
+}
+
+export interface WalletConnectServiceEvents {
+  [ServiceEvents.Initialized]: (payload: { success: boolean; instance: IWalletKit | null }) => void;
+  [ServiceEvents.PairStatus]: (payload: { status: "pairing" | "paired" | "error"; message?: string }) => void;
+  [ServiceEvents.SessionProposal]: (payload: { proposal: WalletKitTypes.SessionProposal }) => void;
+  [ServiceEvents.SessionConnect]: (payload: { session: SessionTypes.Struct }) => void;
+  [ServiceEvents.SessionDelete]: (payload: { topic: string }) => void;
+  [ServiceEvents.SessionRequest]: (payload: { request: WalletKitTypes.SessionRequest }) => void;
+  [ServiceEvents.Error]: (payload: { message: string }) => void;
+  [ServiceEvents.SessionsUpdated]: (payload: { sessions: Record<string, SessionTypes.Struct> }) => void;
+  [ServiceEvents.IS_LOADING]: (payload: { isLoading: boolean }) => void;
+  [ServiceEvents.IS_PAIRING]: (payload: { isPairing: boolean }) => void;
+}
+// ------------------------------------
+
+// --- Export the Class Definition ---
+export class WalletConnectService extends EventEmitter {
+  private core: ICore | undefined;
+  private walletKit: IWalletKit | undefined;
+  private projectId: string;
+  private metadata: WalletKitTypes.Metadata;
+  private _isInitialized = false;
+  private _isInitializing = false;
+  private initPromise: Promise<IWalletKit> | null = null;
+
+  constructor(projectId: string, metadata: WalletKitTypes.Metadata) {
+    super();
+    if (!projectId) {
+      throw new Error("WalletConnectService: Project ID is required.");
+    }
+    this.projectId = projectId;
+    this.metadata = JSON.parse(JSON.stringify(metadata));
+    console.log("WalletConnectService: NEW Instance created (by Provider).");
+  }
+
+  // --- Getters (keep as before) ---
+  public isInitialized(): boolean {
+    return this._isInitialized;
+  }
+
+  public isInitializing(): boolean {
+    return this._isInitializing;
+  }
+
+  public getWalletKitInstance(): IWalletKit | undefined {
+    return this.walletKit;
+  }
+
+  public getActiveSessions(): Record<string, SessionTypes.Struct> {
+    return this.walletKit?.getActiveSessions() || {};
+  }
+
+  // --- Core Initialization (Idempotent - crucial for this pattern too) ---
+  async init(): Promise<IWalletKit> {
+    // Still useful to prevent accidental double-calls on the same instance
+    if (this._isInitialized && this.walletKit) {
+      console.log("WalletConnectService Instance: Init called but already initialized.");
+      this.emit(ServiceEvents.Initialized, { success: true, instance: this.walletKit }); // Re-emit status
+      return this.walletKit;
+    }
+    if (this._isInitializing && this.initPromise) {
+      console.log("WalletConnectService Instance: Init called while already initializing. Returning existing promise.");
+      return this.initPromise;
+    }
+
+    console.log("WalletConnectService Instance: Starting initialization (init)...");
+    this._isInitializing = true;
+    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
+
+    this.initPromise = (async () => {
+      try {
+        console.log("WalletConnectService Instance: Initializing WalletConnect Core...");
+        // Disable global core check within this Core instance to potentially avoid the warning
+        // Note: This might have side effects if other parts of the app *rely* on the global core,
+        // but given our structure, it should be okay.
+        process.env.DISABLE_GLOBAL_CORE = "true"; // Attempt to disable internal check
+        this.core = new Core({ projectId: this.projectId });
+        process.env.DISABLE_GLOBAL_CORE = "false"; // Re-enable immediately after if needed elsewhere
+
+        console.log("WalletConnectService Instance: Initializing WalletKit...");
+        this.walletKit = await WalletKit.init({
+          core: this.core,
+          metadata: this.metadata,
+        });
+
+        this.setupInternalListeners();
+        this._isInitialized = true;
+        console.log("WalletConnectService Instance: Initialization successful.");
+        this.emit(ServiceEvents.Initialized, { success: true, instance: this.walletKit });
+        this.emit(ServiceEvents.SessionsUpdated, { sessions: this.getActiveSessions() });
+        return this.walletKit;
+      } catch (error: unknown) {
+        console.error("WalletConnectService Instance: Initialization failed:", error);
+        this._isInitialized = false;
+        this.emit(ServiceEvents.Initialized, { success: false, instance: null });
+        this.emit(ServiceEvents.Error, { message: `Initialization failed: ${(error as Error).message}` });
+        throw error;
+      } finally {
+        this._isInitializing = false;
+        this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
+        this.initPromise = null;
+      }
+    })();
+
+    return this.initPromise;
+  }
+
+  // --- setupInternalListeners, Event Handlers, Public Methods (keep as before) ---
+  private setupInternalListeners() {
+    // ... (same as previous version) ...
+    if (!this.walletKit) {
+      console.error("WalletConnectService: Cannot setup listeners, WalletKit not ready.");
+      return;
+    }
+    console.log("WalletConnectService: Setting up internal event listeners...");
+
+    this.walletKit.off("session_proposal", this.handleSessionProposal);
+    this.walletKit.on("session_proposal", this.handleSessionProposal);
+
+    if (this.walletKit.engine?.signClient?.events) {
+      this.walletKit.engine.signClient.events.off("session_connect", this.handleSessionConnect);
+      this.walletKit.engine.signClient.events.on("session_connect", this.handleSessionConnect);
+    } else {
+      console.warn("WalletConnectService: SignClient events not available for session_connect listener.");
+    }
+
+    this.walletKit.off("session_delete", this.handleSessionDelete);
+    this.walletKit.on("session_delete", this.handleSessionDelete);
+
+    console.log("WalletConnectService: Internal listeners attached.");
+  }
+
+  // --- Event Handlers (bound methods) ---
+  private handleSessionProposal = (proposal: WalletKitTypes.SessionProposal) => {
+    console.log("Service Handler: session_proposal", proposal.id);
+    this.emit(ServiceEvents.SessionProposal, { proposal });
+    this.emit(ServiceEvents.IS_PAIRING, { isPairing: false });
+  };
+
+  private handleSessionConnect = (sessionArgs: SignClientTypes.EventArguments["session_connect"]) => {
+    console.log("Service Handler: session_connect", sessionArgs.session.topic);
+    this.emit(ServiceEvents.SessionConnect, { session: sessionArgs.session });
+    this.emit(ServiceEvents.SessionsUpdated, { sessions: this.getActiveSessions() });
+  };
+
+  private handleSessionDelete = (event: { id: number; topic: string }) => {
+    console.log("Service Handler: session_delete", event.topic);
+    this.emit(ServiceEvents.SessionDelete, { topic: event.topic });
+    this.emit(ServiceEvents.SessionsUpdated, { sessions: this.getActiveSessions() });
+  };
+
+  // --- Public Methods ---
+  async pair(uri: string): Promise<void> {
+    if (!this._isInitialized || !this.walletKit) throw new Error("WalletConnectService: Not initialized. Cannot pair.");
+    console.log("Service: Attempting to pair with URI:", uri);
+    this.emit(ServiceEvents.IS_PAIRING, { isPairing: true });
+    this.emit(ServiceEvents.PairStatus, { status: "pairing" });
+    try {
+      await this.walletKit.pair({ uri });
+      console.log("Service: Pairing initiated for URI:", uri);
+    } catch (error: unknown) {
+      console.error("Service: Pairing failed:", error);
+      const message = (error as Error).message || "Pairing failed";
+      this.emit(ServiceEvents.PairStatus, { status: "error", message });
+      this.emit(ServiceEvents.IS_PAIRING, { isPairing: false });
+      this.emit(ServiceEvents.Error, { message });
+      throw error;
+    }
+  }
+
+  async approveSession(proposal: WalletKitTypes.SessionProposal, approvedNamespaces: SessionTypes.Namespaces): Promise<SessionTypes.Struct> {
+    if (!this._isInitialized || !this.walletKit) throw new Error("WalletConnectService: Not initialized. Cannot approve session.");
+    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
+    try {
+      console.log("Service: Approving session:", proposal.id);
+      const session = await this.walletKit.approveSession({
+        id: proposal.id,
+        namespaces: approvedNamespaces,
+      });
+      console.log("Service: Session approved via approveSession:", session.topic);
+      return session;
+    } catch (error: unknown) {
+      console.error("Service: Failed to approve session:", error);
+      this.emit(ServiceEvents.Error, { message: (error as Error).message || "Failed to approve session" });
+      throw error;
+    } finally {
+      this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
+    }
+  }
+
+  async rejectSession(proposal: WalletKitTypes.SessionProposal, reason: ErrorResponse): Promise<void> {
+    if (!this._isInitialized || !this.walletKit) throw new Error("WalletConnectService: Not initialized. Cannot reject session.");
+    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
+    try {
+      console.log("Service: Rejecting session:", proposal.id);
+      await this.walletKit.rejectSession({
+        id: proposal.id,
+        reason: reason,
+      });
+      console.log("Service: Session rejected:", proposal.id);
+    } catch (error: unknown) {
+      console.error("Service: Failed to reject session:", error);
+      this.emit(ServiceEvents.Error, { message: (error as Error).message || "Failed to reject session" });
+      throw error;
+    } finally {
+      this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
+    }
+  }
+
+  async disconnectSession(topic: string, reason: ErrorResponse): Promise<void> {
+    if (!this._isInitialized || !this.walletKit) throw new Error("WalletConnectService: Not initialized. Cannot disconnect session.");
+    this.emit(ServiceEvents.IS_LOADING, { isLoading: true });
+    try {
+      console.log("Service: Disconnecting session:", topic);
+      await this.walletKit.disconnectSession({
+        topic: topic,
+        reason: reason,
+      });
+      console.log("Service: Disconnect call successful for topic:", topic);
+    } catch (error: unknown) {
+      console.error("Service: Failed to disconnect session:", error);
+      this.emit(ServiceEvents.Error, { message: (error as Error).message || "Failed to disconnect session" });
+      throw error;
+    } finally {
+      this.emit(ServiceEvents.IS_LOADING, { isLoading: false });
+    }
+  }
+
+  // Typed EventEmitter methods
+  on<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    return super.on(event, listener as (...args: any[]) => void);
+  }
+  once<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    return super.once(event, listener as (...args: any[]) => void);
+  }
+  off<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    return super.off(event, listener as (...args: any[]) => void);
+  }
+  removeListener<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    return super.removeListener(event, listener as (...args: any[]) => void);
+  }
+  emit<E extends keyof WalletConnectServiceEvents>(event: E, ...args: Parameters<WalletConnectServiceEvents[E]>): boolean {
+    return super.emit(event, ...args);
+  }
+}
+// ------------------------------------
 </file>
 
 <file path="src/app/dashboard/page.tsx">
