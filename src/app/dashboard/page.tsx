@@ -6,12 +6,13 @@ import { useAccount, useDisconnect } from "wagmi";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AccountDisplay } from "@/components/AccountDisplay";
-import { WcConnect } from "@/components/WcConnect"; // Import the WC component
+import { WcConnect } from "@/components/WcConnect";
+import { WcRequestDisplay } from "@/components/WcRequestDisplay"; // <<<--- IMPORTED
 
 export default function Dashboard() {
   const { lensAccountAddress, ownerAddress, clearAccount } = useLensAccount();
   const { isConnected } = useAccount();
-  const { disconnect: disconnectOwnerWallet } = useDisconnect(); // Rename to avoid conflict
+  const { disconnect: disconnectOwnerWallet } = useDisconnect();
   const router = useRouter();
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function Dashboard() {
   }, [isConnected, lensAccountAddress, ownerAddress, router, clearAccount]);
 
   const handleLogout = () => {
-    disconnectOwnerWallet(); // Use renamed disconnect
+    disconnectOwnerWallet();
     clearAccount();
     console.log("Logout initiated");
   };
@@ -45,9 +46,9 @@ export default function Dashboard() {
           onClick={handleLogout}
           className="absolute top-4 right-4 px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
         >
-          Logout Owner
+          {" "}
+          Logout Owner{" "}
         </button>
-
         <h1 className="text-2xl font-bold mb-4 text-center">Dashboard</h1>
         <div className="space-y-6">
           <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
@@ -58,16 +59,11 @@ export default function Dashboard() {
             <p className="text-sm font-medium text-blue-800">Managing Lens Account:</p>
             <p className="text-xs text-blue-700 break-words font-mono">{lensAccountAddress}</p>
           </div>
-
           <AccountDisplay />
-
-          {/* Add the WalletConnect Component */}
           <WcConnect />
-
-          {/* Placeholder for Stage 5 content (WC Requests) */}
-          <div className="p-4 border rounded-md bg-gray-50">
-            <p className="text-gray-600">WalletConnect request display will appear here (Stage 5).</p>
-          </div>
+          {/* --- Render the Request Display Component --- */}
+          <WcRequestDisplay /> {/* <<<--- ADDED */}
+          {/* ------------------------------------------- */}
         </div>
       </div>
     </main>

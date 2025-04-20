@@ -9,17 +9,19 @@ import { IWalletKit, WalletKitTypes } from "@reown/walletkit";
 import { buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
 import { useLensAccount } from "./LensAccountContext";
 import { LENS_CHAIN_ID } from "@/lib/constants";
-import { ErrorResponse } from "@walletconnect/jsonrpc-utils";
+import { ErrorResponse, JsonRpcResponse } from "@walletconnect/jsonrpc-utils";
 
 // Keep the context state definition
 interface WalletConnectContextState {
   walletKitInstance: IWalletKit | null;
   activeSessions: Record<string, SessionTypes.Struct>;
   pendingProposal: WalletKitTypes.SessionProposal | null;
+  pendingRequest: WalletKitTypes.SessionRequest | null;
   pair: (uri: string) => Promise<void>;
   disconnect: (topic: string) => Promise<void>;
   approveSession: () => Promise<void>;
   rejectSession: () => Promise<void>;
+  respondRequest: (response: JsonRpcResponse) => Promise<void>;
   isLoading: boolean;
   isInitializing: boolean;
   isPairing: boolean;
@@ -50,6 +52,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
   const [walletKitInstance, setWalletKitInstance] = useState<IWalletKit | null>(null);
   const [activeSessions, setActiveSessions] = useState<Record<string, SessionTypes.Struct>>({});
   const [pendingProposal, setPendingProposal] = useState<WalletKitTypes.SessionProposal | null>(null);
+  const [pendingRequest, setPendingRequest] = useState<WalletKitTypes.SessionRequest | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isPairing, setIsPairing] = useState(false);
   const [isProcessingAction, setIsProcessingAction] = useState(false);
@@ -59,7 +62,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
   const { lensAccountAddress } = useLensAccount();
 
   console.log(
-    `%cWalletConnectProvider Render: isInitialized=${isInitialized}, isInitializing=${isInitializing}, isPairing=${isPairing}, isProcessing=${isProcessingAction}, serviceExists=${!!serviceRef.current}, pendingProposal=${!!pendingProposal}`,
+    `%cWalletConnectProvider Render: isInitialized=${isInitialized}, isInitializing=${isInitializing}, isPairing=${isPairing}, isProcessing=${isProcessingAction}, serviceExists=${!!serviceRef.current}, pendingProposal=${!!pendingProposal}, pendingRequest=${!!pendingRequest}`,
     "color: blue",
   );
 
@@ -161,6 +164,15 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
       console.log(`%cProvider Listener: ${ServiceEvents.SessionsUpdated} received`, "color: purple", sessions);
       setActiveSessions(sessions);
     };
+    const handleSessionRequest: WalletConnectServiceEvents[ServiceEvents.SessionRequest] = ({ request }) => {
+      console.log(`%cProvider Listener: ${ServiceEvents.SessionRequest} received:`, "color: purple", request.id, request.params.request.method);
+      if (request.params.request.method === "eth_sendTransaction") {
+        setPendingRequest(request);
+        setError(null);
+      } else {
+        console.warn(`%cProvider Listener: Received unhandled request method: ${request.params.request.method}`, "color: orange");
+      }
+    };
     const handleError: WalletConnectServiceEvents[ServiceEvents.Error] = ({ message }) => {
       console.error(`%cProvider Listener: ${ServiceEvents.Error} received:`, "color: red", message);
       setError(message);
@@ -186,6 +198,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
     currentService.on(ServiceEvents.Error, handleError);
     currentService.on(ServiceEvents.IS_LOADING, handleIsLoading);
     currentService.on(ServiceEvents.IS_PAIRING, handleIsPairing);
+    currentService.on(ServiceEvents.SessionRequest, handleSessionRequest);
 
     // Cleanup function
     return () => {
@@ -202,6 +215,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
         currentService.off(ServiceEvents.Error, handleError);
         currentService.off(ServiceEvents.IS_LOADING, handleIsLoading);
         currentService.off(ServiceEvents.IS_PAIRING, handleIsPairing);
+        currentService.off(ServiceEvents.SessionRequest, handleSessionRequest);
       }
     };
   }, []); // Run listeners setup only once
@@ -313,16 +327,41 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
   );
   // >>>>>>>> ----------------------------- <<<<<<<<
 
+  const respondRequest = useCallback(
+    async (response: JsonRpcResponse) => {
+      if (!serviceRef.current?.isInitialized() || !pendingRequest) {
+        setError("Service not initialized or no pending request.");
+        console.error("WalletConnectProvider: respondRequest called incorrectly.");
+        return;
+      }
+      console.log(`%cWalletConnectProvider: respondRequest called for ID ${response.id}`, "color: cyan", response);
+      setError(null);
+
+      try {
+        await serviceRef.current.respondSessionRequest(pendingRequest.topic, response);
+        console.log(`%cWalletConnectProvider: response sent successfully for request ${response.id}`, "color: green");
+      } catch (e) {
+        console.error(`%cWalletConnectProvider: respondRequest failed for ID ${response.id}:`, "color: red", e);
+        setError((e as Error)?.message || "Failed to send response");
+      } finally {
+        setPendingRequest(null);
+      }
+    },
+    [isInitialized, pendingRequest],
+  );
+
   // --- Context Value Memoization ---
   const contextValue = useMemo(
     () => ({
       walletKitInstance,
       activeSessions,
       pendingProposal,
+      pendingRequest,
       pair,
       disconnect, // Pass the reverted disconnect function
       approveSession,
       rejectSession,
+      respondRequest,
       isLoading: isInitializing || isPairing || isProcessingAction,
       isInitializing,
       isPairing,
@@ -334,10 +373,12 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
       walletKitInstance,
       activeSessions,
       pendingProposal,
+      pendingRequest,
       pair,
       disconnect, // Include reverted disconnect
       approveSession,
       rejectSession,
+      respondRequest,
       isInitializing,
       isPairing,
       isProcessingAction,
