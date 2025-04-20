@@ -2522,7 +2522,7 @@ We will follow an incremental development approach, building and verifying core 
   - [x] Go to a test dApp (e.g., Reown's React Dapp Example) and generate a WC v2 URI.
   - [x] Paste the URI into the input field in _this_ app and click "Connect".
   - [x] The connection should establish successfully (no prompt needed in the Owner EOA wallet for pairing/session _approval_ in this flow).
-  - [ ] The `WcConnect.tsx` component should update to show the connected dApp's information. Check the dApp, it should also show a successful connection to the _Lens Account address_.
+  - [x] The `WcConnect.tsx` component should update to show the connected dApp's information. Check the dApp, it should also show a successful connection to the _Lens Account address_.
 
 ### Stage 5: WalletConnect v2 Transaction Request Handling
 

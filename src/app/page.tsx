@@ -1,4 +1,4 @@
-// app/page.tsx
+// src/app/page.tsx
 "use client";
 
 import { DiscoveryForm } from "@/components/DiscoveryForm";
@@ -24,8 +24,8 @@ export default function Home() {
     address: connectedAddress,
     chainId: connectedChainId,
     isConnected,
-    isConnecting,
-    isReconnecting,
+    // isConnecting, // REMOVED - Unused
+    // isReconnecting, // REMOVED - Unused
   } = useAccount(); // Get connected account info
   const router = useRouter(); // Initialize router
   const { setVerifiedAccount, clearAccount: clearContext } = useLensAccount(); // Get context actions
@@ -124,8 +124,8 @@ export default function Home() {
 
   const showConnectButton =
     expectedOwner && !isLoadingOwner && !ownerFetchError;
-  const connectButtonDisabled =
-    !!verificationError || connectedChainId !== LENS_CHAIN_ID; // Disable if error or wrong chain
+  // const connectButtonDisabled = // REMOVED - Unused
+  //   !!verificationError || connectedChainId !== LENS_CHAIN_ID;
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">

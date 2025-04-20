@@ -104,32 +104,32 @@ We will follow an incremental development approach, building and verifying core 
 **Goal:** Implement the WalletConnect URI input and pairing logic, allowing the web app (representing the Lens Account) to connect to external dApps.
 
 - **Tasks:**
-  - [ ] **Create WC Service:** Set up `services/walletConnectService.ts`. Include an `init` method that creates a `Web3Wallet` instance from `@reown/walletkit` using the `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`. Store the instance.
-  - [ ] **Create WC Context:** Set up `contexts/WalletConnectProvider.tsx`. Initialize the `walletConnectService` on mount. Provide the `web3wallet` instance, active sessions state (`useState`), pairing state (`useState`), and pending request state (`useState`) via context.
-  - [ ] **Wrap Layout:** Wrap the relevant part of the application (e.g., dashboard layout or root layout) with `WalletConnectProvider`.
-  - [ ] **Create WcConnect Component:** Build `components/WcConnect.tsx`.
+  - [x] **Create WC Service:** Set up `services/walletConnectService.ts`. Include an `init` method that creates a `Web3Wallet` instance from `@reown/walletkit` using the `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`. Store the instance.
+  - [x] **Create WC Context:** Set up `contexts/WalletConnectProvider.tsx`. Initialize the `walletConnectService` on mount. Provide the `web3wallet` instance, active sessions state (`useState`), pairing state (`useState`), and pending request state (`useState`) via context.
+  - [x] **Wrap Layout:** Wrap the relevant part of the application (e.g., dashboard layout or root layout) with `WalletConnectProvider`.
+  - [x] **Create WcConnect Component:** Build `components/WcConnect.tsx`.
     - Include an `<input>` for the WC URI and a `<button>` ("Connect").
     - Add state for the input value.
     - On button click, call a `pair` function provided by the `WalletConnectContext`.
-  - [ ] **Implement Pairing Logic:**
+  - [x] **Implement Pairing Logic:**
     - In `WalletConnectProvider` (or the service), define the `pair(uri)` function. Call `web3wallet.core.pairing.pair({ uri })`. Handle potential errors.
     - Set up the `session_proposal` listener (`web3wallet.on('session_proposal', handleSessionProposal)`).
-  - [ ] **Implement Session Approval:**
+  - [x] **Implement Session Approval:**
     - Define `handleSessionProposal(proposal)` in the service/provider.
     - Retrieve the `lensAccountAddress` and `LENS_CHAIN_ID` from state/constants.
     - Construct the `approvedNamespaces` object containing only the `eip155` namespace, with the `LENS_CHAIN_ID`, the Lens Account address (formatted as `eip155:232:0x...`), required methods (`eth_sendTransaction`, `personal_sign`, etc.), and events (`chainChanged`, `accountsChanged`).
     - Call `web3wallet.approveSession({ id: proposal.id, namespaces: approvedNamespaces })`.
     - On success, update the `activeSessions` state in the context.
     - Handle potential errors during approval.
-  - [ ] **Update UI:** Modify `WcConnect.tsx` to:
+  - [x] **Update UI:** Modify `WcConnect.tsx` to:
     - Conditionally render the input/button form OR the connected dApp info based on `activeSessions` state from context.
     - Display dApp metadata (name, icon, url) from the active session.
 - **Verification:**
-  - [ ] Open the dashboard page. The WC input form is visible.
-  - [ ] Go to a test dApp (e.g., Reown's React Dapp Example) and generate a WC v2 URI.
-  - [ ] Paste the URI into the input field in _this_ app and click "Connect".
-  - [ ] The connection should establish successfully (no prompt needed in the Owner EOA wallet for pairing/session _approval_ in this flow).
-  - [ ] The `WcConnect.tsx` component should update to show the connected dApp's information. Check the dApp, it should also show a successful connection to the _Lens Account address_.
+  - [x] Open the dashboard page. The WC input form is visible.
+  - [x] Go to a test dApp (e.g., Reown's React Dapp Example) and generate a WC v2 URI.
+  - [x] Paste the URI into the input field in _this_ app and click "Connect".
+  - [x] The connection should establish successfully (no prompt needed in the Owner EOA wallet for pairing/session _approval_ in this flow).
+  - [x] The `WcConnect.tsx` component should update to show the connected dApp's information. Check the dApp, it should also show a successful connection to the _Lens Account address_.
 
 ### Stage 5: WalletConnect v2 Transaction Request Handling
 
