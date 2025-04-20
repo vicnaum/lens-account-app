@@ -1,0 +1,4673 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+accounts/
+  toMultisigSmartAccount.md
+  toSinglesigSmartAccount.md
+  toSmartAccount.md
+actions/
+  deployContract.md
+  deposit.md
+  estimateFee.md
+  estimateGasL1ToL2.md
+  finalizeWithdrawal.md
+  getAllBalances.md
+  getBaseTokenL1Address.md
+  getBlockDetails.md
+  getBridgehubContractAddress.md
+  getDefaultBridgeAddress.md
+  getL1Allowance.md
+  getL1Balance.md
+  getL1BatchBlockRange.md
+  getL1BatchDetails.md
+  getL1BatchNumber.md
+  getL1ChainId.md
+  getL1TokenAddress.md
+  getL1TokenBalance.md
+  getL2TokenAddress.md
+  getLogProof.md
+  getMainContractAddress.md
+  getRawBlockTransactions.md
+  getTestnetPaymasterAddress.md
+  getTransactionDetails.md
+  isWithdrawalFinalized.md
+  requestExecute.md
+  sendTransaction.md
+  signTransaction.md
+  withdraw.md
+  writeContract.md
+utilities/
+  bridge/
+    getL2HashFromPriorityOp.md
+  paymaster/
+    getApprovalBasedPaymasterInput.md
+    getGeneralPaymasterInput.md
+  parseEip712Transaction.md
+chains.md
+client.md
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="accounts/toMultisigSmartAccount.md">
+---
+description: Creates a multi-signature ZKsync Smart Account
+---
+
+# toMultisigSmartAccount (ZKsync)
+
+Creates a multi-signature [ZKsync Smart Account](https://docs.zksync.io/build/developer-reference/account-abstraction/building-smart-accounts) from a Contract Address and the Private Key of the owner.
+
+## Usage
+
+```ts twoslash
+import { toMultisigSmartAccount } from 'viem/zksync'
+
+const account = toMultisigSmartAccount({
+  address: '0xf39Fd6e51aad8F6F4ce6aB8827279cffFb92266', 
+  privateKeys: ['0x...', '0x...']
+})
+```
+
+## Parameters
+
+### address
+
+- **Type:** `Hex`
+
+Address of the deployed Account's Contract implementation.
+
+```ts
+const account = toMultisigSmartAccount({
+  address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', // [!code focus]
+  privateKeys: ['0x...', '0x...']
+})
+```
+
+### privateKeys
+
+- **Type:** `Hex[]`
+
+Private Keys of the owners.
+
+```ts
+const account = toMultisigSmartAccount({
+  address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', 
+  privateKeys: ['0x...', '0x...'] // [!code focus]
+})
+```
+</file>
+
+<file path="accounts/toSinglesigSmartAccount.md">
+---
+description: Creates a single-signature ZKsync Smart Account
+---
+
+# toSinglesigSmartAccount (ZKsync)
+
+Creates a single-signature [ZKsync Smart Account](https://docs.zksync.io/build/developer-reference/account-abstraction/building-smart-accounts) from a Contract Address and the Private Key of the owner.
+
+## Usage
+
+```ts twoslash
+import { toSinglesigSmartAccount } from 'viem/zksync'
+
+const account = toSinglesigSmartAccount({
+  address: '0xf39Fd6e51aad8F6F4ce6aB8827279cffFb92266', 
+  privateKey: '0x...'
+})
+```
+
+## Parameters
+
+### address
+
+- **Type:** `Hex`
+
+Address of the deployed Account's Contract implementation.
+
+```ts
+const account = toSinglesigSmartAccount({
+  address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', // [!code focus]
+  privateKey: '0x...'
+})
+```
+
+### privateKey
+
+- **Type:** `Hex`
+
+Private Key of the owner.
+
+```ts
+const account = toSinglesigSmartAccount({
+  address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', 
+  privateKey: '0x...' // [!code focus]
+})
+```
+</file>
+
+<file path="accounts/toSmartAccount.md">
+---
+description: Creates a ZKsync Smart Account
+---
+
+# toSmartAccount (ZKsync)
+
+Creates a [ZKsync Smart Account](https://docs.zksync.io/build/developer-reference/account-abstraction/building-smart-accounts) from a Contract Address and a custom sign function.
+
+## Usage
+
+```ts twoslash
+import { toSmartAccount } from 'viem/zksync'
+
+const account = toSmartAccount({
+  address: '0xf39Fd6e51aad8F6F4ce6aB8827279cffFb92266', 
+  async sign({ hash }) {
+    // ... signing logic
+    return '0x...'
+  }
+})
+```
+
+## Parameters
+
+### address
+
+- **Type:** `Hex`
+
+Address of the deployed Account's Contract implementation.
+
+```ts
+const account = toSmartAccount({
+  address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', // [!code focus]
+  async sign({ hash }) {
+    // ...
+  }
+})
+```
+
+### sign
+
+- **Type:** `({ hash: Hex }) => Hex`
+
+Custom sign function for the Smart Account.
+
+```ts
+const account = toSmartAccount({
+  address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', 
+  async sign({ hash }) { // [!code focus]
+    // ... // [!code focus]
+  } // [!code focus]
+})
+```
+</file>
+
+<file path="actions/deployContract.md">
+---
+description: Deploys a contract to the network, given bytecode & constructor arguments by using EIP712 transaction.
+---
+
+# deployContract
+
+Deploys a contract to the network, given bytecode & constructor arguments by using EIP712 transaction.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { wagmiAbi } from './abi'
+import { account, walletClient } from './config'
+
+const hash = await walletClient.deployContract({
+  abi,
+  account,
+  bytecode: '0x608060405260405161083e38038061083e833981016040819052610...',
+})
+```
+
+```ts [abi.ts]
+export const wagmiAbi = [
+  ...
+  {
+    inputs: [],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  ...
+] as const;
+```
+
+```ts [config.ts]
+import { createWalletClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { zksync } from 'viem/chains'
+import { eip712Actions } from 'viem/zksync'
+
+export const walletClient = createWalletClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(eip712WalletActions())
+
+// JSON-RPC Account
+export const [account] = await walletClient.getAddresses()
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+### Deploying with Constructor Args
+
+:::code-group
+
+```ts [example.ts] {8}
+import { deployContract } from 'viem'
+import { wagmiAbi } from './abi'
+import { account, walletClient } from './config'
+
+const hash = await walletClient.deployContract({
+  abi,
+  account,
+  args: [69420],
+  bytecode: '0x608060405260405161083e38038061083e833981016040819052610...',
+})
+```
+
+```ts [abi.ts] {4}
+export const wagmiAbi = [
+  ...
+  {
+    inputs: [{ name: "x", type: "uint32" }],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  ...
+] as const;
+```
+
+```ts [config.ts]
+import { createWalletClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { zksync } from 'viem/chains'
+import { eip712Actions } from 'viem/zksync'
+
+export const walletClient = createWalletClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(eip712WalletActions())
+
+// JSON-RPC Account
+export const [account] = await walletClient.getAddresses()
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+### Deploying with Factory Deps
+
+:::code-group
+
+```ts [example.ts] {8}
+import { deployContract } from 'viem'
+import { wagmiAbi } from './abi'
+import { account, walletClient } from './config'
+
+const hash = await walletClient.deployContract({
+  abi,
+  account,
+  args: [69420],
+  bytecode: '0x608060405260405161083e38038061083e833981016040819052610...',
+  factoryDeps: [
+    '0x702040405260405161083e38038061083e833981016040819123456...', 
+    '0x102030405260405161083e38038061083e833981016040819112233...'
+  ]
+})
+```
+
+```ts [abi.ts] {4}
+export const wagmiAbi = [
+  ...
+  {
+    inputs: [{ name: "x", type: "uint32" }],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  ...
+] as const;
+```
+
+```ts [config.ts]
+import { createWalletClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { zksync } from 'viem/chains'
+import { eip712Actions } from 'viem/zksync'
+
+export const walletClient = createWalletClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(eip712WalletActions())
+
+// JSON-RPC Account
+export const [account] = await walletClient.getAddresses()
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+## Returns
+
+[`Hash`](/docs/glossary/types#hash)
+
+The [Transaction](/docs/glossary/terms#transaction) hash.
+
+## Parameters
+
+### abi
+
+- **Type:** [`Abi`](/docs/glossary/types#abi)
+
+The contract's ABI.
+
+```ts
+const hash = await walletClient.deployContract({
+  abi: wagmiAbi, // [!code focus]
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+  bytecode: '0x608060405260405161083e38038061083e833981016040819052610...',
+})
+```
+
+### account
+
+- **Type:** `Account | Address`
+
+The Account to deploy the contract from.
+
+Accepts a [JSON-RPC Account](/docs/clients/wallet#json-rpc-accounts) or [Local Account (Private Key, etc)](/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
+
+```ts
+const hash = await walletClient.deployContract({
+  abi: wagmiAbi, 
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266', // [!code focus]
+  bytecode: '0x608060405260405161083e38038061083e833981016040819052610...',
+})
+```
+
+### bytecode
+
+- **Type:** [`Hex`](/docs/glossary/types#hex)
+
+The contract's bytecode.
+
+```ts
+const hash = await walletClient.deployContract({
+  abi: wagmiAbi,
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+  bytecode: '0x608060405260405161083e38038061083e833981016040819052610...', // [!code focus]
+})
+```
+
+### args
+
+- **Type:** Inferred from ABI.
+
+Constructor arguments to call upon deployment.
+
+```ts
+const hash = await walletClient.deployContract({
+  abi: wagmiAbi,
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+  bytecode: '0x608060405260405161083e38038061083e833981016040819052610...',
+  args: [69] // [!code focus]
+})
+```
+
+### deploymentType (optional)
+
+- **Type:** `'create' | 'create2' | 'createAccount' | 'create2Account'`
+
+Specifies the type of contract deployment. Defaults to 'create'.
+
+```ts
+const hash = await walletClient.deployContract({
+  abi: wagmiAbi,
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+  bytecode: '0x608060405260405161083e38038061083e833981016040819052610...',
+  args: [69],
+  deploymentType: 'create2' // [!code focus]
+})
+```
+
+### salt (optional)
+
+- **Type:** [`Hash`](/docs/glossary/types#hash)
+
+Specifies a unique identifier for the contract deployment.
+
+
+```ts
+const hash = await walletClient.deployContract({
+  abi: wagmiAbi,
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+  bytecode: '0x608060405260405161083e38038061083e833981016040819052610...',
+  args: [69],
+  salt: '0x201050...' // [!code focus]
+})
+```
+
+### gasPerPubdata (optional)
+
+- **Type:** `bigint`
+
+The amount of gas for publishing one byte of data on Ethereum.
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  gasPerPubdata: 50000, // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+
+### paymaster (optional)
+
+- **Type:** `Account | Address`
+
+Address of the paymaster account that will pay the fees. The `paymasterInput` field is required with this one.
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+
+### paymasterInput (optional)
+
+- **Type:** `0x${string}`
+
+Input data to the paymaster. The `paymaster` field is required with this one.
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+</file>
+
+<file path="actions/deposit.md">
+---
+description: Transfers the specified token from the associated account on the L1 network to the target account on the L2 network.
+---
+
+# deposit
+
+Transfers the specified token from the associated account on the L1 network to the target account on the L2 network.
+The token can be either ETH or any ERC20 token. For ERC20 tokens, enough approved tokens must be associated with
+the specified L1 bridge (default one or the one defined in `bridgeAddress`).
+In this case, depending on is the chain ETH-based or not `approveToken` or `approveBaseToken`
+can be enabled to perform token approval. If there are already enough approved tokens for the L1 bridge,
+token approval will be skipped.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { account, walletClient, zksyncClient } from './config'
+import { legacyEthAddress } from 'viem/zksync'
+
+// deposit ETH
+const hash = await walletClient.deposit({
+  account,
+  client: zksyncClient,
+  token: legacyEthAddress,
+  amount: 7_000_000_000n,
+  to: account.address,
+  refundRecipient: account.address,
+})
+
+// deposit ERC20
+const txHash = await walletClient.deposit({
+    account,
+    client: zksyncClient,
+    token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+    amount: 20n,
+    to: account.address,
+    approveToken: true,
+    refundRecipient: account.address,
+})
+```
+
+```ts [config.ts]
+import { createWalletClient, createPublicClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { zksync, mainnet } from 'viem/chains'
+import { publicActionsL2, walletActionsL1 } from 'viem/zksync'
+
+export const zksyncClient = createPublicClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL2())
+
+export const walletClient = createWalletClient({
+  chain: mainnet,
+  transport: custom(window.ethereum)
+}).extend(walletActionsL1())
+
+// JSON-RPC Account
+export const [account] = await walletClient.getAddresses()
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+### Account Hoisting
+
+If you do not wish to pass an `account` to every `deposit`, you can also hoist the Account on the Wallet Client (see `config.ts`).
+
+[Learn more](/docs/clients/wallet#account).
+
+:::code-group
+
+```ts [example.ts]
+import { walletClient, zksyncClient } from './config'
+import { legacyEthAddress } from 'viem/zksync'
+
+// deposit ETH
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: legacyEthAddress,
+  amount: 7_000_000_000n,
+  to: walletClient.account.address,
+  refundRecipient: walletClient.account.address,
+})
+
+// deposit ERC20
+const txHash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  approveToken: true,
+  refundRecipient: walletClient.account.address,
+})
+```
+
+```ts [config.ts (JSON-RPC Account)]
+import { createWalletClient, custom } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2, walletActionsL1 } from 'viem/zksync'
+
+export const zksyncClient = createPublicClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL2())
+
+// Retrieve Account from an EIP-1193  Provider. // [!code focus]
+const [account] = await window.ethereum.request({  // [!code focus]
+  method: 'eth_requestAccounts' // [!code focus]
+}) // [!code focus]
+
+export const walletClient = createWalletClient({
+  account,
+  transport: custom(window.ethereum) // [!code focus]
+}).extend(walletActionsL1())
+```
+
+```ts [config.ts (Local Account)]
+import { createWalletClient, custom } from 'viem'
+import { zksync } from 'viem/chains'
+import { privateKeyToAccount } from 'viem/accounts'
+import { publicActionsL2, walletActionsL1 } from 'viem/zksync'
+
+export const zksyncClient = createPublicClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL2())
+
+export const walletClient = createWalletClient({
+  account: privateKeyToAccount('0x...'), // [!code focus]
+  transport: custom(window.ethereum)
+}).extend(walletActionsL1())
+```
+
+:::
+
+## Returns
+
+[`Hash`](/docs/glossary/types#hash)
+
+The [Transaction](/docs/glossary/terms#transaction) hash.
+
+## Parameters
+
+### client
+
+- **Type:** `Client`
+
+The L2 client for fetching data from L2 chain.
+
+```ts
+const hash = await walletClient.deposit({
+  client: zksyncClient, // [!code focus]
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  approveToken: true,
+  refundRecipient: walletClient.account.address,
+})
+```
+
+### token
+
+- **Type:** `Address`
+
+The address of the token to deposit.
+
+```ts
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55', // [!code focus]
+  amount: 20n,
+  to: walletClient.account.address,  
+  approveToken: true,
+  refundRecipient: walletClient.account.address,
+})
+```
+
+### amount
+
+- **Type:** `bigint`
+
+The amount of the token to deposit.
+
+```ts
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n, // [!code focus]
+  to: walletClient.account.address,
+  approveToken: true,
+  refundRecipient: walletClient.account.address,
+})
+```
+
+### to (optional)
+
+- **Type:** `Address`
+- **Default:** `walletClient.account`
+
+The address that will receive the deposited tokens on L2.
+
+```ts
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address, // [!code focus]
+  approveToken: true,
+  refundRecipient: walletClient.account.address,
+})
+```
+
+### operatorTip (optional)
+
+- **Type:** `bigint`
+
+The tip the operator will receive on top of the base cost of the transaction.
+Currently, ZKsync node do not consider this tip.
+
+```ts
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  operatorTip: 100_000n, // [!code focus]
+  approveToken: true,
+  refundRecipient: walletClient.account.address,
+})
+```
+
+### l2GasLimit (optional)
+
+- **Type:** `bigint`
+
+Maximum amount of L2 gas that transaction can consume during execution on L2.
+
+```ts
+const hash = await walletClient.requestExecute({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  l2GasLimit: 900_000n, // [!code focus]
+  approveToken: true,
+  refundRecipient: walletClient.account.address,
+})
+```
+
+### gasPerPubdataByte (optional)
+
+- **Type:** `bigint`
+
+The L2 gas price for each published L1 calldata byte.
+
+```ts
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  approveToken: true,
+  refundRecipient: walletClient.account.address,
+  gasPerPubdataByte: 250_000_000_000n // [!code focus]
+})
+```
+
+### refundRecipient (optional)
+
+- **Type:** `Address`
+- **Default:** `walletClient.account`
+
+The address on L2 that will receive the refund for the transaction.
+If the transaction fails, it will also be the address to receive `amount`.
+
+```ts
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  approveToken: true,
+  refundRecipient: walletClient.account.address, // [!code focus]
+})
+```
+
+### bridgeAddress (optional)
+
+- **Type:** `Address`
+- **Default:** ZKsync L1 shared bridge
+
+The address of the bridge contract to be used.
+
+```ts
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  approveToken: true,
+  refundRecipient: walletClient.account.address, 
+  bridgeAddress: '0xFC073319977e314F251EAE6ae6bE76B0B3BAeeCF' // [!code focus]
+})
+```
+
+### customBridgeData (optional)
+
+- **Type:** `Hex`
+
+Additional data that can be sent to a bridge.
+
+```ts
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  approveToken: true,
+  refundRecipient: walletClient.account.address,
+  bridgeAddress: '0xFC073319977e314F251EAE6ae6bE76B0B3BAeeCF', 
+  customBridgeData: '0x...' // [!code focus],
+})
+```
+
+### approveToken (optional)
+
+- **Type:** `boolean | TransactionRequest`
+
+Whether token approval should be performed under the hood.
+Set this flag to true (or provide transaction overrides) if the bridge does
+not have sufficient allowance. The approval transaction is executed only if
+the bridge lacks sufficient allowance; otherwise, it is skipped.
+
+::: code-group
+
+```ts [boolean.ts]
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  approveToken: true, // [!code focus],
+  refundRecipient: walletClient.account.address,
+  bridgeAddress: '0xFC073319977e314F251EAE6ae6bE76B0B3BAeeCF',
+})
+```
+
+```ts [overrides.ts]
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  approveToken: { 
+    maxFeePerGas: 200_000_000_000n // [!code focus],  
+  },
+  refundRecipient: walletClient.account.address,
+  bridgeAddress: '0xFC073319977e314F251EAE6ae6bE76B0B3BAeeCF',
+})
+```
+
+:::
+
+### approveBaseToken (optional)
+
+- **Type:** `boolean | TransactionRequest`
+
+Whether base token approval should be performed under the hood.
+Set this flag to true (or provide transaction overrides) if the bridge does
+not have sufficient allowance. The approval transaction is executed only if
+the bridge lacks sufficient allowance; otherwise, it is skipped.
+
+::: code-group
+
+```ts [boolean.ts]
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  approveBaseToken: true, // [!code focus],
+  refundRecipient: walletClient.account.address,
+  bridgeAddress: '0xFC073319977e314F251EAE6ae6bE76B0B3BAeeCF',
+})
+```
+
+```ts [overrides.ts]
+const hash = await walletClient.deposit({
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  approveBaseToken: { 
+    maxFeePerGas: 200_000_000_000n // [!code focus],  
+  },
+  refundRecipient: walletClient.account.address,
+  bridgeAddress: '0xFC073319977e314F251EAE6ae6bE76B0B3BAeeCF',
+})
+```
+
+:::
+
+### chain (optional)
+
+- **Type:** [`Chain`](/docs/glossary/types#chain)
+- **Default:** `walletClient.chain`
+
+The target chain. If there is a mismatch between the wallet's current chain & the target chain, an error will be thrown.
+
+```ts
+import { zksync } from 'viem/chains' // [!code focus]
+
+const hash = await walletClient.deposit({
+  chain: zksync, // [!code focus]
+  client: zksyncClient,
+  token: '0x70a0F165d6f8054d0d0CF8dFd4DD2005f0AF6B55',
+  amount: 20n,
+  to: walletClient.account.address,
+  approveToken: true,
+  refundRecipient: walletClient.account.address,
+})
+```
+</file>
+
+<file path="actions/estimateFee.md">
+---
+description: Returns an estimated Fee for requested transaction.
+---
+
+# estimateFee
+
+Returns an estimated Fee for requested transaction.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const fee = await client.estimateFee({
+  account: '0x636A122e48079f750d44d13E5b39804227E1467e',
+  to: "0xa61464658AfeAf65CccaaFD3a512b69A83B77618",
+  value: 0n
+});
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`Fee`
+
+The fee values.
+
+## Parameters
+
+### account
+
+- **Type:** `Account | Address`
+
+The Account to send the transaction from.
+
+Accepts a [JSON-RPC Account](/docs/clients/wallet#json-rpc-accounts) or [Local Account (Private Key, etc)](/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
+
+```ts
+const fee = await walletClient.estimateFee({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266', // [!code focus]
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### to
+
+- **Type:** `0x${string}`
+
+The transaction recipient or contract address.
+
+```ts
+const fee = await walletClient.estimateFee({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8', // [!code focus]
+  value: 1000000000000000000n,
+  nonce: 69
+})
+```
+
+### data (optional)
+
+- **Type:** `0x${string}`
+
+A contract hashed method call with encoded args.
+
+```ts
+const fee = await walletClient.estimateFee({
+  data: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // [!code focus]
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### gasPrice (optional)
+
+- **Type:** `bigint`
+
+The price (in wei) to pay per gas. Only applies to [Legacy Transactions](/docs/glossary/terms#legacy-transaction).
+
+```ts
+const fee = await walletClient.estimateFee({
+  account,
+  gasPrice: parseGwei('20'), // [!code focus]
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### nonce (optional)
+
+- **Type:** `number`
+
+Unique number identifying this transaction.
+
+```ts
+const fee = await walletClient.estimateFee({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n,
+  nonce: 69 // [!code focus]
+})
+```
+
+### value (optional)
+
+- **Type:** `bigint`
+
+Value in wei sent with this transaction.
+
+```ts
+const fee = await walletClient.estimateFee({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: parseEther('1'), // [!code focus]
+  nonce: 69
+})
+```
+
+### gasPerPubdata (optional)
+
+- **Type:** `bigint`
+
+The amount of gas for publishing one byte of data on Ethereum.
+
+```ts
+const fee = await walletClient.estimateFee({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  gasPerPubdata: 50000, // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+
+### factoryDeps (optional)
+
+- **Type:** `[0x${string}]`
+
+Contains bytecode of the deployed contract.
+
+```ts
+const fee = await walletClient.estimateFee({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  factoryDeps: ['0xcde...'], // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+
+### paymaster (optional)
+
+- **Type:** `Account | Address`
+
+Address of the paymaster account that will pay the fees. The `paymasterInput` field is required with this one.
+
+```ts
+const fee = await walletClient.estimateFee({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+
+### paymasterInput (optional)
+
+- **Type:** `0x${string}`
+
+Input data to the paymaster. The `paymaster` field is required with this one.
+
+```ts
+const fee = await walletClient.estimateFee({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+</file>
+
+<file path="actions/estimateGasL1ToL2.md">
+---
+description: Returns an estimated gas for L1 to L2 execution.
+---
+
+# estimateGasL1ToL2
+
+Returns an estimated gas for L1 to L2 execution
+
+## Usage
+
+:::code-group
+```ts [example.ts]
+import { client } from './config'
+
+const gas = await client.estimateGasL1ToL2({
+  account: '0x636A122e48079f750d44d13E5b39804227E1467e',
+  to: '0xa61464658AfeAf65CccaaFD3a512b69A83B77618',
+  value: 0n
+});
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`bigint`
+
+The estimated gas value.
+
+## Parameters
+
+### account
+
+- **Type:** `Account | Address`
+
+The Account to send the transaction from.
+
+Accepts a [JSON-RPC Account](/docs/clients/wallet#json-rpc-accounts) or [Local Account (Private Key, etc)](/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
+
+```ts
+const gas = await walletClient.estimateGasL1ToL2({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266', // [!code focus]
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### to
+
+- **Type:** `0x${string}`
+
+The transaction recipient or contract address.
+
+```ts
+const gas = await walletClient.estimateGasL1ToL2({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8', // [!code focus]
+  value: 1000000000000000000n,
+  nonce: 69
+})
+```
+
+### data (optional)
+
+- **Type:** `0x${string}`
+
+A contract hashed method call with encoded args.
+
+```ts
+const gas = await walletClient.estimateGasL1ToL2({
+  data: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // [!code focus]
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### gasPrice (optional)
+
+- **Type:** `bigint`
+
+The price (in wei) to pay per gas. Only applies to [Legacy Transactions](/docs/glossary/terms#legacy-transaction).
+
+```ts
+const gas = await walletClient.estimateGasL1ToL2({
+  account,
+  gasPrice: parseGwei('20'), // [!code focus]
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### nonce (optional)
+
+- **Type:** `number`
+
+Unique number identifying this transaction.
+
+```ts
+const gas = await walletClient.estimateGasL1ToL2({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n,
+  nonce: 69 // [!code focus]
+})
+```
+
+### value (optional)
+
+- **Type:** `bigint`
+
+Value in wei sent with this transaction.
+
+```ts
+const gas = await walletClient.estimateGasL1ToL2({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: parseEther('1'), // [!code focus]
+  nonce: 69
+})
+```
+
+### gasPerPubdata (optional)
+
+- **Type:** `bigint`
+
+The amount of gas for publishing one byte of data on Ethereum.
+
+```ts
+const gas = await walletClient.estimateGasL1ToL2({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  gasPerPubdata: 50000, // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+
+### factoryDeps (optional)
+
+- **Type:** `[0x${string}]`
+
+Contains bytecode of the deployed contract.
+
+```ts
+const gas = await walletClient.estimateGasL1ToL2({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  factoryDeps: ['0xcde...'], // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+
+### paymaster (optional)
+
+- **Type:** `Account | Address`
+
+Address of the paymaster account that will pay the gas. The `paymasterInput` field is required with this one.
+
+```ts
+const gas = await walletClient.estimateGasL1ToL2({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+
+### paymasterInput (optional)
+
+- **Type:** `0x${string}`
+
+Input data to the paymaster. The `paymaster` field is required with this one.
+
+```ts
+const gas = await walletClient.estimateGasL1ToL2({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+</file>
+
+<file path="actions/finalizeWithdrawal.md">
+---
+description: Proves the inclusion of the `L2->L1` withdrawal message.
+---
+
+# finalizeWithdrawal
+
+Proves the inclusion of the `L2->L1` withdrawal message.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { account, walletClient, zksyncClient } from './config'
+
+const hash = await walletClient.finalizeWithdrawal({
+  account,
+  client: zksyncClient,
+  hash: '0x…',
+})
+```
+
+```ts [config.ts]
+import { createWalletClient, createPublicClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { zksync, mainnet } from 'viem/chains'
+import { publicActionsL2, walletActionsL1 } from 'viem/zksync'
+
+export const zksyncClient = createPublicClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL2())
+
+export const walletClient = createWalletClient({
+  chain: mainnet,
+  transport: custom(window.ethereum)
+}).extend(walletActionsL1())
+
+// JSON-RPC Account
+export const [account] = await walletClient.getAddresses()
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+### Account Hoisting
+
+If you do not wish to pass an `account` to every `finalizeWithdrawal`, you can also hoist the Account on the Wallet Client (see `config.ts`).
+
+[Learn more](/docs/clients/wallet#account).
+
+:::code-group
+
+```ts [example.ts]
+import { walletClient, zksyncClient } from './config'
+ 
+const hash = await walletClient.finalizeWithdrawal({
+  client: zksyncClient,
+  hash: '0x…',
+})
+```
+
+```ts [config.ts (JSON-RPC Account)]
+import { createWalletClient, custom } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2, walletActionsL1 } from 'viem/zksync'
+
+export const zksyncClient = createPublicClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL2())
+
+// Retrieve Account from an EIP-1193  Provider. // [!code focus]
+const [account] = await window.ethereum.request({  // [!code focus]
+  method: 'eth_requestAccounts' // [!code focus]
+}) // [!code focus]
+
+export const walletClient = createWalletClient({
+  account,
+  transport: custom(window.ethereum) // [!code focus]
+}).extend(walletActionsL1())
+```
+
+```ts [config.ts (Local Account)]
+import { createWalletClient, custom } from 'viem'
+import { zksync } from 'viem/chains'
+import { privateKeyToAccount } from 'viem/accounts'
+import { publicActionsL2, walletActionsL1 } from 'viem/zksync'
+
+export const zksyncClient = createPublicClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL2())
+
+export const walletClient = createWalletClient({
+  account: privateKeyToAccount('0x...'), // [!code focus]
+  transport: custom(window.ethereum)
+}).extend(walletActionsL1())
+```
+
+:::
+
+## Returns
+
+[`Hash`](/docs/glossary/types#hash)
+
+The [Transaction](/docs/glossary/terms#transaction) hash.
+
+## Parameters
+
+### client
+
+- **Type:** `Client`
+
+The L2 client for fetching data from L2 chain.
+
+```ts
+const hash = await walletClient.finalizeWithdrawal({
+  client: zksyncClient, // [!code focus]
+  hash: '0x…',
+})
+```
+
+### hash 
+
+- **Type:** `Hex`
+
+Hash of the L2 transaction where the withdrawal was initiated.
+
+```ts
+const hash = await walletClient.finalizeWithdrawal({
+  client: zksyncClient,
+  hash: '0x…',  // [!code focus]
+})
+```
+
+### index (optional)
+
+- **Type:** `number`
+- **Default:** `0`
+
+In case there were multiple withdrawals in one transaction, you may pass an index of the
+withdrawal you want to finalize.
+
+```ts
+const hash = await walletClient.finalizeWithdrawal({
+  client: zksyncClient,
+  hash: '0x…',
+  index: 0n, // [!code focus]
+})
+```
+
+### chain (optional)
+
+- **Type:** [`Chain`](/docs/glossary/types#chain)
+- **Default:** `walletClient.chain`
+
+The target chain. If there is a mismatch between the wallet's current chain & the target chain, an error will be thrown.
+
+```ts
+import { zksync } from 'viem/chains' // [!code focus]
+
+const hash = await walletClient.finalizeWithdrawal({
+  chain: zksync, // [!code focus]
+  client: zksyncClient,
+  hash: '0x…',
+})
+```
+</file>
+
+<file path="actions/getAllBalances.md">
+---
+description: Returns all known balances for a given account.
+---
+
+# getAllBalances
+
+Returns all known balances for a given account.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client, account } from './config'
+
+const balances = await client.getAllBalances({
+  account
+});
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+
+// JSON-RPC Account
+export const account = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
+// Local Account
+export const account = privateKeyToAccount(...)
+
+```
+:::
+
+## Returns
+
+`GetAllBalancesReturnType`
+
+Array of all known balances for an address.
+
+## Parameters
+
+### account
+
+- **Type:** `Account | Address`
+
+The Account used for check.
+
+Accepts a [JSON-RPC Account](/docs/clients/wallet#json-rpc-accounts) or [Local Account (Private Key, etc)](/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
+
+```ts
+const balances = await client.getAllBalances({
+  account: "0x36615Cf349d7F6344891B1e7CA7C72883F5dc049"  // [!code focus]
+});
+```
+</file>
+
+<file path="actions/getBaseTokenL1Address.md">
+---
+description: Returns the base token L1 address.
+---
+
+# getBaseTokenL1Address
+
+Returns the address of the base L1 token.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const address = await client.getBaseTokenL1Address();
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`Address`
+
+Base Token L1 address.
+</file>
+
+<file path="actions/getBlockDetails.md">
+---
+description: Returns additional ZKsync-specific information about the L2 block.
+---
+
+# getBlockDetails
+
+Returns additional ZKsync-specific information about the L2 block.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const blockDetails = await client.getBlockDetails({
+  number: 1
+});
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`BaseBlockDetails`
+
+Structure that represent ZKsync-specific information about L2 block.
+
+## Parameters
+
+### number
+
+Block Number
+
+- **Type** `number`
+
+```ts
+const blockDetails = await client.getBlockDetails({
+  number: 1 // [!code focus]
+}); 
+```
+</file>
+
+<file path="actions/getBridgehubContractAddress.md">
+---
+description: Returns the Bridgehub smart contract address.
+---
+
+# getBridgehubContractAddress
+
+Returns the Bridgehub smart contract address.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const address = await client.getBridgehubContractAddress();
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`Address`
+
+Bridgehub smart contract address.
+</file>
+
+<file path="actions/getDefaultBridgeAddress.md">
+---
+description: Returns the addresses of the default ZKsync Era bridge contracts on both L1 and L2.
+---
+
+# getDefaultBridgeAddresses
+
+Returns the addresses of the default ZKsync Era bridge contracts on both L1 and L2.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const addresses = await client.getDefaultBridgeAddresses();
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`GetDefaultBridgeAddressesReturnType`
+
+Addresses of the default ZKsync Era bridge contracts on both L1 and L2.
+</file>
+
+<file path="actions/getL1Allowance.md">
+---
+description: Determines the amount of approved tokens for a specific L1 bridge.
+---
+
+# getL1Allowance
+
+Determines the amount of approved tokens for a specific L1 bridge.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { account, publicClient } from './config'
+
+const allowance = await publicClient.getL1Allowance({
+  account
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B',
+  bridgeAddress: '0x84DbCC0B82124bee38e3Ce9a92CdE2f943bab60D',
+})
+```
+
+```ts [config.ts]
+import { createPublicClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { mainnet } from 'viem/chains'
+import { publicActionsL1 } from 'viem/zksync'
+
+export const publicClient = createPublicClient({
+  chain: mainnet,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL1())
+
+// JSON-RPC Account
+export const account = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+## Returns
+
+`bigint`
+
+Returns the amount of approved tokens.
+
+## Parameters
+
+### account
+
+- **Type:** `Account | Address`
+
+The Account used for check.
+
+Accepts a [JSON-RPC Account](/docs/clients/wallet#json-rpc-accounts) or [Local Account (Private Key, etc)](/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
+
+```ts
+const allowance = await publicClient.getL1Allowance({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266' // [!code focus]
+  blockTag: 'latest',
+  bridgeAddress: '0x84DbCC0B82124bee38e3Ce9a92CdE2f943bab60D',
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B',
+})
+```
+
+### blockTag (optional)
+
+- **Type:** `BlockTag | undefined`
+
+In which block an allowance should be checked on. The latest processed one is the default option.
+
+```ts
+const allowance = await publicClient.getL1Allowance({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
+  blockTag: 'latest', // [!code focus]
+  bridgeAddress: '0x84DbCC0B82124bee38e3Ce9a92CdE2f943bab60D',
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B',
+})
+```
+
+### bridgeAddress
+
+- **Type:** `Address`
+
+The address of the bridge contract to be used.
+
+```ts
+const allowance = await publicClient.getL1Allowance({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+  blockTag: 'latest', 
+  bridgeAddress: '0x84DbCC0B82124bee38e3Ce9a92CdE2f943bab60D', // [!code focus]
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B', 
+})
+```
+
+### token
+
+- **Type:** `Address`
+
+The Ethereum address of the token.
+
+```ts
+const allowance = await publicClient.getL1Allowance({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+  blockTag: 'latest',
+  bridgeAddress: '0x84DbCC0B82124bee38e3Ce9a92CdE2f943bab60D',
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B', // [!code focus]
+})
+```
+</file>
+
+<file path="actions/getL1Balance.md">
+---
+description: Returns the amount of the token held by the account on the L1 network.
+---
+
+# getL1Balance
+
+Returns the amount of the token held by the account on the L1 network.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts (token balance)]
+import { account, publicClient } from './config'
+
+const balance = await publicClient.getL1Balance({
+  account
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B',
+})
+```
+
+```ts [example.ts (ETH balance)]
+import { account, publicClient } from './config'
+
+const balance = await publicClient.getL1Balance({
+  account
+})
+```
+
+```ts [config.ts]
+import { createPublicClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { mainnet } from 'viem/chains'
+import { publicActionsL1 } from 'viem/zksync'
+
+export const publicClient = createPublicClient({
+  chain: mainnet,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL1())
+
+// JSON-RPC Account
+export const account = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+## Returns
+
+`bigint`
+
+Returns the amount of the tokens.
+
+## Parameters
+
+### account (optional)
+
+- **Type:** `Account | Address`
+
+The Account used for check.
+
+Accepts a [JSON-RPC Account](/docs/clients/wallet#json-rpc-accounts) or [Local Account (Private Key, etc)](/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
+
+```ts
+const balance = await publicClient.getL1Balance({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266' // [!code focus]
+  blockTag: 'latest',
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B',
+})
+```
+
+### blockTag (optional)
+
+- **Type:** `BlockTag | undefined`
+
+In which block an balance should be checked on. The latest processed one is the default option.
+
+```ts
+const balance = await publicClient.getL1Balance({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
+  blockTag: 'latest', // [!code focus]
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B',
+})
+```
+
+### token (optional)
+
+- **Type:** `Address`
+
+The address of the token. Defaults to ETH if not provided.
+
+```ts
+const balance = await publicClient.getL1Balance({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+  blockTag: 'latest',
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B', // [!code focus]
+})
+```
+</file>
+
+<file path="actions/getL1BatchBlockRange.md">
+---
+description: Returns the range of blocks contained within a batch given by batch number.
+---
+
+# getL1BatchBlockRange
+
+Returns the range of blocks contained within a batch given by batch number.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const batchBlockRange = await client.getL1BatchBlockRange({
+  number: 1
+});
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`GetL1BatchBlockRangeReturnType`
+
+Array of two elements representing the range of blocks within a batch.
+
+## Parameters
+
+### number
+
+L1 Batch Number
+
+- **Type** `number`
+
+```ts
+const batchBlockRange = await client.getL1BatchBlockRange({
+  number: 1  // [!code focus]
+});
+```
+</file>
+
+<file path="actions/getL1BatchDetails.md">
+---
+description: Returns data pertaining to a given batch.
+---
+
+# getL1BatchDetails
+
+Returns data pertaining to a given batch.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const batchDetails = await client.getL1BatchDetails({
+  number: 1
+});
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`GetL1BatchDetailsReturnType`
+
+Batch details.
+
+## Parameters
+
+### number
+
+L1 Batch Number
+
+- **Type** `number`
+
+```ts
+const batchDetails = await client.getL1BatchDetails({
+  number: 1  // [!code focus]
+});
+```
+</file>
+
+<file path="actions/getL1BatchNumber.md">
+---
+description: Returns the latest L1 batch number.
+---
+
+# getL1BatchNumber
+
+Returns the latest L1 batch number.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const latestNumber = await client.getL1BatchNumber();
+```
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`Hex`
+
+Latest L1 batch number.
+</file>
+
+<file path="actions/getL1ChainId.md">
+---
+description: Returns the Chain Id of underlying L1 network.
+---
+
+# getL1ChainId
+
+Returns the Chain Id of underlying L1 network.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const chainId = await client.getL1ChainId();
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`Hex`
+
+L1 Chain ID.
+</file>
+
+<file path="actions/getL1TokenAddress.md">
+---
+description: Returns the L1 token address equivalent for a L2 token address as they are not equal.
+---
+
+# getL1TokenAddress
+
+Returns the L1 token address equivalent for a L2 token address as they are not equal.
+
+:::info
+
+Only works for tokens bridged on default ZKsync Era bridges.
+
+:::
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const address = await client.getL1TokenAddress({
+  token: '0x3e7676937A7E96CFB7616f255b9AD9FF47363D4b'
+})
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+    chain: zksync,
+    transport: http(),
+}).extend(publicActionsL2())
+```
+
+:::
+
+## Returns
+
+`Address`
+
+Returns the L1 token address equivalent for a L2 token address.
+
+## Parameters
+
+### token
+
+- **Type:** `Address`
+
+The address of the token on L2.
+
+```ts
+const address = await client.getL1TokenAddress({
+    token: '0x3e7676937A7E96CFB7616f255b9AD9FF47363D4b'
+})
+```
+</file>
+
+<file path="actions/getL1TokenBalance.md">
+---
+description: Retrieve the token balance held by the contract on L1.
+---
+
+# getL1TokenBalance
+
+Retrieve the token balance held by the contract on L1.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { account, publicClient } from './config'
+
+const balance = await publicClient.getL1TokenBalance({
+  account
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B',
+})
+```
+
+```ts [config.ts]
+import { createPublicClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { mainnet } from 'viem/chains'
+import { publicActionsL1 } from 'viem/zksync'
+
+export const publicClient = createPublicClient({
+  chain: mainnet,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL1())
+
+// JSON-RPC Account
+export const account = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+## Returns
+
+`bigint`
+
+Returns the amount of the tokens.
+
+## Parameters
+
+### account
+
+- **Type:** `Account | Address`
+
+The Account used for check.
+
+Accepts a [JSON-RPC Account](/docs/clients/wallet#json-rpc-accounts) or [Local Account (Private Key, etc)](/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
+
+```ts
+const balance = await publicClient.getL1TokenBalance({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266' // [!code focus]
+  blockTag: 'latest',
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B',
+})
+```
+
+### blockTag (optional)
+
+- **Type:** `BlockTag | undefined`
+
+In which block an balance should be checked on. The latest processed one is the default option.
+
+```ts
+const balance = await publicClient.getL1TokenBalance({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
+  blockTag: 'latest', // [!code focus]
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B',
+})
+```
+
+### token
+
+- **Type:** `Address`
+
+The address of the token.
+
+```ts
+const balance = await publicClient.getL1TokenBalance({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+  blockTag: 'latest',
+  token: '0x5C221E77624690fff6dd741493D735a17716c26B', // [!code focus]
+})
+```
+</file>
+
+<file path="actions/getL2TokenAddress.md">
+---
+description: Returns the L2 token address equivalent for a L1 token address as they are not equal.
+---
+
+# getL2TokenAddress
+
+Returns the L2 token address equivalent for a L1 token address as they are not equal.
+
+:::info
+Only works for tokens bridged on default ZKsync Era bridges.
+:::
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const address = await client.getL2TokenAddress({
+    token: '0x5C221E77624690fff6dd741493D735a17716c26B'
+})
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+    chain: zksync,
+    transport: http(),
+}).extend(publicActionsL2())
+```
+
+:::
+
+## Returns
+
+`Address`
+
+Returns the L2 token address equivalent for a L1 token address.
+
+## Parameters
+
+### token
+
+- **Type:** `Address`
+
+The address of the token on L1.
+
+```ts
+const address = await client.getL2TokenAddress({
+    token: '0x5C221E77624690fff6dd741493D735a17716c26B'
+})
+```
+
+### bridgeAddress (optional)
+
+- **Type:** `Address`
+
+The address of custom bridge, which will be used to get l2 token address.
+
+```ts
+const address = await client.getL2TokenAddress({
+    token: '0x5C221E77624690fff6dd741493D735a17716c26B',
+    bridgeAddress: '0xf8c919286126ccf2e8abc362a15158a461429c82' // [!code focus]
+})
+```
+</file>
+
+<file path="actions/getLogProof.md">
+---
+description: Given a transaction hash, and an index of the L2 to L1 log produced within the transaction, it returns the proof for the corresponding L2 to L1 log.
+---
+
+# getLogProof
+
+Returns the proof for the corresponding L2 to L1 log.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const proof = await client.getLogProof({
+  txHash: '0x...',
+  index: 1
+});
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`GetLogProofReturnType`
+
+Proof of the corresponding L2 to L1 log
+
+## Parameters
+
+### txHash
+
+Hash of the L2 transaction the L2 to L1 log was produced within.
+
+```ts
+const proof = await client.getLogProof({
+  txHash: '0x...', // [!code focus]
+  index: 1
+});
+```
+
+### index (optional)
+
+The index of the L2 to L1 log in the transaction.
+
+```ts
+const proof = await client.getLogProof({
+  txHash: '0x...', 
+  index: 1 // [!code focus]
+});
+
+```
+</file>
+
+<file path="actions/getMainContractAddress.md">
+---
+description: Returns the address of a Main ZKsync Contract.
+---
+
+# getMainContractAddress
+
+Returns the address of a Main ZKsync Contract.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const address = await client.getMainContractAddress();
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`Address`
+
+Main ZKsync Era smart contract address.
+</file>
+
+<file path="actions/getRawBlockTransactions.md">
+---
+description: Returns data of transactions in a block.
+---
+
+# getRawBlockTransaction
+
+Returns data of transactions in a block.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+
+const rawTx = await client.getRawBlockTransaction({
+  number: 1
+});
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`RawBlockTransactions`
+
+Data of transactions in a block.
+
+## Parameters
+
+### number
+
+Block number.
+
+```ts
+const rawTx = await client.getRawBlockTransaction({
+  number: 1  // [!code focus]
+});
+```
+</file>
+
+<file path="actions/getTestnetPaymasterAddress.md">
+---
+description: Returns the address of a Paymaster on a Testnet.
+---
+
+# getTestnetPaymasterAddress
+
+Returns the address of a Paymaster on a Testnet.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+const address = await client.getTestnetPaymasterAddress();
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`Address | null`
+
+Testnet paymaster address if available, or `null`.
+</file>
+
+<file path="actions/getTransactionDetails.md">
+---
+description: Returns data from a specific transaction given by the transaction hash.
+---
+
+# getTransactionDetails
+
+Returns data from a specific transaction given by the transaction hash.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client } from './config'
+
+const details = await client.getTransactionDetails({
+  txHash: '0x...'
+});
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+:::
+
+## Returns 
+
+`TransactionDetails`
+
+Data from a specific transaction given by the transaction hash.
+
+## Parameters
+
+`GetTransactionDetailsParameters`
+
+### hash
+
+Transaction hash
+
+```ts
+const details = await client.getTransactionDetails({
+  txHash: '0x...' // [!code focus]
+});
+```
+</file>
+
+<file path="actions/isWithdrawalFinalized.md">
+---
+description: Returns whether the withdrawal transaction is finalized on the L1 network.
+---
+
+# isWithdrawalFinalized
+
+Returns whether the withdrawal transaction is finalized on the L1 network.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client, zksyncClient } from './config'
+
+const hash = await client.isWithdrawalFinalized({
+  client: zksyncClient,
+  hash: '0x…',
+})
+```
+
+```ts [config.ts]
+import { createPublicClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { zksync, mainnet } from 'viem/chains'
+import { publicActionsL2, publicActionsL1 } from 'viem/zksync'
+
+export const zksyncClient = createPublicClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL2())
+
+export const client = createPublicClient({
+  chain: mainnet,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL1())
+```
+
+:::
+
+
+## Returns
+
+`boolean`
+
+Whether the withdrawal transaction is finalized on the L1 network.
+
+## Parameters
+
+### client
+
+- **Type:** `Client`
+
+The L2 client for fetching data from L2 chain.
+
+```ts
+const hash = await client.isWithdrawalFinalized({
+  client: zksyncClient, // [!code focus]
+  hash: '0x…',
+})
+```
+
+### hash 
+
+- **Type:** `Hex`
+
+Hash of the L2 transaction where the withdrawal was initiated.
+
+```ts
+const hash = await client.isWithdrawalFinalized({
+  client: zksyncClient,
+  hash: '0x…',  // [!code focus]
+})
+```
+
+### index (optional)
+
+- **Type:** `number`
+- **Default:** `0`
+
+In case there were multiple withdrawals in one transaction, you may pass an index of the
+withdrawal you want to finalize.
+
+```ts
+const hash = await client.isWithdrawalFinalized({
+  client: zksyncClient,
+  hash: '0x…',
+  index: 0n, // [!code focus]
+})
+```
+
+### chain (optional)
+
+- **Type:** [`Chain`](/docs/glossary/types#chain)
+- **Default:** `client.chain`
+
+The target chain. If there is a mismatch between the wallet's current chain & the target chain, an error will be thrown.
+
+```ts
+import { zksync } from 'viem/chains' // [!code focus]
+
+const hash = await client.isWithdrawalFinalized({
+  chain: zksync, // [!code focus]
+  client: zksyncClient,
+  hash: '0x…',
+})
+```
+</file>
+
+<file path="actions/requestExecute.md">
+---
+description: Requests execution of a L2 transaction from L1.
+---
+
+# requestExecute
+
+Requests execution of a L2 transaction from L1.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { account, walletClient, zksyncClient } from './config'
+
+const hash = await walletClient.requestExecute({
+  account,
+  client: zksyncClient,
+  contractAddress: await zksyncClient.getBridgehubContractAddress(),
+  calldata: '0x',
+  l2Value: 7_000_000_000n,
+  l2GasLimit: 900_000n
+})
+```
+
+```ts [config.ts]
+import { createWalletClient, createPublicClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { zksync, mainnet } from 'viem/chains'
+import { publicActionsL2, walletActionsL1 } from 'viem/zksync'
+
+export const zksyncClient = createPublicClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL2())
+
+export const walletClient = createWalletClient({
+  chain: mainnet,
+  transport: custom(window.ethereum)
+}).extend(walletActionsL1())
+
+// JSON-RPC Account
+export const [account] = await walletClient.getAddresses()
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+### Account Hoisting
+
+If you do not wish to pass an `account` to every `requestExecute`, you can also hoist the Account on the Wallet Client (see `config.ts`).
+
+[Learn more](/docs/clients/wallet#account).
+
+:::code-group
+
+```ts [example.ts]
+import { walletClient, zksyncClient } from './config'
+ 
+const hash = await walletClient.requestExecute({
+  client: zksyncClient,
+  contractAddress: await zksyncClient.getBridgehubContractAddress(),
+  calldata: '0x',
+  l2Value: 7_000_000_000n,
+  l2GasLimit: 900_000n
+})
+```
+
+```ts [config.ts (JSON-RPC Account)]
+import { createWalletClient, custom } from 'viem'
+import { zksync } from 'viem/chains'
+import { publicActionsL2, walletActionsL1 } from 'viem/zksync'
+
+export const zksyncClient = createPublicClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL2())
+
+// Retrieve Account from an EIP-1193  Provider. // [!code focus]
+const [account] = await window.ethereum.request({  // [!code focus]
+  method: 'eth_requestAccounts' // [!code focus]
+}) // [!code focus]
+
+export const walletClient = createWalletClient({
+  account,
+  transport: custom(window.ethereum) // [!code focus]
+}).extend(walletActionsL1())
+```
+
+```ts [config.ts (Local Account)]
+import { createWalletClient, custom } from 'viem'
+import { zksync } from 'viem/chains'
+import { privateKeyToAccount } from 'viem/accounts'
+import { publicActionsL2, walletActionsL1 } from 'viem/zksync'
+
+export const zksyncClient = createPublicClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL2())
+
+export const walletClient = createWalletClient({
+  account: privateKeyToAccount('0x...'), // [!code focus]
+  transport: custom(window.ethereum)
+}).extend(walletActionsL1())
+```
+
+:::
+
+## Returns
+
+[`Hash`](/docs/glossary/types#hash)
+
+The [Transaction](/docs/glossary/terms#transaction) hash.
+
+## Parameters
+
+### client
+
+- **Type:** `Client`
+
+The L2 client for fetching data from L2 chain.
+
+```ts
+const hash = await walletClient.requestExecute({
+  client: zksyncClient, // [!code focus]
+  contractAddress: await zksyncClient.getBridgehubContractAddress(),
+  calldata: '0x',
+  l2Value: 7_000_000_000n,
+  l2GasLimit: 900_000n
+})
+```
+
+### contractAddress
+
+- **Type:** `Address`
+
+The L2 contract to be called.
+
+```ts
+const hash = await walletClient.requestExecute({
+  client: zksyncClient, 
+  contractAddress: await zksyncClient.getBridgehubContractAddress(), // [!code focus]
+  calldata: '0x',
+  l2Value: 7_000_000_000n,
+  l2GasLimit: 900_000n
+})
+```
+
+### calldata 
+
+- **Type:** `Hex`
+
+The input of the L2 transaction.
+
+```ts
+const hash = await walletClient.requestExecute({
+  client: zksyncClient,
+  contractAddress: await zksyncClient.getBridgehubContractAddress(), 
+  calldata: '0x', // [!code focus]
+  l2Value: 7_000_000_000n,
+  l2GasLimit: 900_000n
+})
+```
+
+### l2Value (optional)
+
+- **Type:** `bigint`
+
+The `msg.value` of L2 transaction.
+
+```ts
+const hash = await walletClient.requestExecute({
+  client: zksyncClient,
+  contractAddress: await zksyncClient.getBridgehubContractAddress(), 
+  calldata: '0x', 
+  l2Value: 7_000_000_000n, // [!code focus]
+  l2GasLimit: 900_000n
+})
+```
+
+### l2GasLimit (optional)
+
+- **Type:** `bigint`
+
+Maximum amount of L2 gas that transaction can consume during execution on L2.
+
+```ts
+const hash = await walletClient.requestExecute({
+  client: zksyncClient,
+  contractAddress: await zksyncClient.getBridgehubContractAddress(), 
+  calldata: '0x', 
+  l2Value: 7_000_000_000n, 
+  l2GasLimit: 900_000n // [!code focus]
+})
+```
+
+### mintValue (optional)
+
+- **Type:** `bigint`
+
+The amount of base token that needs to be minted on non-ETH-based L2.
+
+```ts
+const hash = await walletClient.requestExecute({
+  client: zksyncClient,
+  contractAddress: await zksyncClient.getBridgehubContractAddress(), 
+  calldata: '0x', 
+  l2Value: 7_000_000_000n, 
+  l2GasLimit: 900_000n,
+  mintValue: 100_000n // [!code focus]
+})
+```
+
+### factoryDeps (optional)
+
+- **Type:** `Hex[]`
+
+An array of L2 bytecodes that will be marked as known on L2.
+
+```ts
+const hash = await walletClient.requestExecute({
+  client: zksyncClient,
+  contractAddress: await zksyncClient.getBridgehubContractAddress(), 
+  calldata: '0x', 
+  l2Value: 7_000_000_000n, 
+  l2GasLimit: 900_000n,
+  factoryDeps: ['0x...'] // [!code focus]
+})
+```
+
+### operatorTip (optional)
+
+- **Type:** `bigint`
+
+The tip the operator will receive on top of the base cost of the transaction. 
+Currently, ZKsync node do not consider this tip.
+
+```ts
+const hash = await walletClient.requestExecute({
+  client: zksyncClient,
+  contractAddress: await zksyncClient.getBridgehubContractAddress(), 
+  calldata: '0x', 
+  l2Value: 7_000_000_000n, 
+  l2GasLimit: 900_000n,
+  operatorTip: 100_000n // [!code focus]
+})
+```
+
+### gasPerPubdataByte (optional)
+
+- **Type:** `bigint`
+
+The L2 gas price for each published L1 calldata byte.
+
+```ts
+const hash = await walletClient.requestExecute({
+  client: zksyncClient,
+  contractAddress: await zksyncClient.getBridgehubContractAddress(), 
+  calldata: '0x', 
+  l2Value: 7_000_000_000n, 
+  l2GasLimit: 900_000n,
+  gasPerPubdataByte: 250_000_000_000n // [!code focus]
+})
+```
+
+### refundRecipient (optional)
+
+- **Type:** `Address`
+- **Default:** `walletClient.account`
+
+The address on L2 that will receive the refund for the transaction.
+If the transaction fails, it will also be the address to receive `l2Value`.
+
+```ts
+const hash = await walletClient.requestExecute({
+  client: zksyncClient,
+  contractAddress: await zksyncClient.getBridgehubContractAddress(), 
+  calldata: '0x', 
+  l2Value: 7_000_000_000n, 
+  l2GasLimit: 900_000n,
+  refundRecipient: '0x...' // [!code focus]
+})
+```
+
+### chain (optional)
+
+- **Type:** [`Chain`](/docs/glossary/types#chain)
+- **Default:** `walletClient.chain`
+
+The target chain. If there is a mismatch between the wallet's current chain & the target chain, an error will be thrown.
+
+```ts
+import { zksync } from 'viem/chains' // [!code focus]
+
+const hash = await walletClient.requestExecute({
+  chain: zksync, // [!code focus]
+  client: zksyncClient,
+  contractAddress: await zksyncClient.getBridgehubContractAddress(),
+  calldata: '0x',
+  l2Value: 7_000_000_000n,
+  l2GasLimit: 900_000n
+})
+```
+</file>
+
+<file path="actions/sendTransaction.md">
+---
+description: Creates, signs, and sends a new transaction to the network, with EIP712 transaction support.
+---
+
+# sendTransaction
+
+Creates, signs, and sends a new transaction to the network, with EIP712 transaction support.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { account, walletClient } from './config'
+
+const hash = await walletClient.sendTransaction({ // [!code focus:99]
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+// '0x...'
+```
+
+```ts [config.ts]
+import { createWalletClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { zksync } from 'viem/chains'
+import { eip712Actions } from 'viem/zksync'
+
+export const walletClient = createWalletClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(eip712WalletActions())
+
+// JSON-RPC Account
+export const [account] = await walletClient.getAddresses()
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+### Account Hoisting
+
+If you do not wish to pass an `account` to every `sendTransaction`, you can also hoist the Account on the Wallet Client (see `config.ts`).
+
+[Learn more](/docs/clients/wallet#account).
+
+:::code-group
+
+```ts [example.ts]
+import { walletClient } from './config'
+ 
+const hash = await walletClient.sendTransaction({ // [!code focus:99]
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+// '0x...'
+```
+
+```ts [config.ts (JSON-RPC Account)]
+import { createWalletClient, custom } from 'viem'
+import { eip712Actions } from 'viem/zksync'
+
+// Retrieve Account from an EIP-712 Provider. // [!code focus]
+const [account] = await window.ethereum.request({  // [!code focus]
+  method: 'eth_requestAccounts' // [!code focus]
+}) // [!code focus]
+
+export const walletClient = createWalletClient({
+  account,
+  transport: custom(window.ethereum) // [!code focus]
+}).extend(eip712WalletActions())
+```
+
+```ts [config.ts (Local Account)]
+import { createWalletClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { eip712Actions } from 'viem/zksync'
+
+export const walletClient = createWalletClient({
+  account: privateKeyToAccount('0x...'), // [!code focus]
+  transport: custom(window.ethereum)
+}).extend(eip712WalletActions())
+```
+
+:::
+
+## Returns
+
+[`Hash`](/docs/glossary/types#hash)
+
+The [Transaction](/docs/glossary/terms#transaction) hash.
+
+## Parameters
+
+### account
+
+- **Type:** `Account | Address`
+
+The Account to send the transaction from.
+
+Accepts a [JSON-RPC Account](/docs/clients/wallet#json-rpc-accounts) or [Local Account (Private Key, etc)](/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266', // [!code focus]
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### to
+
+- **Type:** `0x${string}`
+
+The transaction recipient or contract address.
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8', // [!code focus]
+  value: 1000000000000000000n,
+  nonce: 69
+})
+```
+
+### accessList (optional)
+
+- **Type:** [`AccessList`](/docs/glossary/types#accesslist)
+
+The access list.
+
+```ts
+const hash = await walletClient.sendTransaction({
+  accessList: [ // [!code focus:6]
+    {
+      address: '0x1',
+      storageKeys: ['0x1'],
+    },
+  ],
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+})
+```
+
+### chain (optional)
+
+- **Type:** [`Chain`](/docs/glossary/types#chain)
+- **Default:** `walletClient.chain`
+
+The target chain. If there is a mismatch between the wallet's current chain & the target chain, an error will be thrown.
+
+The chain is also used to infer its request type (e.g. the Celo chain has a `gatewayFee` that you can pass through to `sendTransaction`).
+
+```ts
+import { zksync } from 'viem/chains' // [!code focus]
+
+const hash = await walletClient.sendTransaction({
+  chain: zksync, // [!code focus]
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### data (optional)
+
+- **Type:** `0x${string}`
+
+A contract hashed method call with encoded args.
+
+```ts
+const hash = await walletClient.sendTransaction({
+  data: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // [!code focus]
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### gasPrice (optional)
+
+- **Type:** `bigint`
+
+The price (in wei) to pay per gas. Only applies to [Legacy Transactions](/docs/glossary/terms#legacy-transaction).
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account,
+  gasPrice: parseGwei('20'), // [!code focus]
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### nonce (optional)
+
+- **Type:** `number`
+
+Unique number identifying this transaction.
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n,
+  nonce: 69 // [!code focus]
+})
+```
+
+### value (optional)
+
+- **Type:** `bigint`
+
+Value in wei sent with this transaction.
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: parseEther('1'), // [!code focus]
+  nonce: 69
+})
+```
+
+### gasPerPubdata (optional)
+
+- **Type:** `bigint`
+
+The amount of gas for publishing one byte of data on Ethereum.
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  gasPerPubdata: 50000, // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+
+### factoryDeps (optional)
+
+- **Type:** `[0x${string}]`
+
+Contains bytecode of the deployed contract.
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  factoryDeps: ['0xcde...'], // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+
+### paymaster (optional)
+
+- **Type:** `Account | Address`
+
+Address of the paymaster account that will pay the fees. The `paymasterInput` field is required with this one.
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+
+### paymasterInput (optional)
+
+- **Type:** `0x${string}`
+
+Input data to the paymaster. The `paymaster` field is required with this one.
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+  nonce: 69,
+  value: 1000000000000000000n
+})
+```
+</file>
+
+<file path="actions/signTransaction.md">
+---
+description: Signs a transaction, with EIP712 transaction support.
+---
+
+# signTransaction
+
+Signs a transaction, with EIP712 transaction support.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { account, walletClient } from './config'
+ 
+const request = await walletClient.prepareTransactionRequest({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+
+const signature = await walletClient.signTransaction(request) // [!code focus:2]
+// 0x02f850018203118080825208808080c080a04012522854168b27e5dc3d5839bab5e6b39e1a0ffd343901ce1622e3d64b48f1a04e00902ae0502c4728cbf12156290df99c3ed7de85b1dbfe20b5c36931733a33
+
+const hash = await walletClient.sendRawTransaction(signature)
+```
+
+```ts [config.ts]
+import { createWalletClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { zksync } from 'viem/chains'
+import { eip712WalletActions } from 'viem/zksync'
+
+export const walletClient = createWalletClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(eip712WalletActions())
+
+// JSON-RPC Account
+export const [account] = await walletClient.getAddresses()
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+### Account Hoisting
+
+If you do not wish to pass an `account` to every `prepareTransactionRequest`, you can also hoist the Account on the Wallet Client (see `config.ts`).
+
+[Learn more](/docs/clients/wallet#account).
+
+:::code-group
+
+```ts [example.ts]
+import { walletClient } from './config' 
+ 
+const request = await walletClient.prepareTransactionRequest({
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+
+const signature = await walletClient.signTransaction(request) // [!code focus:2]
+// 0x02f850018203118080825208808080c080a04012522854168b27e5dc3d5839bab5e6b39e1a0ffd343901ce1622e3d64b48f1a04e00902ae0502c4728cbf12156290df99c3ed7de85b1dbfe20b5c36931733a33
+
+const hash = await client.sendRawTransaction(signature)
+```
+
+```ts [config.ts (JSON-RPC Account)]
+import { createWalletClient, custom } from 'viem'
+import { eip712WalletActions } from 'viem/zksync'
+
+// Retrieve Account from an EIP-712 Provider. // [!code focus]
+const [account] = await window.ethereum.request({ // [!code focus]
+  method: 'eth_requestAccounts' // [!code focus]
+}) // [!code focus]
+
+export const walletClient = createWalletClient({
+  account, // [!code focus]
+  transport: custom(window.ethereum)
+}).extend(eip712WalletActions())
+```
+
+```ts [config.ts (Local Account)]
+import { createWalletClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { eip712WalletActions } from 'viem/zksync'
+
+export const walletClient = createWalletClient({
+  account: privateKeyToAccount('0x...'), // [!code focus]
+  transport: custom(window.ethereum)
+}).extend(eip712WalletActions())
+```
+
+:::
+
+## Returns
+
+[`Hex`](/docs/glossary/types#hex)
+
+The signed serialized transaction.
+
+## Parameters
+
+### account
+
+- **Type:** `Account | Address`
+
+The Account to send the transaction from.
+
+Accepts a [JSON-RPC Account](/docs/clients/wallet#json-rpc-accounts) or [Local Account (Private Key, etc)](/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
+
+```ts
+const signature = await walletClient.signTransaction({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266', // [!code focus]
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### to
+
+- **Type:** `0x${string}`
+
+The transaction recipient or contract address.
+
+```ts
+const signature = await walletClient.signTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8', // [!code focus]
+  value: 1000000000000000000n,
+  nonce: 69
+})
+```
+
+### accessList (optional)
+
+- **Type:** [`AccessList`](/docs/glossary/types#accesslist)
+
+The access list.
+
+```ts
+const signature = await walletClient.signTransaction({
+  accessList: [ // [!code focus:6]
+    {
+      address: '0x1',
+      storageKeys: ['0x1'],
+    },
+  ],
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+})
+```
+
+### chain (optional)
+
+- **Type:** [`Chain`](/docs/glossary/types#chain)
+- **Default:** `walletClient.chain`
+
+The target chain. If there is a mismatch between the wallet's current chain & the target chain, an error will be thrown.
+
+The chain is also used to infer its request type (e.g. the Celo chain has a `gatewayFee` that you can pass through to `signTransaction`).
+
+```ts
+import { zksync } from 'viem/chains' // [!code focus]
+
+const signature = await walletClient.signTransaction({
+  chain: zksync, // [!code focus]
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### data (optional)
+
+- **Type:** `0x${string}`
+
+A contract hashed method call with encoded args.
+
+```ts
+const signature = await walletClient.signTransaction({
+  data: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // [!code focus]
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n
+})
+```
+
+### gasPrice (optional)
+
+- **Type:** `bigint`
+
+The price (in wei) to pay per gas. Only applies to [Legacy Transactions](/docs/glossary/terms#legacy-transaction).
+
+```ts
+const signature = await walletClient.signTransaction({
+  account,
+  gasPrice: parseGwei('20'), // [!code focus]
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: parseEther('1') 
+})
+```
+
+### nonce (optional)
+
+- **Type:** `number`
+
+Unique number identifying this transaction.
+
+```ts
+const signature = await walletClient.signTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n,
+  nonce: 69 // [!code focus]
+})
+```
+
+### value (optional)
+
+- **Type:** `bigint`
+
+Value in wei sent with this transaction.
+
+```ts
+const signature = await walletClient.signTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: parseEther('1'), // [!code focus]
+  nonce: 69
+})
+```
+
+### gasPerPubdata (optional)
+
+- **Type:** `bigint`
+
+The amount of gas for publishing one byte of data on Ethereum.
+
+```ts
+const hash = await walletClient.signTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  gasPerPubdata: 50000, // [!code focus]
+  nonce: 69
+})
+```
+
+### factoryDeps (optional)
+
+- **Type:** `[0x${string}]`
+
+Contains bytecode of the deployed contract.
+
+```ts
+const hash = await walletClient.signTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  factoryDeps: ['0xcde...'], // [!code focus]
+  nonce: 69
+})
+```
+
+### paymaster (optional)
+
+- **Type:** `Account | Address`
+
+Address of the paymaster account that will pay the fees. The `paymasterInput` field is required with this one.
+
+```ts
+const hash = await walletClient.signTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+  nonce: 69
+})
+```
+
+### paymasterInput (optional)
+
+- **Type:** `0x${string}`
+
+Input data to the paymaster. The `paymaster` field is required with this one.
+
+```ts
+const hash = await walletClient.signTransaction({
+  account,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+  nonce: 69
+})
+```
+</file>
+
+<file path="actions/withdraw.md">
+---
+description: Initiates the withdrawal process which withdraws ETH or any ERC20 token from the associated account on L2 network to the target account on L1 network.
+---
+
+# withdraw
+
+Initiates the withdrawal process which withdraws ETH or any ERC20 token
+from the associated account on L2 network to the target account on L1 network.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { account, walletClient } from './config'
+import { legacyEthAddress } from 'viem/zksync'
+
+const hash = await walletClient.withdraw({
+  account,
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,
+})
+```
+
+```ts [config.ts]
+import { createWalletClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { zksync } from 'viem/chains'
+import { eip712Actions } from 'viem/zksync'
+
+export const walletClient = createWalletClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(publicActionsL2())
+
+// JSON-RPC Account
+export const [account] = await walletClient.getAddresses()
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+### Account Hoisting
+
+If you do not wish to pass an `account` to every `withdraw`, you can also hoist the Account on the Wallet Client (see `config.ts`).
+
+[Learn more](/docs/clients/wallet#account).
+
+:::code-group
+
+```ts [example.ts]
+import { walletClient } from './config'
+import { legacyEthAddress } from 'viem/zksync'
+ 
+const hash = await walletClient.withdraw({ // [!code focus:99]
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,  
+})
+// '0x...'
+```
+
+```ts [config.ts (JSON-RPC Account)]
+import { createWalletClient, custom } from 'viem'
+import { publicActionsL2 } from 'viem/zksync'
+
+// Retrieve Account from an EIP-712 Provider. // [!code focus]
+const [account] = await window.ethereum.request({  // [!code focus]
+  method: 'eth_requestAccounts' // [!code focus]
+}) // [!code focus]
+
+export const walletClient = createWalletClient({
+  account,
+  transport: custom(window.ethereum) // [!code focus]
+}).extend(publicActionsL2())
+```
+
+```ts [config.ts (Local Account)]
+import { createWalletClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const walletClient = createWalletClient({
+  account: privateKeyToAccount('0x...'), // [!code focus]
+  transport: custom(window.ethereum)
+}).extend(publicActionsL2())
+```
+
+:::
+
+## Returns
+
+[`Hash`](/docs/glossary/types#hash)
+
+The [Transaction](/docs/glossary/terms#transaction) hash.
+
+## Parameters
+
+### account
+
+- **Type:** `Account | Address`
+
+The Account to send the transaction from.
+
+Accepts a [JSON-RPC Account](/docs/clients/wallet#json-rpc-accounts) or [Local Account (Private Key, etc)](/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
+
+```ts
+const hash = await walletClient.withdraw({
+  account: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266', // [!code focus]
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,
+})
+```
+
+### amount
+
+- **Type:** `bigint`
+
+The amount of the token to withdraw.
+
+```ts
+const hash = await walletClient.withdraw({
+  account,
+  amount: 1_000_000_000_000_000_000n, // [!code focus]
+  token: legacyEthAddress,
+})
+```
+
+### token
+
+- **Type:** `Address`
+
+The address of the token on L2.
+
+```ts
+const hash = await walletClient.withdraw({
+  account,
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress, // [!code focus]
+})
+```
+
+### bridgeAddress (optional)
+
+- **Type:** `Address`
+
+The address of the bridge contract to be used. By default, uses shared bridge.
+
+```ts
+const address = await walletClient.withdraw({
+  account,
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,
+  bridgeAddress: '0xf8c919286126ccf2e8abc362a15158a461429c82' // [!code focus]
+})
+```
+
+### chain (optional)
+
+- **Type:** [`Chain`](/docs/glossary/types#chain)
+- **Default:** `walletClient.chain`
+
+The target chain. If there is a mismatch between the wallet's current chain & the target chain, an error will be thrown.
+
+The chain is also used to infer its request type.
+
+```ts
+import { zksync } from 'viem/chains' // [!code focus]
+
+const hash = await walletClient.withdraw({
+  chain: zksync, // [!code focus]
+  account,
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,
+})
+```
+
+### gasPerPubdata (optional)
+
+- **Type:** `bigint`
+
+The amount of gas for publishing one byte of data on Ethereum.
+
+```ts
+const hash = await walletClient.withdraw({
+  account,
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,
+  gasPerPubdata: 50000, // [!code focus]
+})
+```
+
+### gasPrice (optional)
+
+- **Type:** `bigint`
+
+The price (in wei) to pay per gas. Only applies to [Legacy Transactions](/docs/glossary/terms#legacy-transaction).
+
+```ts
+const hash = await walletClient.withdraw({
+  account,
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,
+  gasPrice: parseGwei('20'), // [!code focus]
+})
+```
+
+### maxFeePerGas (optional)
+
+- **Type:** `bigint`
+
+Total fee per gas (in wei), inclusive of `maxPriorityFeePerGas`. Only applies to [EIP-1559 Transactions](/docs/glossary/terms#eip-1559-transaction)
+
+```ts
+const hash = await walletClient.withdraw({
+  account,
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,
+  maxFeePerGas: parseGwei('20'),  // [!code focus]
+})
+```
+
+### maxPriorityFeePerGas (optional)
+
+- **Type:** `bigint`
+
+Max priority fee per gas (in wei). Only applies to [EIP-1559 Transactions](/docs/glossary/terms#eip-1559-transaction)
+
+```ts
+const hash = await walletClient.withdraw({
+  account, 
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,
+  maxFeePerGas: parseGwei('20'),
+  maxPriorityFeePerGas: parseGwei('2'), // [!code focus]
+})
+```
+
+### nonce (optional)
+
+- **Type:** `number`
+
+Unique number identifying this transaction.
+
+```ts
+const hash = await walletClient.withdraw({
+  account,
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,
+  nonce: 69 // [!code focus]
+})
+```
+
+
+### paymaster (optional)
+
+- **Type:** `Account | Address`
+
+Address of the paymaster account that will pay the fees. The `paymasterInput` field is required with this one.
+
+```ts
+const hash = await walletClient.withdraw({
+  account,
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+})
+```
+
+### paymasterInput (optional)
+
+- **Type:** `0x${string}`
+
+Input data to the paymaster. The `paymaster` field is required with this one.
+
+```ts
+const hash = await walletClient.withdraw({
+  account,
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+})
+```
+
+### to (optional)
+
+- **Type:** `Address`
+
+The address of the recipient on L1. Defaults to the sender address.
+
+```ts
+const hash = await walletClient.withdraw({
+  account,
+  amount: 1_000_000_000_000_000_000n,
+  token: legacyEthAddress,
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8', // [!code focus]
+})
+```
+</file>
+
+<file path="actions/writeContract.md">
+---
+description: Executes a write function on a contract, with EIP712 transaction support.
+---
+
+# writeContract
+
+Executes a write function on a contract, with EIP712 transaction support.
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { account, walletClient } from './config'
+
+const hash = await walletClient.writeContract({ // [!code focus:99]
+  account,
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint',
+})
+// '0x...'
+```
+
+```ts [config.ts]
+import { createWalletClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { zksync } from 'viem/chains'
+import { eip712WalletActions } from 'viem/zksync'
+
+export const walletClient = createWalletClient({
+  chain: zksync,
+  transport: custom(window.ethereum)
+}).extend(eip712WalletActions())
+
+// JSON-RPC Account
+export const [account] = await walletClient.getAddresses()
+// Local Account
+export const account = privateKeyToAccount(...)
+```
+
+:::
+
+### Account Hoisting
+
+If you do not wish to pass an `account` to every `sendTransaction`, you can also hoist the Account on the Wallet Client (see `config.ts`).
+
+[Learn more](/docs/clients/wallet#account).
+
+:::code-group
+
+```ts [example.ts]
+import { walletClient } from './config'
+ 
+const hash = await walletClient.writeContract({ // [!code focus:99]
+  account,
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint',
+})
+// '0x...'
+```
+
+```ts [config.ts (JSON-RPC Account)]
+import { createWalletClient, custom } from 'viem'
+import { eip712WalletActions } from 'viem/zksync'
+
+// Retrieve Account from an EIP-712 Provider. // [!code focus]
+const [account] = await window.ethereum.request({  // [!code focus]
+  method: 'eth_requestAccounts' // [!code focus]
+}) // [!code focus]
+
+export const walletClient = createWalletClient({
+  account,
+  transport: custom(window.ethereum) // [!code focus]
+}).extend(eip712WalletActions())
+```
+
+```ts [config.ts (Local Account)]
+import { createWalletClient, custom } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { eip712WalletActions } from 'viem/zksync'
+
+export const walletClient = createWalletClient({
+  account: privateKeyToAccount('0x...'), // [!code focus]
+  transport: custom(window.ethereum)
+}).extend(eip712WalletActions())
+```
+
+:::
+
+## Returns
+
+[`Hash`](/docs/glossary/types#hash)
+
+The [Transaction](/docs/glossary/terms#transaction) hash.
+
+## Parameters
+
+### address
+
+- **Type:** [`Address`](/docs/glossary/types#address)
+
+The contract address.
+
+```ts
+await walletClient.writeContract({
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2', // [!code focus]
+  abi: wagmiAbi,
+  functionName: 'mint',
+  args: [69420]
+})
+```
+
+### abi
+
+- **Type:** [`Abi`](/docs/glossary/types#abi)
+
+The contract's ABI.
+
+```ts
+await walletClient.writeContract({
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi, // [!code focus]
+  functionName: 'mint',
+  args: [69420]
+})
+```
+
+### functionName
+
+- **Type:** `string`
+
+A function to extract from the ABI.
+
+```ts
+await walletClient.writeContract({
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint', // [!code focus]
+  args: [69420]
+})
+```
+
+### account
+
+- **Type:** `Account | Address`
+
+The Account to send the transaction from.
+
+Accepts a [JSON-RPC Account](/docs/clients/wallet#json-rpc-accounts) or [Local Account (Private Key, etc)](/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
+
+```ts
+await walletClient.writeContract({
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2', // [!code focus]
+  abi: wagmiAbi,
+  functionName: 'mint',
+  args: [69420]
+})
+```
+
+### accessList (optional)
+
+- **Type:** [`AccessList`](/docs/glossary/types#accesslist)
+
+The access list.
+
+```ts
+const hash = await walletClient.writeContract({
+  accessList: [ // [!code focus:6]
+    {
+      address: '0x1',
+      storageKeys: ['0x1'],
+    },
+  ],
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint',
+  args: [69420]
+})
+```
+
+### chain (optional)
+
+- **Type:** [`Chain`](/docs/glossary/types#chain)
+- **Default:** `walletClient.chain`
+
+The target chain. If there is a mismatch between the wallet's current chain & the target chain, an error will be thrown.
+
+```ts
+import { zksync } from 'viem/chains' // [!code focus]
+
+const hash = await walletClient.writeContract({
+  chain: zksync, // [!code focus]
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint',
+  args: [69420]
+})
+```
+
+### data (optional)
+
+- **Type:** `0x${string}`
+
+A contract hashed method call with encoded args.
+
+```ts
+const hash = await walletClient.writeContract({
+  data: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // [!code focus]
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint',
+  args: [69420]
+})
+```
+
+### gasPrice (optional)
+
+- **Type:** `bigint`
+
+The price (in wei) to pay per gas. Only applies to [Legacy Transactions](/docs/glossary/terms#legacy-transaction).
+
+```ts
+const hash = await walletClient.writeContract({
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint',
+  args: [69420],
+  gasPrice: parseGwei('20'), // [!code focus]
+})
+```
+
+### nonce (optional)
+
+- **Type:** `number`
+
+Unique number identifying this transaction.
+
+```ts
+const hash = await walletClient.writeContract({
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint',
+  args: [69420],
+  nonce: 69 // [!code focus]
+})
+```
+
+### value (optional)
+
+- **Type:** `bigint`
+
+Value in wei sent with this transaction.
+
+```ts
+const hash = await walletClient.writeContract({
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint',
+  args: [69420],
+  value: parseEther('1'), // [!code focus]
+})
+```
+
+### gasPerPubdata (optional)
+
+- **Type:** `bigint`
+
+The amount of gas for publishing one byte of data on Ethereum.
+
+```ts
+const hash = await walletClient.writeContract({
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint',
+  args: [69420],
+  gasPerPubdata: 50000, // [!code focus]
+})
+```
+
+### factoryDeps (optional)
+
+- **Type:** `[0x${string}]`
+
+Contains bytecode of the deployed contract.
+
+```ts
+const hash = await walletClient.writeContract({
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint',
+  args: [69420],
+  factoryDeps: ['0xcde...'], // [!code focus]
+})
+```
+
+### paymaster (optional)
+
+- **Type:** `Account | Address`
+
+Address of the paymaster account that will pay the fees. The `paymasterInput` field is required with this one.
+
+```ts
+const hash = await walletClient.writeContract({
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint',
+  args: [69420],
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+})
+```
+
+### paymasterInput (optional)
+
+- **Type:** `0x${string}`
+
+Input data to the paymaster. The `paymaster` field is required with this one.
+
+```ts
+const hash = await walletClient.writeContract({
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: wagmiAbi,
+  functionName: 'mint',
+  args: [69420],
+  paymaster: '0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021', // [!code focus]
+  paymasterInput: '0x8c5a...' // [!code focus]
+})
+```
+</file>
+
+<file path="utilities/bridge/getL2HashFromPriorityOp.md">
+---
+description: Returns the hash of the L2 priority operation from a given L1 transaction receipt.
+---
+
+# getL2HashFromPriorityOp
+
+Returns the hash of the L2 priority operation from a given L1 transaction receipt.
+
+## Import
+
+```ts
+import { getL2HashFromPriorityOp } from 'viem/zksync'
+```
+
+## Usage
+
+:::code-group
+
+```ts [example.ts]
+import { client, zksyncClient } from './config'
+import { getL2HashFromPriorityOp } from 'viem/zksync'
+
+const receipt = await client.waitForTransactionReceipt({
+  hash: '0x...'
+})
+const l2Hash = getL2HashFromPriorityOp(
+  receipt,
+  await zksyncClient.getMainContractAddress()
+)
+```
+
+```ts [config.ts]
+import { createPublicClient, http } from 'viem'
+import { zksync, mainnet } from 'viem/chains'
+import { publicActionsL2 } from 'viem/zksync'
+
+export const client = createPublicClient({
+  chain: mainnet,
+  transport: http(),
+})
+
+export const zksyncClient = createPublicClient({
+  chain: zksync,
+  transport: http(),
+}).extend(publicActionsL2())
+```
+
+:::
+
+
+## Returns
+
+`Hash`
+
+The hash of the L2 priority operation.
+
+## Parameters
+
+### receipt
+
+- **Type:** [`TransactionReceipt`](/docs/glossary/types#transactionreceipt)
+
+The L1 transaction receipt.
+
+```ts
+const l2Hash = getL2HashFromPriorityOp(
+  receipt, // [!code focus]
+  '0x14b947814912c71bdbc3275c143a065d2ecafaba'
+)
+```
+
+### zksync
+
+- **Type:** `Address`
+
+The address of the ZKsync Era main contract.
+
+```ts
+const l2Hash = getL2HashFromPriorityOp(
+  receipt, 
+  '0x14b947814912c71bdbc3275c143a065d2ecafaba' // [!code focus]
+)
+```
+</file>
+
+<file path="utilities/paymaster/getApprovalBasedPaymasterInput.md">
+---
+description: Returns encoded formatted approval-based paymaster params.
+---
+
+# getApprovalBasedPaymasterInput
+
+Returns encoded formatted approval-based paymaster params.
+
+## Import
+
+```ts
+import { getApprovalBasedPaymasterInput } from 'viem/zksync'
+```
+
+## Usage
+
+```ts
+import { getApprovalBasedPaymasterInput } from 'viem/zksync'
+
+const data = getApprovalBasedPaymasterInput({
+  innerInput: '0x',
+  minAllowance: 1n,
+  token: "0x65C899B5fb8Eb9ae4da51D67E1fc417c7CB7e964",
+})
+```
+
+## Returns
+
+`EncodeFunctionDataReturnType`
+
+The `Hex` value of the provided approval-based paymaster inputs.
+
+## Parameters
+
+### token
+
+- **Type:** `Address`
+
+The token address.
+
+```ts
+const data = getApprovalBasedPaymasterInput({
+  innerInput: '0x',
+  minAllowance: 1n,
+  token: "0x65C899B5fb8Eb9ae4da51D67E1fc417c7CB7e964", // [!code focus]
+})
+```
+
+### minAllowance
+
+- **Type:** `bigint`
+
+Minimum allowance (in wei) of token that can be sent towards the paymaster.
+
+```ts
+const data = getApprovalBasedPaymasterInput({
+  innerInput: new Uint8Array(),
+  minAllowance: 1n, // [!code focus]
+  token: "0x65C899B5fb8Eb9ae4da51D67E1fc417c7CB7e964",
+})
+```
+
+### innerInput
+
+- **Type:** `Hex | ByteArray`
+
+Additional payload that can be sent to the paymaster to implement any logic .
+
+```ts
+const data = getApprovalBasedPaymasterInput({
+  innerInput: "0x0005040302010", // [!code focus]
+  minAllowance: 1n, 
+  token: "0x65C899B5fb8Eb9ae4da51D67E1fc417c7CB7e964",
+})
+```
+</file>
+
+<file path="utilities/paymaster/getGeneralPaymasterInput.md">
+---
+description: Returns encoded formatted general-based paymaster params.
+---
+
+# getGeneralPaymasterInput
+
+Returns encoded formatted general-based paymaster params.
+
+## Import
+```ts
+import { getGeneralPaymasterInput } from 'viem/zksync'
+```
+
+## Usage
+
+```ts
+import { getGeneralPaymasterInput } from 'viem/zksync'
+
+const data = getGeneralPaymasterInput({
+  innerInput: '0x',
+})
+```
+
+## Returns
+
+`EncodeFunctionDataReturnType`
+
+The `Hex` value of the provided general-based paymaster inputs.
+
+## Parameters
+
+### innerInput
+
+Additional payload that can be sent to the paymaster to implement any logic 
+
+- **Type:** `Hex` or `ByteArray`
+
+```ts
+const data = getGeneralPaymasterInput({
+      innerInput: new Uint8Array([0, 1, 2, 3, 4, 5]), // [!code focus]
+    })
+```
+
+```ts
+const data = getGeneralPaymasterInput({
+      innerInput: "0x0005040302010", // [!code focus]
+    })
+```
+</file>
+
+<file path="utilities/parseEip712Transaction.md">
+---
+description: Parse EIP712 transaction.
+---
+
+# parseEip712Transaction
+
+Parses a serialized EIP712 transaction.
+
+## Import
+
+```ts
+import { parseEip712Transaction } from 'viem/zksync'
+```
+
+## Usage
+
+```ts
+import { parseEip712Transaction } from 'viem/zksync'
+
+const serializedTransaction =
+    '0x71f87f8080808094a61464658afeaf65cccaafd3a512b69a83b77618830f42408001a073a20167b8d23b610b058c05368174495adf7da3a4ed4a57eb6dbdeb1fafc24aa02f87530d663a0d061f69bb564d2c6fb46ae5ae776bbd4bd2a2a4478b9cd1b42a82010e9436615cf349d7f6344891b1e7ca7c72883f5dc04982c350c080c0'
+const transaction = parseEip712Transaction(serializedTransaction)
+```
+
+## Returns
+
+`ZksyncTransactionSerializableEIP712`
+
+The ZKsync EIP712 transaction.
+
+## Parameters
+
+### tx
+
+- **Type:** [`Hex`](/docs/glossary/types#hex)
+
+The serialized EIP712 transaction.
+
+```ts
+const serializedTransaction =
+    '0x71f87f8080808094a61464658afeaf65cccaafd3a512b69a83b77618830f42408001a073a20167b8d23b610b058c05368174495adf7da3a4ed4a57eb6dbdeb1fafc24aa02f87530d663a0d061f69bb564d2c6fb46ae5ae776bbd4bd2a2a4478b9cd1b42a82010e9436615cf349d7f6344891b1e7ca7c72883f5dc04982c350c080c0'
+const transaction = parseEip712Transaction(serializedTransaction)
+```
+</file>
+
+<file path="chains.md">
+# Chains
+
+The following ZKsync chains are supported in Viem:
+
+```ts twoslash
+import {
+  zksync, // [!code hl]
+  zksyncSepoliaTestnet, // [!code hl]
+} from 'viem/chains'
+```
+
+## Configuration
+
+Viem exports ZKsync's chain [formatters](/docs/chains/formatters) & [serializers](/docs/chains/serializers) via `chainConfig`. This is useful if you need to define another chain which is implemented on ZKsync.
+
+```ts twoslash
+// @noErrors
+import { defineChain } from 'viem'
+import { chainConfig } from 'viem/zksync'
+
+export const zkStackExample = defineChain({
+  ...chainConfig,
+  name: 'ZKsync Example',
+  // ...
+})
+```
+</file>
+
+<file path="client.md">
+---
+description: Setting up your ZKsync Viem Client
+---
+
+# Client
+
+To use the ZKsync functionality of Viem, you must extend your existing (or new) Viem Client with ZKsync Actions.
+
+## Usage
+
+```ts twoslash
+import 'viem/window'
+// ---cut---
+import { createPublicClient, createWalletClient, custom, http } from 'viem'
+import { zksync } from 'viem/chains'
+import { eip712WalletActions } from 'viem/zksync'
+ 
+const walletClient = createWalletClient({
+  chain: zksync,
+  transport: custom(window.ethereum!),
+}).extend(eip712WalletActions()) // [!code hl]
+
+const publicClient = createPublicClient({
+  chain: zksync,
+  transport: http()
+})
+```
+
+## Extensions
+
+### `eip712WalletActions`
+
+A suite of [Wallet Actions](/zksync/actions/sendTransaction) for suited for development with ZKsync chains.
+
+```ts twoslash
+import { eip712WalletActions } from 'viem/zksync'
+```
+
+#### Sending transactions using paymaster
+
+[Read more](./actions/sendTransaction.md)
+
+```ts
+const hash = await walletClient.sendTransaction({
+  account: '0xA0Cf798816D4b9b9866b5330EEa46a18382f251e',
+  to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+  value: 1000000000000000000n,
+  paymaster: '0xFD9aE5ebB0F6656f4b77a0E99dCbc5138d54b0BA',
+  paymasterInput: '0x123abc...'
+})
+```
+
+#### Calling contracts
+
+[Read more](../docs/contract/writeContract.md)
+
+```ts
+import { simulateContract } from 'viem/contract'
+
+const { request } = await publicClient.simulateContract(walletClient, {
+  address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+  abi: parseAbi(['function mint(uint32 tokenId) nonpayable']),
+  functionName: 'mint',
+  args: [69420],
+});
+const hash = await walletClient.writeContract(request)
+```
+
+### `publicActionsL1`
+
+A suite of [Public Actions](/zksync/actions/getL1Allowance) suited for development with **Layer 1** chains. These actions provide functionalities specific to public clients operating at the Layer 1 level, enabling them to interact seamlessly with Layer 2 protocols.
+
+```ts
+import { publicActionsL1 } from 'viem/zksync'
+```
+</file>
+
+</files>

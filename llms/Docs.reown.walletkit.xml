@@ -1,0 +1,2870 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+The content has been processed where security check has been disabled.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: walletkit/web/**/*.*, walletkit/upgrade/**/*.*, walletkit/*.mdx, walletkit/features/**/*.*
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Security check has been disabled - content may contain sensitive information
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+walletkit/
+  features/
+    chain-abstraction.mdx
+    notifications.mdx
+    one-click-auth.mdx
+    verify.mdx
+  upgrade/
+    from-web3wallet-android.mdx
+    from-web3wallet-flutter.mdx
+    from-web3wallet-ios.mdx
+    from-web3wallet-react-native.mdx
+    from-web3wallet-to-reown.mdx
+    from-web3wallet-unity.mdx
+    from-web3wallet-web.mdx
+  web/
+    cloud/
+      analytics.mdx
+      explorer-submission.mdx
+      relay.mdx
+      verify.mdx
+    best-practices.mdx
+    chain-abstraction.mdx
+    eip5792.mdx
+    installation.mdx
+    one-click-auth-siws.mdx
+    one-click-auth.mdx
+    resources.mdx
+    usage.mdx
+    verify.mdx
+  best-practices.mdx
+  overview.mdx
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="walletkit/features/chain-abstraction.mdx">
+---
+title: Chain Abstraction
+---
+Chain Abstraction allows users to spend stablecoins across different networks seamlessly. 
+This solution provides wallet developers with a toolkit to integrate cross-chain functionality using WalletKit.
+
+<Note>
+💡 Support for Chain Abstraction is currently in early access phase.
+</Note>
+
+<video
+  controls
+  className="w-full aspect-video"
+  src="/images/assets/chain-abstraction-demo.mp4"
+></video>
+
+## How it works
+
+When an application sends a `wallet_sendTransaction` request for an ERC-20 transfer (such as USDC), 
+the wallet checks for available tokens across all supported networks. If the user has sufficient funds on any supported network,
+they can complete the transaction instantly, regardless of which network holds their tokens.
+
+For example, consider a scenario where an app requests a transfer of 225 USDC on the Base Network. 
+Even if the user doesn't have USDC on Base, their wallet can automatically source the funds from other networks,
+making the experience seamless for both the user and the application.
+
+<Note>
+💡 Make sure you have enough gas fees in other networks from which bridging will happen. 
+For example, in given scenario, you need to have enough gas fees on OP Mainnet and Arbitrum. 
+</Note>
+
+The diagram below shows an example scenario where a user is interacting with an app and is asked to transfer 225 USDC to the app on Base Network. 
+The user does not have any USDC on Base, but their wallet seamlessly allows them to source the funds from other networks. 
+<Frame>   
+![Chain Abstraction Example](/images/assets/chain_abstraction_demo.png)
+</Frame>  
+## Get Started
+
+<CardGroup cols={2}>
+  <Card title="Android" icon="android" href="/walletkit/android/chain-abstraction">
+    Get started with WalletKit in Android.
+  </Card>
+
+  <Card title="iOS" icon="apple" href="/walletkit/ios/chain-abstraction">
+    Get started with WalletKit in iOS.
+  </Card>
+
+  <Card title="Flutter" icon="flutter" href="/walletkit/flutter/chain-abstraction">
+    Get started with WalletKit in Flutter.
+  </Card>
+
+  <Card title="React Native" icon="react" href="/walletkit/react-native/chain-abstraction">
+    Get started with WalletKit in React Native.
+  </Card>
+
+  <Card title="Web" icon="js" href="/walletkit/web/chain-abstraction">
+    Get started with WalletKit in Web.
+  </Card>
+</CardGroup>
+
+
+## FAQ
+
+### What are the available networks for Chain Abstraction?
+
+Chain Abstraction is available on the following networks:
+
+- Base 
+- Arbitrum
+- OP Mainnet 
+
+### What are the supported tokens and networks?
+
+Chain Abstraction supports the following tokens across different networks:
+
+| Network | Supported Tokens |
+|---------|-----------------|
+| OP Mainnet | USDC, USDT, ETH |
+| Base | USDC, USDS, ETH |
+| Arbitrum | USDC, USDT, ETH |
+| Solana | USDC |
+
+
+### What are the limitations?
+
+We currently support 1:1 transfers i.e. sourcing funds from one address to another. Make sure that you're transferring minimum 0.6$ worth of tokens(/walletkit/../walletkit/features/early-access/chain-abstraction.mdx#what-are-the-supported-tokens-and-networks) and have enough gas to pay bridging fees.
+</file>
+
+<file path="walletkit/features/notifications.mdx">
+---
+title: Notifications
+---
+
+Enrich your wallet experience with Web3 Notifications and provide your community with direct access to critical and powerful updates from their favorite apps.
+Build in-wallet notification features that allow users to subscribe, set permissions, and receive notifications from their favorite apps.
+
+## Get Started
+
+<CardGroup cols={2}>
+  <Card title="Android" icon="android" href="/walletkit/android/notifications/notify/overview">
+    Get started with WalletKit in Android.
+  </Card>
+
+  <Card title="iOS" icon="apple" href="/walletkit/ios/notifications/notify/overview">
+    Get started with WalletKit in iOS.
+  </Card>
+
+  <Card title="React Native" icon="react" href="/walletkit/react-native/notifications/notify/overview">
+    Get started with WalletKit in React Native.
+  </Card>
+</CardGroup>
+</file>
+
+<file path="walletkit/features/one-click-auth.mdx">
+---
+title: One-Click Auth
+---
+
+Enable your users to connect to web3 through a single tap with One-Click Auth, improving connectivity speeds and creating all-around better UX and friction-free user journeys.
+With one-tap multi-chain and multi-account signing, let users authenticate multiple chains and accounts simultaneously.
+
+## Get Started
+
+<CardGroup cols={2}>
+  <Card title="Web" icon="browser" href="/walletkit/web/one-click-auth">
+    Get started with WalletKit in Web.
+  </Card>
+
+  <Card title="Android" icon="android" href="/walletkit/android/one-click-auth">
+    Get started with WalletKit in Android.
+  </Card>
+
+  <Card title="iOS" icon="apple" href="/walletkit/ios/one-click-auth">
+    Get started with WalletKit in iOS.
+  </Card>
+
+  <Card title="React Native" icon="react" href="/walletkit/react-native/one-click-auth">
+    Get started with WalletKit in React Native.
+  </Card>
+
+  <Card title="Flutter" icon="flutter" href="/walletkit/flutter/one-click-auth">
+    Get started with WalletKit in Flutter.
+  </Card>
+</CardGroup>
+</file>
+
+<file path="walletkit/features/verify.mdx">
+---
+title: Verify API
+sidebarTitle: Verify
+---
+
+App Verification is a first-of-its-kind layered security solution that enables wallets to help users protect themselves from phishing attacks, with robust architecture enabling wallets to support users in better identifying the veracity of a domain they are attempting to connect to.
+
+<Frame caption="Verify API Userflow" height="400" width="600">
+    <img src="/images/verify-banner.png" />
+</Frame>
+
+
+## Get Started
+
+<CardGroup cols={2}>
+  <Card title="Android" icon="android" href="/walletkit/android/verify">
+    Get started with WalletKit in Android.
+  </Card>
+
+  <Card title="iOS" icon="apple" href="/walletkit/ios/verify">
+    Get started with WalletKit in iOS.
+  </Card>
+
+  <Card title="Flutter" icon="flutter" href="/walletkit/flutter/verify">
+    Get started with WalletKit in Flutter.
+  </Card>
+
+  <Card title="React Native" icon="react" href="/walletkit/react-native/verify">
+    Get started with WalletKit in React Native.
+  </Card>
+
+  <Card title="Web" icon="browser" href="/walletkit/web/verify">
+    Get started with WalletKit in Web.
+  </Card>
+
+  <Card title=".NET" icon="c" href="/walletkit/c-sharp/verify">
+    Get started with WalletKit in .NET.
+  </Card>
+</CardGroup>
+</file>
+
+<file path="walletkit/upgrade/from-web3wallet-android.mdx">
+---
+title: Upgrade from Web3Wallet to WalletKit for Android
+sidebarTitle: WalletKit - Android
+---
+
+## Upgrade to Reown WalletKit
+
+This upgrade guide helps developers transition from using the Web3Wallet library to the WalletKit within reown-kotlin. The guide involves updating imports, modifying class references and updating artefacts dependencies. Follow these steps to ensure a smooth migration.
+
+### Step 1. Update the Repository Dependencies
+
+The Web3Wallet library has been deprecated and moved to a new repository under the reown-com organization. Update your dependencies to use WalletKit:
+
+```swift
+/* highlight-delete-start */
+- dependencies {
+-     implementation(platform("com.walletconnect:android-bom:{BOM version}"))
+-     implementation("com.walletconnect:android-core")
+-     implementation("com.walletconnect:web3wallet")
+- }
+/* highlight-delete-end */
+/* highlight-add-start */
++ dependencies {
++     implementation(platform("com.reown:android-bom:{BOM version}"))
++     implementation("com.reown:android-core")
++     implementation("com.reown:walletkit")
++ }
+/* highlight-add-end */
+```
+
+### Step 2.  Update Imports in Your Code
+
+All references to Web3Wallet in your import statements should be updated to use WalletKit.
+
+```swift
+/* highlight-delete-start */
+- import com.walletconnect.android.*
+- import com.walletconnect.web3.wallet.*
+/* highlight-delete-end */
+/* highlight-add-start */
++ import com.reown.android.*
++ import com.reown.walletkit.*
+/* highlight-add-end */
+```
+
+
+### Step 3. Update Class Name
+
+The singleton instance for Web3Wallet has been replaced with WalletKit. Update all instances where Web3Wallet is used with WalletKit.
+
+```swift
+/* highlight-delete-start */
+- Web3Wallet.initialize(Wallet.Params.Init(core = CoreClient), onSuccess, onError)
+- Web3Wallet.approveSession(approveProposal, onSuccess, onError)
+/* highlight-delete-end */
+/* highlight-add-start */
++ WalletKit.initialize(Wallet.Params.Init(core = CoreClient), onSuccess, onError)
++ WalletKit.approveSession(approveProposal, onSuccess, onError)
+/* highlight-add-end */
+```
+
+### Step 4. Update ProGuard file rules
+
+If you have ProGuard rules defined remember to update 
+
+```swift
+/* highlight-delete-start */
+- -keep class com.walletconnect.web3.wallet.client.Wallet$Model { *; }
+- -keep class com.walletconnect.web3.wallet.client.Wallet { *; }
+/* highlight-delete-end */
+/* highlight-add-start */
++ -keep class com.reown.walletkit.client.Wallet$Model { *; }
++ -keep class com.reown.walletkit.client.Wallet { *; }
+/* highlight-add-end */
+```
+
+### Step 5. Test Your Changes
+
+After updating all references to Web3Wallet to use WalletKit, thoroughly test your application to ensure that all functionalities work as expected.
+
+## Pairing Expiry
+
+Currently, Dapps create a new pairing whenever the user selects the **"Connect Wallet"** button, instead of reusing existing pairings. Although pairings were not intended to be reused, they were being persisted for 30 days, causing unnecessary resource usage for both Dapps and wallet clients, including redundant socket connections. 
+
+This led to an accumulation of stale pairings in wallets, resulting in degraded efficiency and increased resource consumption. To address this issue, we have introduced changes to how pairings are managed to ensure more efficient connection handling.
+
+Pairings were never intended to be listed in the wallet, and wallets should only display active sessions to users.
+
+## WebSocket Connection Handling
+
+We've optimized the WebSocket connection management to improve performance and resource utilization. The SDK will now establish a WebSocket connection only when there's an explicit intention to send a request or subscribe to a topic. If none of these conditions are met, the WebSocket connection will remain closed by default.
+
+### What's Changed?
+Previous Behavior: The SDK automatically initiated a WebSocket connection upon startup, regardless of active sessions or pending actions.
+
+New Behavior: The SDK delays establishing a WebSocket connection until it's necessary based on the app's activities.
+
+### Why This Change?
+This adjustment reduces unnecessary network traffic and conserves device resources, leading to better performance and battery life, especially important for mobile applications.
+
+### Impact on Your Application
+Disconnected State on Launch: Apps without active sessions at launch will start with the WebSocket in a disconnected state.
+UI Elements Depending on WebSocket: Buttons or features that rely on an active WebSocket connection may not function until the connection is established.
+
+### Steps for Migration
+
+Wallets are no longer expected to handle pairing-related methods. If your wallet has been listing pairings, please replace this with listing active sessions instead.
+</file>
+
+<file path="walletkit/upgrade/from-web3wallet-flutter.mdx">
+---
+title: Upgrade from Web3Wallet to WalletKit for Flutter
+sidebarTitle: WalletKit - Flutter
+---
+
+## Upgrade to Reown WalletKit
+
+This document outlines the steps to migrate from the old `walletconnect_flutter_v2` package to the new `reown_walletkit` packages in your Flutter project.
+
+### Step 1. Replace the corresponding dependency
+
+Remove `walletconnect_flutter_v2` dependency from pubspec.yaml and add `reown_walletkit`:
+
+```dart
+/* highlight-delete-start */
+walletconnect_flutter_v2: ^X.Y.Z
+/* highlight-delete-end */
+/* highlight-add-start */
+reown_walletkit: ^1.0.0
+/* highlight-add-end */
+```
+
+Run `flutter clean && flutter pub get` after replacing the packages
+
+Then replace the imports...
+
+```dart
+/* highlight-delete-start */
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+/* highlight-delete-end */
+/* highlight-add-start */
+import 'package:reown_walletkit/reown_walletkit.dart';
+/* highlight-add-end */
+```
+
+### Step 2. Update main classes
+
+<Table
+  headers={["Old", "New"]}
+  data={[
+    {
+      old: { code: "Web3Wallet" },
+      new: { code: "ReownWalletKit" },
+    },
+    {
+      old: { code: "Core" },
+      new: { code: "ReownCore" },
+    },
+  ]}
+/>
+
+### Step 3. Update error definitions
+
+```tsx
+/* highlight-delete-start */
+Errors.getSdkError(Errors.USER_REJECTED);
+/* highlight-delete-end */
+/* highlight-add-start */
+Errors.getSdkError(Errors.USER_REJECTED).toSignError();
+/* highlight-add-end */
+```
+
+### Step 5. Update any exception type
+
+<Table
+  headers={["Old", "New"]}
+  data={[
+    {
+      old: { code: "WalletConnectError" },
+      new: { code: "ReownSignError" },
+    },
+  ]}
+/>
+
+### Final notes
+
+- Ensure that you have updated all relevant configurations and imports in your project to reflect the changes from Web3Wallet to WalletKit.
+- Test your application thoroughly to ensure that the migration has been successful and that all functionality is working as expected.
+- Check our [WalletKit example for Flutter](https://github.com/reown-com/reown_flutter/tree/master/packages/reown_walletkit/example/) to compare with your implementation in case you are having issues
+</file>
+
+<file path="walletkit/upgrade/from-web3wallet-ios.mdx">
+---
+title: Upgrade from Web3Wallet to WalletKit for iOS
+sidebarTitle: WalletKit - iOS
+---
+
+
+## Upgrade to Reown WalletKit
+
+This upgrade guide helps developers transition from using the Web3Wallet library to the WalletKit within reown-swift. The guide involves updating import statements, modifying instance references, changing configuration methods, and updating repository URLs for CocoaPods and Swift Package Manager (SPM). 
+
+### Step 1. Update the Repository URL
+
+The Web3Wallet library has been moved to a new repository under the reown-com organization. If you are using Swift Package Manager (SPM) to manage dependencies, update your Package.swift file to point to the new repository:
+
+```swift
+/* highlight-delete-start */
+- .package(url: "https://github.com/WalletConnect/WalletConnectSwiftV2", from: "1.0.0"),
+/* highlight-delete-end */
+/* highlight-add-start */
++ .package(url: "https://github.com/reown-com/reown-swift", from: "1.0.0"),
+/* highlight-add-end */
+```
+
+### Step 2. Update Imports in Your Code
+
+All references to Web3Wallet in your import statements should be updated to use WalletKit.
+
+```swift
+/* highlight-delete-start */
+- import Web3Wallet
+/* highlight-delete-end */
+/* highlight-add-start */
++ import WalletKit
+/* highlight-add-end */
+```
+
+### Step 3. Update Instance Access and Method Calls
+
+The singleton instance access for Web3Wallet has been replaced with WalletKit. Update all instances where Web3Wallet.instance is used to WalletKit.instance.
+
+```swift
+/* highlight-delete-start */
+- Web3Wallet.instance.authRequestPublisher.sink { (id, result) in
+-    // Your code here
+- }
+/* highlight-delete-end */
+/* highlight-add-start */
++ WalletKit.instance.authRequestPublisher.sink { (id, result) in
++     // Your code here
++ }
+/* highlight-add-end */
+```
+
+### Step 4. Update Configuration Method
+
+The configure method has been updated to reflect the new branding. Replace calls to Web3Wallet.configure with WalletKit.configure.
+
+```swift
+/* highlight-delete-start */
+- Web3Wallet.configure(
+-   ...
+- )
+/* highlight-delete-end */
+/* highlight-add-start */
++ WalletKit.configure(
++   ...
++ )
+/* highlight-add-end */
+```
+
+### Step 5. Update CocoaPods Podspec
+
+If you are using CocoaPods to manage dependencies, update your Podfile to use the new library name.
+
+```swift
+/* highlight-delete-start */
+- pod 'Web3Wallet', '~> 1.0'
+/* highlight-delete-end */
+/* highlight-add-start */
++ pod 'WalletKit', '~> 1.0'
+/* highlight-add-end */
+```
+
+### Step 6. Test Your Changes
+
+After updating all references to Web3Wallet to use WalletKit, thoroughly test your application to ensure that all functionalities work as expected.
+
+## Pairing Expiry
+
+Currently, Dapps create a new pairing whenever the user selects the **"Connect Wallet"** button, instead of reusing existing pairings. Although pairings were not intended to be reused, they were being persisted for 30 days, causing unnecessary resource usage for both Dapps and wallet clients, including redundant socket connections. 
+
+This led to an accumulation of stale pairings in wallets, resulting in degraded efficiency and increased resource consumption. To address this issue, we have introduced changes to how pairings are managed to ensure more efficient connection handling.
+
+Pairings were never intended to be listed in the wallet, and wallets should only display active sessions to users.
+
+## WebSocket Connection Handling
+
+We've optimized the WebSocket connection management to improve performance and resource utilization. The SDK will now establish a WebSocket connection only when there's an explicit intention to send a request or subscribe to a topic. If none of these conditions are met, the WebSocket connection will remain closed by default.
+
+### What's Changed?
+Previous Behavior: The SDK automatically initiated a WebSocket connection upon startup, regardless of active sessions or pending actions.
+
+New Behavior: The SDK delays establishing a WebSocket connection until it's necessary based on the app's activities.
+
+### Why This Change?
+This adjustment reduces unnecessary network traffic and conserves device resources, leading to better performance and battery life, especially important for mobile applications.
+
+### Impact on Your Application
+Disconnected State on Launch: Apps without active sessions at launch will start with the WebSocket in a disconnected state.
+UI Elements Depending on WebSocket: Buttons or features that rely on an active WebSocket connection may not function until the connection is established.
+
+### Steps for Migration
+
+Wallets are no longer expected to handle pairing-related methods. If your wallet has been listing pairings, please replace this with listing active sessions instead.
+</file>
+
+<file path="walletkit/upgrade/from-web3wallet-react-native.mdx">
+---
+title: Upgrade from Web3Wallet to WalletKit for React Native
+sidebarTitle: WalletKit - React Native
+---
+
+
+## Upgrade to Reown WalletKit
+
+This document outlines the steps to migrate from the old `@walletconnect/web3wallet` package to the new `@reown/walletkit` packages in your project.
+
+### Step 1. Update your package.json
+
+Replace your existing `@walletconnect/web3wallet` dependency with `@reown/walletkit`:
+
+```json
+/* highlight-delete-start */
+"@walletconnect/web3wallet": "^x.y.z"
+/* highlight-delete-end */
+/* highlight-add-start */
+"@reown/walletkit": "^1.0.0"
+/* highlight-add-end */
+```
+
+### Step 2. Install `@reown/walletkit`
+
+Run `npm install` (or your preferred package manager command) to install the new package.
+
+### Step 3. Update your imports
+
+Replace the imports in your project:
+
+```javascript
+/* highlight-delete-start */
+import { Web3Wallet } from "@walletconnect/web3wallet";
+/* highlight-delete-end */
+/* highlight-add-start */
+import { WalletKit } from "@reown/walletkit";
+/* highlight-add-end */
+```
+and your initialization to use the new package:
+```javascript
+/* highlight-delete-start */
+await Web3Wallet.init()
+/* highlight-delete-end */
+/* highlight-add-start */
+await WalletKit.init()
+/* highlight-add-end */
+```
+
+
+If you're using additional imports from `@walletconnect/web3wallet`, you can replace them with their corresponding version from `@reown/walletkit` such as:
+```javascript
+/* highlight-delete-start */
+import { IWeb3Wallet } from "@walletconnect/web3wallet";
+/* highlight-delete-end */
+/* highlight-add-start */
+import { IWalletKit } from "@reown/walletkit";
+/* highlight-add-end */
+```
+
+
+## You're all set!
+
+### Final Notes 
++ public API documentation can be found [here](/walletkit/web/usage)
++ `auth_request` is deprecated in favor of `session_authenticate`. Docs can be found [here](/walletkit/web/one-click-auth)
+</file>
+
+<file path="walletkit/upgrade/from-web3wallet-to-reown.mdx">
+---
+title: Upgrade from Web3Wallet to Reown WalletKit
+sidebarTitle: Overview
+---
+
+## Upgrade Platform list
+
+<CardGroup cols={2}>
+  <Card title="Web" icon="browser" href="/walletkit/upgrade/from-web3wallet-web">
+    Upgrade to WalletKit in Web.
+  </Card>
+
+  <Card title="React Native" icon="react" href="/walletkit/upgrade/from-web3wallet-react-native">
+    Upgrade to WalletKit in React Native.
+  </Card>
+
+  <Card title="Flutter" icon="flutter" href="/walletkit/upgrade/from-web3wallet-flutter">
+    Upgrade to WalletKit in Flutter.
+  </Card>
+
+  <Card title="Android" icon="android" href="/walletkit/upgrade/from-web3wallet-android">
+    Upgrade to WalletKit in Android.
+  </Card>
+
+  <Card title="iOS" icon="apple" href="/walletkit/upgrade/from-web3wallet-ios">
+    Migrate to WalletKit in iOS.
+  </Card>
+
+  <Card title=".NET" icon="microsoft" href="/walletkit/upgrade/from-web3wallet-unity">
+    Upgrade to WalletKit in .NET.
+  </Card>
+</CardGroup>
+</file>
+
+<file path="walletkit/upgrade/from-web3wallet-unity.mdx">
+---
+title: Upgrade from Web3Wallet to WalletKit for .NET
+sidebarTitle: WalletKit - Unity
+---
+
+## Upgrade to Reown WalletKit
+
+This document outlines the steps to migrate from the old `WalletConnect.Web3Wallet` package to the new `Reown.WalletKit` package in your .NET project.
+
+### Step 1. Replace the corresponding dependency in your project file
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- ... -->
+
+  <ItemGroup>
+/* highlight-delete-start */
+    <PackageReference Include="WalletConnect.Web3Wallet" Version="2.4.2" />
+/* highlight-delete-end */
+/* highlight-add-start */
+    <PackageReference Include="Reown.WalletKit" Version="1.0.0" />
+/* highlight-add-end */
+  </ItemGroup>
+
+</Project>
+```
+
+Alternatively, you can use the .NET CLI:
+
+```bash
+# Remove the old package
+dotnet remove package WalletConnect.Web3Wallet
+
+# Add the new package
+dotnet add package Reown.WalletKit
+```
+
+### Step 2. Update references to the namespaces
+
+<Table
+  headers={["Old", "New"]}
+  data={[
+    {
+      old: { code: "WalletConnectSharp.Web3Wallet" },
+      new: { code: "Reown.WalletKit" },
+    },
+    {
+      old: { code: "WalletConnectSharp.Sign" },
+      new: { code: "Reown.Sign" },
+    },
+    {
+      old: { code: "WalletConnectSharp.Core" },
+      new: { code: "Reown.Core" },
+    },
+    {
+      old: { code: "WalletConnectSharp.Storage" },
+      new: { code: "Reown.Core.Storage" },
+    },
+    {
+      old: { code: "WalletConnectSharp.Crypto" },
+      new: { code: "Reown.Core.Crypto" },
+    },
+    {
+      old: { code: "WalletConnectSharp.Network" },
+      new: { code: "Reown.Core.Network" },
+    },
+  ]}
+/>
+
+### Step 3. Update references to the classes
+
+<Table
+  headers={["Old", "New"]}
+  data={[
+    {
+      old: { code: "WalletConnectCore" },
+      new: { code: "CoreClient" },
+    },
+    {
+      old: { code: "WalletConnectSignClient" },
+      new: { code: "SignClient" },
+    },
+    {
+      old: { code: "Web3WalletClient" },
+      new: { code: "WalletKitClient" },
+    },
+    {
+      old: { code: "WCLogger" },
+      new: { code: "ReownLogger" },
+    },
+  ]}
+/>
+
+### Final notes
+
+- Ensure that you have updated all relevant configurations and imports in your project to reflect the changes from Web3Wallet to WalletKit.
+- Test your application thoroughly to ensure that the migration has been successful and that all functionality is working as expected.
+</file>
+
+<file path="walletkit/upgrade/from-web3wallet-web.mdx">
+---
+title: Upgrade from Web3Wallet to WalletKit for Web
+sidebarTitle: WalletKit - Web
+---
+
+## Upgrade to Reown WalletKit
+
+This document outlines the steps to migrate from the old `@walletconnect/web3wallet` package to the new `@reown/walletkit` packages in your project.
+
+### Step 1. Update your package.json
+
+Replace your existing `@walletconnect/web3wallet` dependency with `@reown/walletkit`:
+
+```json
+/* highlight-delete-start */
+"@walletconnect/web3wallet": "^x.y.z"
+/* highlight-delete-end */
+/* highlight-add-start */
+"@reown/walletkit": "^1.0.0"
+/* highlight-add-end */
+```
+
+### Step 2. Install `@reown/walletkit`
+
+Run `npm install` (or your preferred package manager command) to install the new package.
+
+### Step 3. Update your imports
+
+Replace the imports in your project:
+
+```javascript
+/* highlight-delete-start */
+import { Web3Wallet } from "@walletconnect/web3wallet";
+/* highlight-delete-end */
+/* highlight-add-start */
+import { WalletKit } from "@reown/walletkit";
+/* highlight-add-end */
+```
+and your initialization to use the new package:
+```javascript
+/* highlight-delete-start */
+await Web3Wallet.init()
+/* highlight-delete-end */
+/* highlight-add-start */
+await WalletKit.init()
+/* highlight-add-end */
+```
+
+
+If you're using additional imports from `@walletconnect/web3wallet`, you can replace them with their corresponding version from `@reown/walletkit` such as:
+```javascript
+/* highlight-delete-start */
+import { IWeb3Wallet } from "@walletconnect/web3wallet";
+/* highlight-delete-end */
+/* highlight-add-start */
+import { IWalletKit } from "@reown/walletkit";
+/* highlight-add-end */
+```
+
+
+## You're all set!
+
+### Final Notes 
++ public API documentation can be found [here](/walletkit/web/usage)
++ `auth_request` is deprecated in favor of `session_authenticate`. Docs can be found [here](/walletkit/web/one-click-auth)
+</file>
+
+<file path="walletkit/web/cloud/analytics.mdx">
+---
+title: Analytics
+---
+
+import Analytics from "/snippets/cloud/analytics.mdx";
+
+<Analytics />
+</file>
+
+<file path="walletkit/web/cloud/explorer-submission.mdx">
+---
+title: Explorer Submission
+---
+
+import ExplorerSubmission from "/snippets/cloud/explorer-submission.mdx";
+
+<ExplorerSubmission />
+</file>
+
+<file path="walletkit/web/cloud/relay.mdx">
+---
+title: Relay
+---
+
+import Relay from "/snippets/cloud/relay.mdx";
+
+<Relay />
+</file>
+
+<file path="walletkit/web/cloud/verify.mdx">
+---
+title: Verify
+---
+
+import Verify from "/snippets/cloud/verify.mdx";
+
+<Verify />
+</file>
+
+<file path="walletkit/web/best-practices.mdx">
+---
+title: Best Practices
+---
+
+The purpose of this guide is to show the best practices in regards of the WalletKit client usage. The goal is to provide the best user experience that just works in every circumstances.
+
+<Info>
+In order to ensure the best user experience and flawless connection flow, please make sure that WalletKit is initialized immediately after your app launch, especially if launched via a WalletConnect Deep Link. It guarantees that websocket connection is opened immediately and all requests are received by your wallet
+</Info>
+
+## Pairing
+
+A pairing is a connection between a wallet and a dapp that has fixed permissions to only allow a dapp to propose a session through it. Dapp can propose infinite number of sessions on one pairing. Wallet must use a pair method from WalletKit client to pair with dapp.
+
+```typescript
+const uri = 'xxx'; // pairing uri
+try {
+    await walletKit.pair({ uri });
+} catch (error) {
+    // some error happens while pairing - check Expected errors section
+}
+```
+
+### Pairing Expiry
+
+A pairing expiry event is triggered whenever a pairing is expired. The expiry for inactive pairing is 5 mins, whereas for active pairing is 30 days. A pairing becomes active when a session proposal is received and user successfully approves it. This event helps to know when given pairing expires and update UI accordingly.
+
+```typescript
+core.pairing.events.on("pairing_expire", (event) => {
+    // pairing expired before user approved/rejected a session proposal
+    const { topic } = topic;
+});
+```
+### Expected User flow
+
+### Pairing Flow
+<Frame>
+![](/images/assets/pairing.gif)
+</Frame>
+### Pairing Error
+<Frame>
+![](/images/assets/pairing_error.gif)
+</Frame>
+### Expected Errors
+
+While pairing the following errors might occur:
+
+- No Internet connection error or pairing timeout when scanning QR with no Internet connection
+  - User should pair again with Internet connection
+- Pairing expired error when scanning a QR code with expired pairing
+  - User should refresh a QR code and scan again
+- Pairing with existing pairing is not allowed
+  - User should refresh a QR code and scan again. I usually happens when user scans an already paired QR code.
+
+## Session Proposal
+
+A session proposal is a handshake sent by a dapp and it's purpose is to define a session rules. Whenever a user wants to establish a connection between a wallet and a dapp, one should approve a session proposal.
+
+### User Action Feedback
+
+Whenever user approves or rejects a session proposal, wallet should show loading indicators in a moment of the button press until Relay acknowledgement is received for any of this actions.
+
+Approving session
+```typescript
+    try {
+        await walletKit.approveSession(params);
+        // update UI -> remove the loader
+    } catch (error) {
+        // present error to the user
+    }
+```
+Rejecting session
+```typescript
+    try {
+        await walletKit.rejectSession(params);
+        // update UI -> remove the loader
+    } catch (error) {
+        // present error to the user
+    }
+```
+
+### Session Proposal Expiry
+
+A session proposal expiry is 5 mins. It means a given proposal is stored for 5 mins in the SDK storage and user has 5 mins for approval or rejection decision. After that time the below event is emitted and proposal modal should be removed from the app's UI.
+
+```typescript
+walletKit.on("proposal_expire", (event) => {
+    // proposal expired and any modal displaying it should be removed
+    const { id } = event;
+});
+```
+
+### Expected User flow
+
+### Approve or Reject Session Proposal
+<Frame>
+![](/images/assets/pairing.gif)
+</Frame>
+### Error Handling
+<Frame>
+![](/images/assets/proposal_error.gif)
+</Frame>
+### Expected Errors
+
+While approving or rejecting a session proposal the following errors might occurs:
+
+- No Internet connection
+  - It happens when a user tries to approve or reject session proposal with no Internet connection
+- Session proposal expired
+  - It happens when users tries to approve or reject expired session proposal
+- Invalid namespaces
+  - It happens when a validation of session namespaces fails
+- Timeout
+  - It happens when Relay doesn't acknowledge session settle publish within 10s
+
+## Session Request
+
+A session request represents the request sent by a dapp to a wallet.
+
+### User Action Feedback
+
+Whenever user approves or rejects a session request, wallet should show loading indicators in a moment of the button press until Relay acknowledgement is received for any of this actions.
+
+```typescript
+    try {
+        await walletKit.respondSessionRequest(params);
+        // update UI -> remove the loader
+    } catch (error) {
+        // present error to the user
+    }
+```
+
+### Session Request Expiry
+
+A session request expiry is defined by a dapp. It's value must be between now() + 5mins and now() + 7 days. After the session request expires the below event is emitted and session request modal should be removed from the app's UI.
+
+```typescript
+walletKit.on("session_request_expire", (event) => {
+    // request expired and any modal displaying it should be removed
+    const { id } = event;
+});
+```
+
+### Expected User flow
+
+### Approve or Reject Session Proposal
+<Frame>
+![](/images/assets/session_request.gif)
+</Frame>
+### Error Handling
+<Frame>
+![](/images/assets/session_request_error.gif)
+</Frame>
+### Expected Errors
+
+While approving or rejecting a session request the following error might occur:
+
+- Invalid session
+  - This error might happen when user approves or rejects a session request on expired session
+- Session request expired
+  - This error might happen when user approves or rejects a session request that already expires
+- Timeout
+  - It happens when Relay doesn't acknowledge session settle publish within 10s
+
+## Web Socket Connection State
+
+The Web Socket connection state tracks the connection with the relay server, event is emitted whenever a connection state changes.
+
+```typescript
+core.relayer.on("relayer_connect", () => {
+    // connection to the relay server is established
+})
+
+core.relayer.on("relayer_disconnect", () => {
+// connection to the relay server is lost
+})
+
+```
+
+### Expected User flow
+
+### Connection State
+<Frame>
+![](/images/assets/connection_state.gif)
+</Frame>
+</file>
+
+<file path="walletkit/web/chain-abstraction.mdx">
+---
+title: Chain Abstraction
+sidebar_position: 1
+---
+
+import HowItWorks from "/snippets/walletkit/shared/chain-abstraction/intro.mdx";
+import ErrorHandling from "/snippets/walletkit/shared/chain-abstraction/error-handling.mdx";
+
+<HowItWorks />
+
+## Methods
+
+<Info>
+Make sure you are using canary version of `@reown/walletkit`.
+</Info>
+
+Following are the methods from WalletKit that you will use in implementing chain abstraction.
+
+### Prepare 
+
+This method checks if a transaction requires additional bridging transactions beforehand.
+
+```typescript
+public abstract prepare(params: {
+  transaction: ChainAbstractionTypes.PartialTransaction;
+}): ChainAbstractionTypes.PrepareResponse;
+```
+
+### Execute 
+
+Helper method used to broadcast the bridging and initial transactions and wait for them to be completed.
+
+```typescript
+public abstract execute(params: {
+  orchestrationId: ChainAbstractionTypes.OrchestrationId;
+  bridgeSignedTransactions: ChainAbstractionTypes.SignedTransaction[];
+  initialSignedTransaction: ChainAbstractionTypes.SignedTransaction;
+}): ChainAbstractionTypes.ExecuteResult;
+```
+
+## Usage
+
+When sending a transaction, first check if chain abstraction is needed using the `prepare` method. 
+If it is needed, you must sign all the fulfillment transactions and use the `execute` method. 
+Here's a complete example:
+
+```typescript
+// Check if chain abstraction is needed
+const result = await walletKit.chainAbstraction.prepare({
+  transaction: {
+    from: transaction.from as `0x${string}`,
+    to: transaction.to as `0x${string}`,
+    // @ts-ignore - cater for both input or data
+    input: transaction.input || (transaction.data as `0x${string}`),
+    chainId: chainId,
+  },
+});
+
+// Handle the prepare result
+if ('success' in result) {
+  if ('notRequired' in result.success) {
+    // No bridging required, proceed with normal transaction
+    console.log('no routing required');
+  } else if ('available' in result.success) {
+    const available = result.success.available;
+    
+    // Sign all bridge transactions and initial transaction
+    const bridgeTxs = available.route.map(tx => tx.transactionHashToSign);
+    const signedBridgeTxs = bridgeTxs.map(tx => wallet.signAny(tx));
+    const signedInitialTx = wallet.signAny(available.initial.transactionHashToSign);
+
+    // Execute the chain abstraction
+    const result = await walletKit.chainAbstraction.execute({
+      bridgeSignedTransactions: signedBridgeTxs,
+      initialSignedTransaction: signedInitialTx,
+      orchestrationId: available.routeResponse.orchestrationId,
+    });
+  }
+}
+```
+
+For example, check out implementation of chain abstraction in [sample wallet](https://github.com/reown-com/web-examples/tree/main/advanced/wallets/react-wallet-v2) built with React. 
+
+<ErrorHandling />
+
+## Testing 
+
+To test Chain Abstraction, you can use the [AppKit laboratory](https://appkit-lab.reown.com/library/wagmi/) and try sending [USDC/USDT](../../../walletkit/features/experimental/chain-abstraction.mdx#what-are-the-supported-tokens-and-networks) with any chain abstraction supported wallet. 
+You can also use this [sample wallet](https://react-wallet.walletconnect.com) for testing. 
+
+<video controls width="100%" height="100%" style={{ borderRadius: '10px' }}>
+  <source src="/images/assets/chain-abstraction-demo.mp4" type="video/mp4" />
+</video>
+</file>
+
+<file path="walletkit/web/eip5792.mdx">
+---
+title: Wallet Call API
+---
+
+WalletConnect supports [EIP-5792](https://eips.ethereum.org/EIPS/eip-5792#atomicbatch-capability), which defines new JSON-RPC methods that enable apps to ask a wallet to process a batch of onchain write calls and to check on the status of those calls.
+Applications can specify that these onchain calls be executed taking advantage of specific capabilities previously expressed by the wallet; an additional, a novel wallet RPC is defined to enable apps to query the wallet for those capabilities.
+
+- `wallet_sendCalls`: Requests that a wallet submits a batch of calls.
+- `wallet_getCallsStatus`: Returns the status of a call batch that was sent via wallet_sendCalls.
+- `wallet_showCallsStatus`: Requests that a wallet shows information about a given call bundle that was sent with wallet_sendCalls.
+- `wallet_getCapabilities`: This RPC allows an application to request capabilities from a wallet (e.g. batch transactions, paymaster communication).
+</file>
+
+<file path="walletkit/web/installation.mdx">
+---
+title: Installation
+---
+
+Install WalletKit using npm or yarn.
+
+<CodeGroup>
+```bash npm
+npm install @reown/walletkit @walletconnect/utils @walletconnect/core
+```
+```bash Yarn
+yarn add @reown/walletkit @walletconnect/utils @walletconnect/core
+```
+```bash Bun
+bun add @reown/walletkit @walletconnect/utils @walletconnect/core
+```
+```bash pnpm
+pnpm add @reown/walletkit @walletconnect/utils @walletconnect/core
+```
+</CodeGroup>
+## Next Steps
+
+Now that you've installed WalletKit, you're ready to start integrating it. The next section will walk you through the process of setting up your project to use the SDK.
+</file>
+
+<file path="walletkit/web/one-click-auth-siws.mdx">
+---
+title: One-click Auth / SIWS
+---
+
+## Introduction
+
+This section outlines an innovative protocol method that facilitates the initiation of a Sign session and the authentication of a wallet through a [Sign-In with Solana](https://github.com/phantom/sign-in-with-solana) (SIWS) message, enhanced by [ReCaps](https://eips.ethereum.org/EIPS/eip-5573) (ReCap Capabilities).
+
+This enhancement not only offers immediate authentication for dApps, paving the way for prompt user logins, but also integrates informed consent for authorization. Through this mechanism, dApps can request the delegation of specific capabilities to perform actions on behalf of the wallet user. These capabilities, encapsulated within SIWS messages as ReCap URIs, detail the scope of actions authorized by the user in an explicit and human-readable form.
+
+By incorporating ReCaps, this method extends the utility of SIWS messages, allowing dApps to combine authentication with a nuanced authorization model. This model specifies the actions a dApp is authorized to execute on the user's behalf, enhancing security and user autonomy by providing clear consent for each delegated capability. As a result, dApps can utilize these consent-backed messages to perform predetermined actions, significantly enriching the interaction between dApps, wallets, and users within the Solana ecosystem.
+
+## Handling Authentication Requests
+
+To handle incoming authentication requests, subscribe to the `session_authenticate` event. This will notify you of any authentication requests that need to be processed, allowing you to either approve or reject them based on your application logic.
+
+```typescript
+walletKit.on("session_authenticate", async (payload) => {
+  // Process the authentication request here.
+  // Steps include:
+  // 1. Populate the authentication payload with the supported chains and methods
+  // 2. Format the authentication message using the payload and the user's account
+  // 3. Present the authentication message to the user
+  // 4. Sign the authentication message(s) to create a verifiable authentication object(s)
+  // 5. Approve the authentication request with the authentication object(s)
+});
+```
+
+## Authentication Objects/Payloads
+
+```typescript
+import { populateAuthPayload } from "@walletconnect/utils";
+
+// Solana chains that your wallet supports
+const supportedChains = [ "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ" ]
+// Solana methods that your wallet supports
+const supportedMethods = ["solana_signMessage", "solana_signTransaction"];
+// Populate the authentication payload with the supported chains and methods
+const authPayload = populateAuthPayload({
+  authPayload: payload.params.authPayload,
+  chains: supportedChains,
+  methods: supportedMethods,
+});
+// Prepare the user's address in CAIP10(https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-10.md) format
+const iss = `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:8nJ694gNrHx76L2eyJzQw7JBGRoW8Fdtrxf588pEqyYh`;
+// Now you can use the authPayload to format the authentication message
+const message = walletKit.formatAuthMessage({
+  request: authPayload,
+  iss
+});
+
+// Present the authentication message to the user
+...
+```
+
+## Approving Authentication Requests
+
+<Note>
+
+1. The recommended approach for secure authentication across multiple chains involves signing a SIWS (Sign-In with Solana) message for each chain and account. However, at a minimum, one SIWS message must be signed to establish a session. It is possible to create a session for multiple chains with just one issued authentication object.
+2. Sometimes a dapp may want to only authenticate the user without creating a session, not every approval will result with a new session.
+
+</Note>
+
+```typescript
+// Approach 1
+// Sign the authentication message(s) to create a verifiable authentication object(s)
+const signature = await cryptoWallet.signMessage(message, privateKey);
+// Build the authentication object(s)
+const auth = buildAuthObject(
+  authPayload,
+  {
+    t: "caip122",
+    s: signature,
+  },
+  iss
+);
+
+// Approve
+await walletKit.approveSessionAuthenticate({
+  id: payload.id,
+  auths: [auth],
+});
+
+// Approach 2
+// Note that you can also sign multiple messages for every requested chain/address pair
+const auths = [];
+authPayload.chains.forEach(async (chain) => {
+  const message = walletKit.formatAuthMessage({
+    request: authPayload,
+    iss: `${chain}:${cryptoWallet.address}`,
+  });
+  const signature = await cryptoWallet.signMessage(message);
+  const auth = buildAuthObject(
+    authPayload,
+    {
+      t: "caip122", // signature type
+      s: signature,
+    },
+    `${chain}:${cryptoWallet.address}`
+  );
+  auths.push(auth);
+});
+
+// Approve
+await walletKit.approveSessionAuthenticate({
+  id: payload.id,
+  auths,
+});
+```
+
+## Rejecting Authentication Requests
+
+If the authentication request cannot be approved or if the user chooses to reject it, use the rejectSession method.
+
+```typescript
+import { getSdkError } from "@walletconnect/utils";
+
+await walletKit.rejectSessionAuthenticate({
+  id: payload.id,
+  reason: getSdkError("USER_REJECTED"), // or choose a different reason if applicable
+});
+```
+
+## Testing One-click Auth
+
+You can use [AppKit Labs](https://appkit-lab.reown.com/library/solana-siws/) to test and verify that your wallet supports One-click Auth properly.
+
+<Card
+  title="Test One-click Auth"
+  href="https://appkit-lab.reown.com/library/solana-siws/"
+/>
+</file>
+
+<file path="walletkit/web/one-click-auth.mdx">
+---
+title: One-click Auth
+---
+
+## Introduction
+
+This section outlines an innovative protocol method that facilitates the initiation of a Sign session and the authentication of a wallet through a [Sign-In with Ethereum](https://eips.ethereum.org/EIPS/eip-4361) (SIWE) message, enhanced by [ReCaps](https://eips.ethereum.org/EIPS/eip-5573) (ReCap Capabilities).
+
+This enhancement not only offers immediate authentication for dApps, paving the way for prompt user logins, but also integrates informed consent for authorization. Through this mechanism, dApps can request the delegation of specific capabilities to perform actions on behalf of the wallet user. These capabilities, encapsulated within SIWE messages as ReCap URIs, detail the scope of actions authorized by the user in an explicit and human-readable form.
+
+By incorporating ReCaps, this method extends the utility of SIWE messages, allowing dApps to combine authentication with a nuanced authorization model. This model specifies the actions a dApp is authorized to execute on the user's behalf, enhancing security and user autonomy by providing clear consent for each delegated capability. As a result, dApps can utilize these consent-backed messages to perform predetermined actions, significantly enriching the interaction between dApps, wallets, and users within the Ethereum ecosystem.
+<Frame>
+![](/images/w3w/authenticatedSessions-light.png)
+</Frame>
+
+## Handling Authentication Requests
+
+To handle incoming authentication requests, subscribe to the `session_authenticate` event. This will notify you of any authentication requests that need to be processed, allowing you to either approve or reject them based on your application logic.
+
+```typescript
+walletKit.on("session_authenticate", async (payload) => {
+  // Process the authentication request here.
+  // Steps include:
+  // 1. Populate the authentication payload with the supported chains and methods
+  // 2. Format the authentication message using the payload and the user's account
+  // 3. Present the authentication message to the user
+  // 4. Sign the authentication message(s) to create a verifiable authentication object(s)
+  // 5. Approve the authentication request with the authentication object(s)
+});
+```
+
+## Authentication Objects/Payloads
+
+```typescript
+import { populateAuthPayload } from "@walletconnect/utils";
+
+// EVM chains that your wallet supports
+const supportedChains = ["eip155:1", "eip155:2", 'eip155:137'];
+// EVM methods that your wallet supports
+const supportedMethods = ["personal_sign", "eth_sendTransaction", "eth_signTypedData"];
+// Populate the authentication payload with the supported chains and methods
+const authPayload = populateAuthPayload({
+  authPayload: payload.params.authPayload,
+  chains: supportedChains,
+  methods: supportedMethods,
+});
+// Prepare the user's address in CAIP10(https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-10.md) format
+const iss = `eip155:1:0x0Df6d2a56F90e8592B4FfEd587dB3D5F5ED9d6ef`;
+// Now you can use the authPayload to format the authentication message
+const message = walletKit.formatAuthMessage({
+  request: authPayload,
+  iss
+});
+
+// Present the authentication message to the user
+...
+```
+
+## Approving Authentication Requests
+
+<Note>
+**Note**
+
+1. The recommended approach for secure authentication across multiple chains involves signing a SIWE (Sign-In with Ethereum) message for each chain and account. However, at a minimum, one SIWE message must be signed to establish a session. It is possible to create a session for multiple chains with just one issued authentication object.
+2. Sometimes a dapp may want to only authenticate the user without creating a session, not every approval will result with a new session.
+</Note>
+
+```typescript
+// Approach 1
+// Sign the authentication message(s) to create a verifiable authentication object(s)
+const signature = await cryptoWallet.signMessage(message, privateKey);
+// Build the authentication object(s)
+const auth = buildAuthObject(
+  authPayload,
+  {
+    t: "eip191",
+    s: signature,
+  },
+  iss
+);
+
+// Approve
+await walletKit.approveSessionAuthenticate({
+  id: payload.id,
+  auths: [auth],
+});
+
+// Approach 2
+// Note that you can also sign multiple messages for every requested chain/address pair
+const auths = [];
+authPayload.chains.forEach(async (chain) => {
+  const message = walletKit.formatAuthMessage({
+    request: authPayload,
+    iss: `${chain}:${cryptoWallet.address}`,
+  });
+  const signature = await cryptoWallet.signMessage(message);
+  const auth = buildAuthObject(
+    authPayload,
+    {
+      t: "eip191", // signature type
+      s: signature,
+    },
+    `${chain}:${cryptoWallet.address}`
+  );
+  auths.push(auth);
+});
+
+// Approve
+await walletKit.approveSessionAuthenticate({
+  id: payload.id,
+  auths,
+});
+```
+
+## Rejecting Authentication Requests
+
+If the authentication request cannot be approved or if the user chooses to reject it, use the rejectSession method.
+
+```typescript
+import { getSdkError } from "@walletconnect/utils";
+
+await walletKit.rejectSessionAuthenticate({
+  id: payload.id,
+  reason: getSdkError("USER_REJECTED"), // or choose a different reason if applicable
+});
+```
+
+## Testing One-click Auth
+
+You can use [AppKit Lab](https://appkit-lab.reown.com/library/ethers-siwe/) to test and verify that your wallet supports One-click Auth properly.
+
+<Card
+  title="Test One-click Auth"
+  href="https://appkit-lab.reown.com/library/ethers-siwe/"
+/>
+</file>
+
+<file path="walletkit/web/resources.mdx">
+---
+title: Resources
+---
+
+Valuable assets for developers and users interested in integrating WalletKit into their applications.
+
+- [Awesome WalletConnect](https://github.com/WalletConnect/awesome-walletconnect) - Community-curated collection of WalletConnect-enabled wallets, libraries, and tools.
+- [AppKit Laboratory](https://appkit-lab.reown.com/) - A place to test your wallet integrations against various setups of AppKit.
+- [WalletKit GitHub](https://github.com/reown-com/reown-walletkit-js) - WalletKit GitHub repository.
+
+### Wallet Resources
+
+We have a set of official examples in our [web-examples](https://github.com/WalletConnect/web-examples) repository to help you get started.
+
+**WalletKit**
+
+This wallet can be used with any dapp using Sign v2 or Auth.
+
+- [React WalletKit](https://github.com/reown-com/web-examples/tree/main/advanced/wallets/react-wallet-v2) ([Demo](https://react-wallet.walletconnect.com))
+
+**Sign**
+
+- [React Wallet Ethers - v2](https://github.com/reown-com/web-examples/tree/main/advanced/wallets/react-wallet-auth) ([Demo](https://react-auth-wallet.walletconnect.com/))
+
+### Dapp Resources
+
+If you need to test your app's integration, you can use one of our following demo wallets and/or dapps.
+
+**Sign**
+
+- [React dApp (with standalone client) - v2](https://github.com/WalletConnect/web-examples/tree/main/advanced/dapps/react-dapp-v2) ([Demo](https://react-app.reown.com/))
+- [React dApp (with EthereumProvider + Ethers.js) - v2](https://github.com/WalletConnect/web-examples/tree/main/advanced/dapps/react-dapp-v2-with-ethers) ([Demo](https://react-dapp-v2-with-ethers.vercel.app/))
+- [React dApp (with EthereumProvider + web3.js) - v2](https://github.com/WalletConnect/web-examples/tree/main/advanced/dapps/react-dapp-v2-with-web3js) ([Demo](https://react-dapp-v2-with-web3js.vercel.app/))
+- [React dApp (with CosmosProvider) - v2](https://github.com/WalletConnect/web-examples/tree/main/advanced/dapps/react-dapp-v2-cosmos-provider) ([Demo](https://react-dapp-v2-cosmos-provider.vercel.app/))
+</file>
+
+<file path="walletkit/web/usage.mdx">
+---
+title: Usage
+---
+
+import CloudBanner from "/snippets/cloud-banner.mdx";
+
+This section provides instructions on how to initialize the WalletKit client, approve sessions with supported namespaces, and respond to session requests, enabling easy integration of Web3 wallets with dapps through a simple and intuitive interface.
+
+## Cloud Configuration
+
+Create a new project on Reown Cloud at https://cloud.reown.com and obtain a new project ID.
+
+<CloudBanner />
+
+## Initialization
+
+Create a new instance from Core and initialize it with a projectId created from installation. Next, create WalletKit instance by calling init on walletKit. Passing in the options object containing metadata about the app and an optional relay URL.
+
+<Info>
+Make sure you initialize `walletKit` globally and use the same instance for all your sessions. For React-based apps, you can initialize it in the root component and export it to use in other components.
+</Info>
+
+```javascript
+import { Core } from "@walletconnect/core";
+import { WalletKit } from "@reown/walletkit";
+
+const core = new Core({
+  projectId: process.env.PROJECT_ID,
+});
+
+const walletKit = await WalletKit.init({
+  core, // <- pass the shared `core` instance
+  metadata: {
+    name: "Demo app",
+    description: "Demo Client as Wallet/Peer",
+    url: "https://reown.com/walletkit",
+    icons: [],
+  },
+});
+```
+
+## Session
+
+A session is a connection between a dapp and a wallet. It is established when a user approves a session proposal from a dapp. A session is active until the user disconnects from the dapp or the session expires.
+
+### Namespace Builder
+
+With WalletKit (and @walletconnect/utils) we've published a helper utility that greatly reduces the complexity of parsing the `required` and `optional` namespaces. It accepts as parameters a `session proposal` along with your user's `chains/methods/events/accounts` and returns ready-to-use `namespaces` object.
+
+```javascript
+// util params
+{
+  proposal: ProposalTypes.Struct; // the proposal received by `.on("session_proposal")`
+  supportedNamespaces: Record< // your Wallet's supported namespaces
+    string, // the supported namespace key e.g. eip155
+    {
+      chains: string[]; // your supported chains in CAIP-2 format e.g. ["eip155:1", "eip155:2", ...]
+      methods: string[]; // your supported methods e.g. ["personal_sign", "eth_sendTransaction"]
+      events: string[]; // your supported events e.g. ["chainChanged", "accountsChanged"]
+      accounts: string[] // your user's accounts in CAIP-10 format e.g. ["eip155:1:0x453d506b1543dcA64f57Ce6e7Bb048466e85e228"]
+      }
+  >;
+};
+```
+
+Example usage
+
+```javascript
+// import the builder util
+import { WalletKit, WalletKitTypes } from '@reown/walletkit'
+import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
+
+async function onSessionProposal({ id, params }: WalletKitTypes.SessionProposal){
+  try{
+    // ------- namespaces builder util ------------ //
+    const approvedNamespaces = buildApprovedNamespaces({
+      proposal: params,
+      supportedNamespaces: {
+        eip155: {
+          chains: ['eip155:1', 'eip155:137'],
+          methods: ['eth_sendTransaction', 'personal_sign'],
+          events: ['accountsChanged', 'chainChanged'],
+          accounts: [
+            'eip155:1:0xab16a96d359ec26a11e2c2b3d8f8b8942d5bfcdb',
+            'eip155:137:0xab16a96d359ec26a11e2c2b3d8f8b8942d5bfcdb'
+          ]
+        }
+      }
+    })
+    // ------- end namespaces builder util ------------ //
+
+    const session = await walletKit.approveSession({
+      id,
+      namespaces: approvedNamespaces
+    })
+  }catch(error){
+    // use the error.message to show toast/info-box letting the user know that the connection attempt was unsuccessful
+    ....
+    await walletKit.rejectSession({
+      id: proposal.id,
+      reason: getSdkError("USER_REJECTED")
+    })
+  }
+}
+
+
+walletKit.on('session_proposal', onSessionProposal)
+```
+
+If your wallet supports multiple namespaces e.g. `eip155`,`cosmos` & `near`
+Your `supportedNamespaces` should look like the following example.
+
+```javascript
+// ------- namespaces builder util ------------ //
+const approvedNamespaces = buildApprovedNamespaces({
+    proposal: params,
+    supportedNamespaces: {
+        eip155: {...},
+        cosmos: {...},
+        near: {...}
+    },
+});
+// ------- end namespaces builder util ------------ //
+```
+
+### Get Active Sessions
+
+You can get the wallet active sessions using the `getActiveSessions` function.
+
+```js
+const activeSessions = walletKit.getActiveSessions();
+```
+
+### EVM methods & events
+
+In @walletconnect/ethereum-provider, (our abstracted EVM SDK for apps) we support by default the following Ethereum methods and events:
+
+```ts
+{
+  //...
+  methods: [
+    "eth_accounts",
+    "eth_requestAccounts",
+    "eth_sendRawTransaction",
+    "eth_sign",
+    "eth_signTransaction",
+    "eth_signTypedData",
+    "eth_signTypedData_v3",
+    "eth_signTypedData_v4",
+    "eth_sendTransaction",
+    "personal_sign",
+    "wallet_switchEthereumChain",
+    "wallet_addEthereumChain",
+    "wallet_getPermissions",
+    "wallet_requestPermissions",
+    "wallet_registerOnboarding",
+    "wallet_watchAsset",
+    "wallet_scanQRCode",
+    "wallet_sendCalls",
+    "wallet_getCallsStatus",
+    "wallet_showCallsStatus",
+    "wallet_getCapabilities",
+  ],
+  events: [
+    "chainChanged",
+    "accountsChanged",
+    "message",
+    "disconnect",
+    "connect",
+  ]
+}
+```
+
+### Session Approval
+
+The `session_proposal` event is emitted when a dapp initiates a new session with a user's wallet. The event will include a `proposal` object with information about the dapp and requested permissions. The wallet should display a prompt for the user to approve or reject the session. If approved, call `approveSession` and pass in the `proposal.id` and requested `namespaces`.
+
+The `pair` method initiates a WalletConnect pairing process with a dapp using the given `uri` (QR code from the dapps). To learn more about pairing, checkout out the [docs](/advanced/api/core/pairing).
+
+```javascript
+walletKit.on(
+  "session_proposal",
+  async (proposal: WalletKitTypes.SessionProposal) => {
+    const session = await walletKit.approveSession({
+      id: proposal.id,
+      namespaces,
+    });
+  }
+);
+await walletKit.pair({ uri });
+```
+
+### 🛠️ Usage examples
+
+- [in a demo wallet app](https://github.com/WalletConnect/web-examples/blob/a50c8eb5a10666f25911713c5358e78f1ca576d6/advanced/wallets/react-wallet-v2/src/views/SessionProposalModal.tsx#L264)
+- [in integration tests](https://github.com/reown-com/reown-walletkit-js/blob/main/packages/walletkit/test/sign.spec.ts#L55)
+
+### ⚠️ Expected Errors
+
+- `No matching key. proposal id doesn't exist: 1`
+
+This rejection means the SDK can't find a record with the given `proposal.id` - in this example `1`.
+This can happen when the proposal has expired (by default 5 minutes) or if you attempt to respond to a proposal that has already been approved/rejected.
+If you are seeing this error, please make sure that you are calling `approveSession` with the correct `proposal.id` that is available within the proposal payload.
+
+- `Error: Missing or invalid. approve(), namespaces should be an object with data`
+
+This error means that the `namespaces` parameter passed to `approveSession` is either missing or invalid. Please check that you are passing a valid `namespaces` object that satisfies all required properties.
+
+- `Non conforming namespaces. approve() namespaces <property> don't satisfy required namespaces.`
+
+This error indicates that some value(s) in your `namespaces` object do not satisfy the required namespaces requested by the dapp.
+To provide additional guidance, the message might include info about the exact property that is missing or invalid e.g. `Required: eip155:1 Approved: eip155:137`.
+Please check [CAIP-25](https://github.com/ChainAgnostic/CAIPs/blob/master/CAIPs/caip-25.md) to familiarize yourself with the standard and it's nuances.
+Additionally, we highly recommend you to use our `namespace` builder utility that would greatly simplify the process of parsing & building a valid `namespaces` object.
+
+### Session Rejection
+
+In the event you want to reject the session proposal, call the `rejectSession` method. The `getSDKError` function comes from the `@walletconnect/utils` [library](https://github.com/WalletConnect/walletconnect-monorepo/tree/v2.0/packages/utils).
+
+```javascript
+walletKit.on(
+  "session_proposal",
+  async (proposal: WalletKitTypes.SessionProposal) => {
+    await walletKit.rejectSession({
+      id: proposal.id,
+      reason: getSdkError("USER_REJECTED_METHODS"),
+    });
+  }
+);
+```
+
+### 🛠️ Usage examples
+
+- [in a demo wallet app](https://github.com/WalletConnect/web-examples/blob/a50c8eb5a10666f25911713c5358e78f1ca576d6/advanced/wallets/react-wallet-v2/src/views/SessionProposalModal.tsx#L287)
+- [in integration tests](https://github.com/reown-com/reown-walletkit-js/blob/main/packages/walletkit/test/sign.spec.ts#L79)
+
+### ⚠️ Expected Errors
+
+- `No matching key. proposal id doesn't exist: 1`
+
+This rejection means the SDK can't find a record with the given `proposal.id` - in this example `1`.
+This can happen when the proposal has expired (by default 5 minutes) or if you attempt to respond to a proposal that has already been approved/rejected.
+If you are seeing this error, please make sure that you are calling `rejectSession` with the correct `proposal.id` that is available within the proposal payload.
+
+- `Error: Missing or invalid. reject() reason:`
+
+This rejection means the `reason` parameter passed to `rejectSession` is either missing or invalid.
+We recommend using the `getSDKError` function from the `@walletconnect/utils` library that will populate & format the parameter for you.
+
+### Responding to Session requests
+
+The `session_request` event is emitted when the SDK received a request from the peer and it needs the wallet to perform a specific action, such as signing a transaction. The event contains a `topic` and a `request` object, which will vary depending on the action requested.
+
+To respond to the request, you can access the `topic` and `request` object by destructuring them from the event payload. To see a list of possible `request` and `response` objects, refer to the relevant JSON-RPC Methods for [Ethereum](../../advanced/multichain/rpc-reference/ethereum-rpc.md), [Solana](../../advanced/multichain/rpc-reference/solana-rpc.md), [Cosmos](../../advanced/multichain/rpc-reference/cosmos-rpc.md), or [Stellar](../../advanced/multichain/rpc-reference/stellar-rpc.md).
+
+As an example, if the dapp requests a `personal_sign` method, you can extract the `params` array from the `request` object. The first item in the array is the hex version of the message to be signed, which can be converted to UTF-8 and assigned to a `message` variable. The second item in `params` is the user's wallet address.
+
+To sign the message, you can use your wallet's `signMessage` method and pass in the message. The signed message, along with the `id` from the event payload, can then be used to create a `response` object, which can be passed into `respondSessionRequest`.
+
+```javascript
+walletKit.on(
+  "session_request",
+  async (event: WalletKitTypes.SessionRequest) => {
+    const { topic, params, id } = event;
+    const { request } = params;
+    const requestParamsMessage = request.params[0];
+
+    // convert `requestParamsMessage` by using a method like hexToUtf8
+    const message = hexToUtf8(requestParamsMessage);
+
+    // sign the message
+    const signedMessage = await wallet.signMessage(message);
+
+    const response = { id, result: signedMessage, jsonrpc: "2.0" };
+
+    await walletKit.respondSessionRequest({ topic, response });
+  }
+);
+```
+
+To reject a session request, the response should be similar to this.
+
+```javascript
+const response = {
+  id,
+  jsonrpc: "2.0",
+  error: {
+    code: 5000,
+    message: "User rejected.",
+  },
+};
+```
+
+### 🛠️ Usage examples
+
+- [in a demo wallet app](https://github.com/WalletConnect/web-examples/blob/a50c8eb5a10666f25911713c5358e78f1ca576d6/advanced/wallets/react-wallet-v2/src/views/SessionSignModal.tsx#L36)
+- [in integration tests](https://github.com/reown-com/reown-walletkit-js/blob/main/packages/walletkit/test/sign.spec.ts#L165)
+
+### ⚠️ Expected Errors
+
+- `Error: No matching key. session topic doesn't exist: 'xyz...'`
+
+This rejection means the SDK can't find a session with the given `topic` - in this example `xyz...`.
+This can happen when the session has been disconnected by either the wallet or the dapp while the session request was being processed or if a session with such topic doesn't exist.
+If you are seeing this error, please make sure that you are using a correct topic that is available within the request payload.
+
+- `Error: Missing or invalid. respond() response:`
+
+This rejection means the `response` parameter passed to `respondSessionRequest` is either missing or invalid. The response should be a valid [JSON-RPC 2.0](https://www.jsonrpc.org/specification) response object.
+We recommend you to use our `formatJsonRpcResult` utility from `"@walletconnect/jsonrpc-utils"` that will format the response for you.
+
+Example usage:
+`id` argument being the request id from the request payload.
+
+```javascript
+import { formatJsonRpcResult } from "@walletconnect/jsonrpc-utils";
+
+const signature = await cryptoWallet.signTransaction(signTransaction);
+const response = await walletKit.respondSessionRequest({
+  topic: session.topic,
+  response: formatJsonRpcResult(id, signature),
+});
+```
+
+### Updating a Session
+
+If you wish to include new accounts or chains or methods in an existing session, `updateSession` allows you to do so.
+You need pass in the `topic` and a new `Namespaces` object that contains all of the existing namespaces as well as the new data you wish to include.
+After you update the session, the other peer will receive a `session_update` event.
+
+An example adding a new account to an existing session:
+
+```javascript
+const namespaces = session.namespaces;
+const accounts = [
+  "eip155:1:0xab16a96d359ec26a11e2c2b3d8f8b8942d5bfcdb",
+  "eip155:1:0x1234567890123456789012345678901234567890",
+];
+const updatedNamespaces = {
+  ...namespaces,
+  eip155: {
+    ...namespaces.eip155,
+    accounts,
+  },
+};
+const { acknowledged } = await walletKit.updateSession({
+  topic: session.topic,
+  namespaces: updatedNamespaces,
+});
+// If you wish to be notified when the dapp acknowledges the update.
+// note that if the dapp is offline `acknowledged` will not resolve until it comes back online
+await acknowledged();
+```
+
+An example adding a new chain to an existing session:
+
+```javascript
+const namespaces = session.namespaces;
+const chains = ["eip155:1", "eip155:137"];
+const accounts = [
+  "eip155:1:0xab16a96d359ec26a11e2c2b3d8f8b8942d5bfcdb",
+  "eip155:137:0x1234567890123456789012345678901234567890",
+];
+const updatedNamespaces = {
+  ...namespaces,
+  eip155: {
+    ...namespaces.eip155,
+    accounts,
+    chains,
+  },
+};
+await walletKit.updateSession({
+  topic: session.topic,
+  namespaces: updatedNamespaces,
+});
+```
+
+### 🛠️ Usage examples
+
+- [in a demo wallet app](https://github.com/WalletConnect/web-examples/blob/a50c8eb5a10666f25911713c5358e78f1ca576d6/advanced/wallets/react-wallet-v2/src/pages/session.tsx#L77)
+- [in integration tests](https://github.com/reown-com/reown-walletkit-js/blob/main/packages/walletkit/test/sign.spec.ts#L98)
+
+### ⚠️ Expected Errors
+
+Note that all `namespaces` validation applies and you still have to satisfy the required namespaces requested by the dapp.
+
+- `Error: No matching key. session topic doesn't exist: 'xyz...'`
+
+This rejection means the SDK can't find a session with the given `topic` - in this example `xyz...`.
+This can happen when the session you're trying to update has already been disconnected by either the wallet or the dapp or if a session with such topic doesn't exist.
+If you are seeing this error, please make sure that you are using a correct topic of an active session.
+
+- `Error: Missing or invalid. update(), namespaces should be an object with data`
+
+This error means that the `namespaces` parameter passed to `updateSession` is either missing or invalid. Please check that you are passing a valid `namespaces` object that satisfies all required properties.
+
+- `Non conforming namespaces. update() namespaces <property> don't satisfy required namespaces.`
+
+This error indicates that some value(s) in your `namespaces` object do not satisfy the required namespaces requested by the dapp.
+To provide additional guidance, the message might include info about the exact property that is missing or invalid e.g. `Required: eip155:1 Approved: eip155:137`.
+Please check [CAIP-25](https://github.com/ChainAgnostic/CAIPs/blob/master/CAIPs/caip-25.md) to familiarize yourself with the standard and it's nuances.
+Additionally, we highly recommend you to use our `namespace` builder utility that would greatly simplify the process of parsing & building a valid `namespaces` object.
+
+### Extending a Session
+
+Sessions have a default expiry of 7 days. To extend a session by an additional 7 days, call `.extendSession` method and pass in the `topic` of the session you wish to extend.
+
+```javascript
+const { acknowledged } = await walletKit.extendSession({ topic });
+// if you wish to be notified when the dapp acks the extend
+// note that if the dapp is offline `acknowledged` will not resolve until it comes back online
+await acknowledged();
+```
+
+### 🛠️ Usage examples
+
+- [in integration tests](https://github.com/reown-com/reown-walletkit-js/blob/main/packages/walletkit/test/sign.spec.ts#L130)
+
+### ⚠️ Expected Errors
+
+- `Error: No matching key. session topic doesn't exist: 'xyz...'`
+
+This rejection means the SDK can't find a session with the given `topic` - in this example `xyz...`.
+This can happen when the session you're trying to update has already been disconnected by either the wallet or the dapp or if a session with such topic doesn't exist.
+If you are seeing this error, please make sure that you are using a correct topic of an active session.
+
+### Session Disconnect
+
+To initiate disconnect from a session(think session delete), call `.disconnectSession` by passing a `topic` & `reason` for the disconnect.
+The other peer will receive a `session_delete` and be notified that the session has been disconnected.
+
+<Note>
+**Note**
+
+It's important that you're subscribed to the `session_delete` event as well, to be notified when the other peer initiates a disconnect.
+</Note>
+<Tip>
+We recommend using the `getSDKError` utility function, that will provide ready-to-use `reason` payloads and is available in the `@walletconnect/utils` [library](https://github.com/WalletConnect/walletconnect-monorepo/tree/v2.0/packages/utils).
+</Tip>
+
+```javascript
+await walletKit.disconnectSession({
+  topic,
+  reason: getSdkError("USER_DISCONNECTED"),
+});
+```
+
+### 🛠️ Usage examples
+
+- [in integration tests](https://github.com/reown-com/reown-walletkit-js/blob/main/packages/walletkit/test/sign.spec.ts#L222)
+
+### ⚠️ Expected Errors
+
+- `Error: No matching key. session topic doesn't exist: 'xyz...'`
+
+This rejection means the SDK can't find a session with the given `topic` - in this example `xyz...`.
+This can happen when the session you're trying to update has already been disconnected by either the wallet or the dapp or if a session with such topic doesn't exist.
+If you are seeing this error, please make sure that you are using a correct topic of an active session.
+
+### Emitting Session Events
+
+To emit session events, call the `emitSessionEvent` and pass in the params. If you wish to switch to chain/account that is not approved (missing from `session.namespaces`) you will have to update the session first. In the following example, the wallet will emit `session_event` that will instruct the dapp to switch the active accounts.
+
+```javascript
+await walletKit.emitSessionEvent({
+  topic,
+  event: {
+    name: "accountsChanged",
+    data: ["0xab16a96D359eC26a11e2C2b3d8f8B8942d5Bfcdb"],
+  },
+  chainId: "eip155:1",
+});
+```
+
+In the following example, the wallet will emit `session_event` when the wallet switches chains.
+
+```javascript
+await walletKit.emitSessionEvent({
+  topic,
+  event: {
+    name: "chainChanged",
+    data: 1,
+  },
+  chainId: "eip155:1",
+});
+```
+</file>
+
+<file path="walletkit/web/verify.mdx">
+---
+title: Verify API
+---
+
+Verify API is a security-focused feature that allows wallets to notify end-users when they may be connecting to a suspicious or malicious domain, helping to prevent phishing attacks across the industry.
+Once a wallet knows whether an end-user is on uniswap.com or eviluniswap.com, it can help them to detect potentially harmful connections through Verify's combined offering of Reown's domain registry.
+For those looking to enable Verify on the app side, check out our reference guide [here.](./cloud/verify)
+
+When a user initiates a connection with an application, Verify API enables wallets to present their users with four key states that can help them determine whether the domain they’re about to connect to might be malicious.
+
+These are:
+<Frame>
+![Verify Banner](/images/verify-banner.png)
+</Frame>
+
+## Disclaimer
+
+Verify API is not designed to be bulletproof but to make the impersonation attack harder and require a somewhat sophisticated attacker. We are working on a new standard with various partners to close those gaps and make it bulletproof.
+
+## Domain risk detection
+
+The Verify security system will discriminate session proposals & session requests with distinct validations that can be either `VALID`, `INVALID` or `UNKNOWN`.
+
+- Domain match: The domain linked to this request has been verified as this application's domain.
+  - This interface appears when the domain a user is attempting to connect to has been ‘verified’ in our domain registry as the registered domain of the application the user is trying to connect to, and the domain has not returned as suspicious from either of the security tools we work with. The `verifyContext` included in the request will have a validation of `VALID`.
+- Unverified: The domain sending the request cannot be verified.
+  - This interface appears when the domain a user is attempting to connect to has not been verified in our domain registry, but the domain has not returned as suspicious from either of the security tools we work with. The `verifyContext` included in the request will have a validation of `UNKNOWN`.
+- Mismatch: The application's domain doesn't match the sender of this request.
+  - This interface appears when the domain a user is attempting to connect to has been flagged as a different domain to the one this application has verified in our domain registry, but the domain has not returned as suspicious from either of the security tools we work with. The `verifyContext` included in the request will have a validation of `INVALID`
+- Threat: This domain is flagged as malicious and potentially harmful.
+  - This interface appears when the domain a user is attempting to connect to has been flagged as malicious on one or more of the security tools we work with. The `verifyContext` included in the request will contain parameter `isScam` with value `true`.
+
+### Implementation
+
+To check the Verify API validations and whether or not your user is interacting with potentially malicious app, you can do so by accessing the `verifyContext` included in the request payload.
+
+```javascript
+...
+walletKit.on("auth_request", async (authRequest) => {
+  const { verifyContext } = authRequest
+  const validation = verifyContext.verified.validation // can be VALID, INVALID or UNKNOWN
+  const origin = verifyContext.verified.origin // the actual verified origin of the request
+  const isScam = verifyContext.verified.isScam // true if the domain is flagged as malicious
+
+  // if the domain is flagged as malicious, you should warn the user as they may lose their funds - check the `Threat` case for more info
+  if(isScam) {
+    // show a warning screen to the user
+    // and proceed only if the user accepts the risk
+  }
+
+  switch(validation) {
+    case "VALID":
+      // proceed with the request - check the `Domain match` case for more info
+      break
+    case "INVALID":
+      // show a warning dialog to the user - check the `Mismatch` case for more info
+      // and proceed only if the user accepts the risk
+      break
+    case "UNKNOWN":
+      // show a warning dialog to the user - check the `Unverified` case for more info
+      // and proceed only if the user accepts the risk
+      break
+  }
+})
+```
+
+For live demo examples of the intended Verify API flows, check out our demo apps:
+
+- [Demo Wallet](https://react-wallet.walletconnect.com)
+- [Demo App](https://react-app.walletconnect.com/) - you can toggle between the verify states by clicking on the `gear` & selecting the decided Validation before connecting to the wallet
+- [Demo Malicious App](https://malicious-app-verify-simulation.vercel.app/) - this app is flagged as malicious and will have the `isScam` parameter set to `true` in the `verifyContext` of the request
+</file>
+
+<file path="walletkit/best-practices.mdx">
+---
+sidebarTitle: Best Practices
+title: Best Practices for Wallets
+---
+
+To ensure the smoothest and most seamless experience for our users, Reown is committed to working closely with wallet providers to encourage the adoption of our recommended best practices.
+
+By implementing these guidelines, we aim to optimize performance and minimize potential challenges, even in suboptimal network conditions.
+
+We are actively partnering with wallet developers to optimize performance in scenarios such as:
+
+1. **Success and Error Messages** - Users need to know what’s going on, at all times. Too much communication is better than too little. The less users need to figure out themselves or assume what’s going on, the better.
+2. **(Perceived) Latency** - A lot of factors can influence latency (or perceived latency), e.g. network conditions, position in the boot chain, waiting on the wallet to connect or complete a transaction and not knowing if or when it has done it.
+3. **Old SDK Versions** - Older versions can have known and already fixed bugs, leading to unnecessary issues to users, which can be simply and quickly solved by updating to the latest SDK.
+
+To take all of the above into account and to make experience better for users, we've put together some key guidelines for wallet providers. These best practices focus on the most important areas for improving user experience.
+
+Please follow these best practices and make the experience for your users and yourself a delightful and quick one.
+
+## Checklist Before Going Live
+
+To make sure your wallet adheres to the best practices, we recommend implementing the following checklist before going live. You can find more detailed information on each point below.
+
+1. **Success and Error Messages**
+   - ✅ Display clear and concise messages for all user interactions
+   - ✅ Provide feedback for all user actions
+     - ✅ Connection success
+     - ✅ Connection error
+     - ✅ Loading indicators for waiting on connection, transaction, etc.
+   - ✅ Ensure that users are informed of the status of their connection and transactions
+   - ✅ Implement status indicators internet availability
+   - ✅ Make sure to provide feedback not only to users but also back to the dapp (e.g., if there's an error or a user has not enough funds to pay for gas, don't just display the info message to the user, but also send the error back to the dapp so that it can change the state accordingly)
+2. **Mobile Linking**
+   - ✅ Implement mobile linking to allow for automatic redirection between the wallet and the dapp
+   - ✅ Use deep linking over universal linking for a better user experience
+   - ✅ Ensure that the user is redirected back to the dapp after completing a transaction
+3. **Latency**
+   - ✅ Optimize performance to minimize latency
+   - ✅ Latency for connection in normal conditions: under 5 seconds
+   - ✅ Latency for connection in poor network (3G) conditions: under 15 seconds
+   - ✅ Latency for signing in normal conditions: under 5 seconds
+   - ✅ Latency for signing in poor network (3G) conditions: under 10 seconds
+4. **Verify API**
+   - ✅ Present users with four key states that can help them determine whether the domain they’re about to connect to might be malicious (Domain match, Unverified, Mismatch, Threat)
+5. **Latest SDK Version**
+   - ✅ Ensure that you are using the latest SDK version
+   - ✅ Update your SDK regularly to benefit from the latest features and bug fixes
+   - ✅ Subscribe to SDK updates to stay informed about new releases
+
+## 1. Success and Error Messages
+
+Users often face ambiguity in determining whether their connection or transactions were successful. They are also not guided to switching back into the dapp or automatically switched back when possible, causing unnecessary user anxiety. Additionally, wallets typically lack status indicators for connection and internet availability, leaving users in the dark.
+<Frame caption="An example of a successful connection message in a Rainbow wallet">
+![](/images/assets/connection-successful.png)
+</Frame>
+### Pairing
+
+A pairing is a connection between a wallet and a dapp that has fixed permissions to only allow a dapp to propose a session through it. Dapp can propose infinite number of sessions on one pairing. Wallet must use a pair method from WalletKit client to pair with dapp.
+
+<Tabs>
+  <Tab title="Web" >
+```jsx
+const uri = 'xxx'; // pairing uri
+try {
+    await walletKit.pair({ uri });
+} catch (error) {
+    // some error happens while pairing - check Expected errors section
+}
+```
+</Tab>
+<Tab title="React Native">
+```jsx
+const uri = 'xxx'; // pairing uri
+try {
+    await walletKit.pair({ uri });
+} catch (error) {
+    // some error happens while pairing - check Expected errors section
+}
+```
+</Tab>
+<Tab title="iOS">
+```swift
+let uri = WalletConnectURI(string: urlString)
+
+if let uri {
+Task {
+try await WalletKit.instance.pair(uri: uri)
+}
+}
+
+````
+</Tab>
+<Tab title="Android">
+```kotlin
+val pairingParams = Wallet.Params.Pair(pairingUri)
+WalletKit.pair(pairingParams,
+    onSuccess = {
+        //Subscribed on the pairing topic successfully. Wallet should await for a session proposal
+    },
+    onError = { error ->
+        //Some error happens while pairing - check Expected errors section
+    }
+}
+````
+
+</Tab>
+</Tabs>
+
+#### Pairing Expiry
+
+A pairing expiry event is triggered whenever a pairing is expired. The expiry for inactive pairing is 5 mins, whereas for active pairing is 30 days. A pairing becomes active when a session proposal is received and user successfully approves it. This event helps to know when given pairing expires and update UI accordingly.
+
+<Tabs>
+  <Tab title="Web" >
+```typescript
+core.pairing.events.on("pairing_expire", (event) => {
+    // pairing expired before user approved/rejected a session proposal
+    const { topic } = topic;
+});
+```
+  </Tab>
+  <Tab title="React Native">
+```typescript
+core.pairing.events.on("pairing_expire", (event) => {
+    // pairing expired before user approved/rejected a session proposal
+    const { topic } = topic;
+});
+```
+  </Tab>
+  <Tab title="iOS">
+```Swift
+WalletKit.instance.pairingExpirationPublisher
+    .receive(on: DispatchQueue.main)
+    .sink { pairing in
+    guard !pairing.active else { return }
+    // let user know that pairing has expired
+}.store(in: &publishers)
+```
+  </Tab>
+  <Tab title="Android" label="Android">
+```kotlin
+val coreDelegate = object : CoreClient.CoreDelegate {
+    override fun onPairingExpired(expiredPairing: Core.Model.ExpiredPairing) {
+        // Here a pairing expiry is triggered
+    }
+    // ...other callbacks
+}
+
+CoreClient.setDelegate(coreDelegate)
+
+````
+</Tab>
+</Tabs>
+
+#### Pairing messages
+
+1. Consider displaying a successful pairing message when pairing is successful. Before that happens, wallet should show a loading indicator.
+2. Display an error message when a pairing fails.
+
+#### Expected Errors
+
+While pairing, the following errors might occur:
+
+- **No Internet connection error or pairing timeout when scanning QR with no Internet connection**
+  - User should pair again with Internet connection
+- **Pairing expired error when scanning a QR code with expired pairing**
+  - User should refresh a QR code and scan again
+- **Pairing with existing pairing is not allowed**
+  - User should refresh a QR code and scan again. It usually happens when user scans an already paired QR code.
+
+### Session Proposal
+
+A session proposal is a handshake sent by a dapp and its purpose is to define session rules. Whenever a user wants to establish a connection between a wallet and a dapp, one should approve a session proposal.
+
+Whenever user approves or rejects a session proposal, a wallet should show a loading indicator the moment the button is pressed, until Relay acknowledgement is received for any of these actions.
+
+#### Approving session
+
+<Tabs>
+  <Tab title="Web" >
+```typescript
+try {
+    await walletKit.approveSession(params);
+    // update UI -> remove the loader
+} catch (error) {
+    // present error to the user
+}
+````
+
+  </Tab>
+  <Tab title="React Native">
+```typescript
+try {
+    await walletKit.approveSession(params);
+    // update UI -> remove the loader
+} catch (error) {
+    // present error to the user
+}
+```
+  </Tab>
+  <Tab title="iOS">
+```swift
+do {
+    try await WalletKit.instance.approve(proposalId: proposal.id, namespaces: sessionNamespaces, sessionProperties: proposal.sessionProperties)
+    // Update UI, remove loader
+} catch {
+    // present error
+}
+```
+  </Tab>
+  <Tab title="Android" label="Android">
+```kotlin
+WalletKit.approveSession(approveProposal,
+  onSuccess = {
+    //Session approval response was sent successfully - update your UI
+  }
+    onError = { error ->
+      //Error while sending session approval - update your UI
+  })
+```
+</Tab>
+</Tabs>
+
+#### Rejecting session
+
+<Tabs>
+  <Tab title="Web" >
+```typescript
+try {
+    await walletKit.rejectSession(params);
+    // update UI -> remove the loader
+} catch (error) {
+    // present error to the user
+}
+```
+  </Tab>
+  <Tab title="React Native">
+```typescript
+try {
+    await walletKit.rejectSession(params);
+    // update UI -> remove the loader
+} catch (error) {
+    // present error to the user
+}
+```
+  </Tab>
+  <Tab title="iOS">
+```swift
+do {
+    try await WalletKit.instance.reject(proposalId: proposal.id, reason: .userRejected)
+    // Update UI, remove loader
+} catch {
+    // present error
+}
+```
+  </Tab>
+  <Tab title="Android" label="Android">
+```kotlin
+WalletKit.rejectSession(reject,
+  onSuccess = {
+      //Session rejection response was sent successfully - update your UI
+  },
+  onError = { error ->
+        //Error while sending session rejection - update your UI
+  })
+```
+</Tab>
+</Tabs>
+
+#### Session proposal expiry
+
+A session proposal expiry is 5 minutes. It means a given proposal is stored for 5 minutes in the SDK storage and user has 5 minutes for the approval or rejection decision. After that time, the below event is emitted and proposal modal should be removed from the app's UI.
+
+<Tabs>
+  <Tab title="Web" >
+```typescript
+walletKit.on("proposal_expire", (event) => {
+    // proposal expired and any modal displaying it should be removed
+    const { id } = event;
+});
+```
+  </Tab>
+  <Tab title="React Native">
+```typescript
+walletKit.on("proposal_expire", (event) => {
+    // proposal expired and any modal displaying it should be removed
+    const { id } = event;
+});
+```
+  </Tab>
+  <Tab title="iOS">
+```swift
+WalletKit.instance.sessionProposalExpirationPublisher.sink { _ in
+    // let user know that session proposal has expired, update UI
+}.store(in: &publishers)
+```
+  </Tab>
+  <Tab title="Android" label="Android">
+```kotlin
+val walletDelegate = object : WalletKit.WalletDelegate {
+  override fun onProposalExpired(proposal: Wallet.Model.ExpiredProposal) {
+          // Here this event is triggered when a proposal expires - update your UI
+  }
+  // ...other callbacks
+}
+WalletKit.setWalletDelegate(walletDelegate)
+```
+</Tab>
+</Tabs>
+
+#### Session Proposal messages
+
+1. Consider displaying a successful session proposal message before redirecting back to the dapp. Before the success message is displayed, wallet should show a loading indicator.
+2. Display an error message when session proposal fails.
+
+#### Expected errors
+
+While approving or rejecting a session proposal, the following errors might occur:
+
+- **No Internet connection**
+  - It happens when a user tries to approve or reject a session proposal with no Internet connection
+- **Session proposal expired**
+  - It happens when a user tries to approve or reject an expired session proposal
+- **Invalid [namespaces](../advanced/glossary#namespaces)**
+  - It happens when a validation of session namespaces fails
+- **Timeout**
+  - It happens when Relay doesn't acknowledge session settle publish within 10s
+
+### Session Request
+
+A session request represents the request sent by a dapp to a wallet.
+
+Whenever user approves or rejects a session request, a wallet should show a loading indicator the moment the button is pressed, until Relay acknowledgement is received for any of these actions.
+
+<Tabs>
+  <Tab title="Web" >
+```typescript
+try {
+    await walletKit.respondSessionRequest(params);
+    // update UI -> remove the loader
+} catch (error) {
+    // present error to the user
+}
+```
+  </Tab>
+  <Tab title="React Native">
+```typescript
+try {
+    await walletKit.respondSessionRequest(params);
+    // update UI -> remove the loader
+} catch (error) {
+    // present error to the user
+}
+```
+  </Tab>
+  <Tab title="iOS">
+```swift
+do {
+    try await WalletKit.instance.respond(requestId: request.id, signature: signature, from: account)
+    // update UI -> remove the loader
+} catch {
+    // present error to the user
+}
+```
+  </Tab>
+  <Tab title="Android" label="Android">
+```kotlin
+WalletKit.respondSessionRequest(Wallet.Params.SessionRequestResponse,
+  onSuccess = {
+      //Session request response was sent successfully - update your UI
+  },
+  onError = { error ->
+      //Error while sending session response - update your UI
+  })
+```
+</Tab>
+</Tabs>
+
+#### Session request expiry
+
+A session request expiry is defined by a dapp. Its value must be between `now() + 5mins` and `now() + 7 days`. After the session request expires, the below event is emitted and session request modal should be removed from the app's UI.
+
+<Tabs>
+  <Tab title="Web" >
+```typescript
+walletKit.on("session_request_expire", (event) => {
+  // request expired and any modal displaying it should be removed
+  const { id } = event;
+});
+```
+  </Tab>
+  <Tab title="React Native">
+```typescript
+walletKit.on("session_request_expire", (event) => {
+  // request expired and any modal displaying it should be removed
+  const { id } = event;
+});
+```
+  </Tab>
+  <Tab title="iOS">
+```swift
+WalletKit.instance.requestExpirationPublisher.sink { _ in
+    // let user know that request has expired
+}.store(in: &publishers)
+```
+  </Tab>
+  <Tab title="Android" label="Android">
+```kotlin
+val walletDelegate = object : WalletKit.WalletDelegate {
+  override fun onRequestExpired(request: Wallet.Model.ExpiredRequest) {
+      // Here this event is triggered when a session request expires - update your UI
+  }
+  // ...other callbacks
+}
+WalletKit.setWalletDelegate(walletDelegate)
+```
+</Tab>
+</Tabs>
+
+#### Expected errors
+
+While approving or rejecting a session request, the following errors might occur:
+
+- **Invalid session**
+  - This error might happen when a user approves or rejects a session request on an expired session
+- **Session request expired**
+  - This error might happen when a user approves or rejects a session request that already expired
+- **Timeout**
+  - It happens when Relay doesn't acknowledge session settle publish within 10 seconds
+
+### Connection state
+
+The Web Socket connection state tracks the connection with the Relay server. An event is emitted whenever a connection state changes.
+
+<Tabs>
+  <Tab title="Web" >
+```typescript
+core.relayer.on("relayer_connect", () => {
+  // connection to the relay server is established
+})
+
+core.relayer.on("relayer_disconnect", () => {
+// connection to the relay server is lost
+})
+
+````
+  </Tab>
+  <Tab title="React Native">
+```typescript
+core.relayer.on("relayer_connect", () => {
+  // connection to the relay server is established
+})
+
+core.relayer.on("relayer_disconnect", () => {
+  // connection to the relay server is lost
+})
+````
+
+  </Tab>
+  <Tab title="iOS">
+```swift
+WalletKit.instance.socketConnectionStatusPublisher
+  .receive(on: DispatchQueue.main)
+  .sink { status in
+  switch status {
+  case .connected:
+    // ...
+  case .disconnected:
+    // ...
+  }
+}.store(in: &publishers)
+```
+  </Tab>
+  <Tab title="Android" label="Android">
+```kotlin
+val walletDelegate = object : WalletKit.WalletDelegate {
+  override fun onConnectionStateChange(state: Wallet.Model.ConnectionState) {
+    // Here this event is triggered when a connection state has changed
+  }
+  // ...other callbacks
+}
+WalletKit.setWalletDelegate(walletDelegate)
+```
+</Tab>
+</Tabs>
+
+#### Connection state messages
+
+When the connection state changes, show a message in the UI. For example, display a message when the connection is lost or re-established.
+
+## 2. Mobile Linking
+
+### Why use Mobile Linking?
+
+Mobile Linking uses the mobile device’s native OS to automatically redirect between the native wallet app and a native app. This results in few user actions a better UX.
+
+#### Establishing Communication Between Mobile Wallets and Apps
+
+When integrating a wallet with a mobile application, it's essential to understand how they communicate. The process involves two main steps:
+
+1. **QR Code Handshake:** The mobile app (Dapp) generates a unique URI (Uniform Resource Identifier) and displays it as a QR code. This URI acts like a secret handshake. When the user scans the QR code or copy/pastes the URI using their wallet app, they establish a connection. It's like saying, "Hey, let's chat!"
+2. **Deep Links and Universal Links:** The URI from the QR code allows the wallet app to create a [deep link](https://support.google.com/google-ads/answer/10023042) or [universal link](https://developer.apple.com/ios/universal-links/). These links work on both Android and iOS. They enable seamless communication between the wallet and the app.
+
+<Tip>
+
+**Developers should prefer Deep Linking over Universal Linking.**
+
+Universal Linking may redirect the user to a browser, which might not provide the intended user experience. Deep Linking ensures the user is taken directly to the app.
+
+</Tip>
+
+### Key Behavior to Address
+
+In some scenarios, wallets use redirect metadata provided in session proposals to open applications. This can cause unintended behavior, such as:
+
+Redirecting to the wrong app when multiple apps share the same redirect metadata (e.g., a desktop and mobile version of the same Dapp).
+Opening an unrelated application if a QR code is scanned on a different device than where the wallet is installed.
+
+#### Recommended Approach
+
+To avoid this behavior, wallets should:
+
+- **Restrict Redirect Metadata to Deep Link Use Cases**: Redirect metadata should only be used when the session proposal is initiated through a deep link. QR code scans should not trigger app redirects using session proposal metadata.
+
+### Connection Flow
+
+1. **Dapp prompts user:** The Dapp asks the user to connect.
+2. **User chooses wallet:** The user selects a wallet from a list of compatible wallets.
+3. **Redirect to wallet:** The user is redirected to their chosen wallet.
+4. **Wallet approval:** The wallet prompts the user to approve or reject the session (similar to granting permission).
+5. **Return to dapp:**
+   - **Manual return:** The wallet asks the user to manually return to the Dapp.
+   - **Automatic return:** Alternatively, the wallet automatically takes the user back to the Dapp.
+6. **User reunites with dapp:** After all the interactions, the user ends up back in the Dapp.
+<Frame>
+![](/images/w3w/mobileLinking-light.png)
+</Frame>
+
+### Sign Request Flow
+
+When the Dapp needs the user to sign something (like a transaction), a similar pattern occurs:
+
+1. **Automatic redirect:** The Dapp automatically sends the user to their previously chosen wallet.
+2. **Approval prompt:** The wallet asks the user to approve or reject the request.
+3. **Return to dapp:**
+   - **Manual return:** The wallet asks the user to manually return to the Dapp.
+   - **Automatic return:** Alternatively, the wallet automatically takes the user back to the Dapp.
+4. **User reconnects:** Eventually, the user returns to the Dapp.
+
+<Frame>
+![](/images/w3w/mobileLinking_sign-light.png)
+</Frame>
+
+
+### Platform Specific Preparation
+
+<Tabs>
+  <Tab title="iOS">
+  Read the specific steps for iOS here: [Platform preparations](./ios/mobile-linking#platform-preparations)
+  </Tab>
+
+<Tab title="Android" label="Android">
+  Read the specific steps for Android here: [Platform
+  preparations](./android/mobile-linking#platform-preparations)
+</Tab>
+
+<Tab title="Flutter" label="Flutter">
+  Read the specific steps for Flutter here: [Platform
+  preparations](./flutter/mobile-linking#platform-preparations)
+</Tab>
+
+  <Tab title="React Native">
+  Read the specific steps for React Native here: [Platform preparations](./react-native/mobile-linking#platform-preparations)
+  </Tab>
+</Tabs>
+
+### How to Test
+
+To experience the desired behavior, try our Sample Wallet and Dapps which use our Mobile linking best practices. These are available on all platforms.
+
+Once you have completed your integration, you can test it against our sample apps to see if it is working as expected. Download the app and and try your mobile linking integration on your device.
+
+<Tabs>
+  <Tab title="iOS">
+  - [Sample Wallet](https://testflight.apple.com/join/09bTAryp) - on TestFlight
+  - [Sample DApp](https://testflight.apple.com/join/7S1GYcjC) - on TestFlight
+  </Tab>
+
+<Tab title="Android" label="Android">
+  - [Sample Wallet](https://appdistribution.firebase.dev/i/6f9437a5f9bf4eec) -
+  on Firebase - [Sample
+  DApp](https://appdistribution.firebase.dev/i/5e4fe4b30c8a208d) - on Firebase
+</Tab>
+
+<Tab title="Flutter" label="Flutter">
+  - Sample Wallet: - [Sample Wallet for
+  iOS](https://testflight.apple.com/join/Uv0XoBuD) - [Sample Wallet for
+  Android](https://appdistribution.firebase.dev/i/2b8b3dce9e2831cd) - AppKit
+  DApp: - [AppKit Dapp for iOS](https://testflight.apple.com/join/6aRJSllc) -
+  [AppKit Dapp for
+  Android](https://appdistribution.firebase.dev/i/2c6573f6956fa7b5)
+</Tab>
+
+  <Tab title="React Native">
+  - Sample Wallet:
+    - [Sample Wallet for Android](https://appdistribution.firebase.dev/i/e7711e780547234e)
+  - Sample DApp:
+    - [Sample App for iOS](https://testflight.apple.com/join/Ivd8bg7s)
+    - [Sample App for Android](https://appdistribution.firebase.dev/i/0297fbd3de8f1e3f)
+  </Tab>
+</Tabs>
+
+## 3. Latency
+
+Our SDK’s position in the boot chain can lead to up to 15 seconds in throttled network conditions. Lack of loading indicators exacerbates the perceived latency issues, impacting user experience negatively. Additionally, users often do not receive error messages or codes when issues occur or timeouts happen.
+
+### Target latency
+
+For **connecting**, the target latency is:
+
+- **Under 5 seconds** in normal conditions
+- **Under 15 seconds** when throttled (3G network speed)
+
+For **signing**, the target latency is:
+
+- **Under 5 seconds** in normal conditions
+- **Under 10 seconds** when throttled (3G network speed)
+
+### How to test
+
+To test latency under suboptimal network conditions, you can enable throttling on your mobile phone. You can simulate different network conditions to see how your app behaves in various scenarios.
+
+For example, on iOS you need to enable Developer Mode and then go to **Settings > Developer > Network Link Conditioner**. You can then select the network condition you want to simulate. For 3G, you can select **3G** from the list, for no network or timeout simulations, choose **100% Loss**.
+
+Check this article for how to simulate slow internet connection on iOS & Android, with multiple options for both platforms: [How to simulate slow internet connection on iOS & Android](https://www.browserstack.com/guide/how-to-simulate-slow-network-conditions).
+
+## 4. Verify API
+
+Verify API is a security-focused feature that allows wallets to notify end-users when they may be connecting to a suspicious or malicious domain, helping to prevent phishing attacks across the industry. Once a wallet knows whether an end-user is on uniswap.com or eviluniswap.com, it can help them to detect potentially harmful connections through Verify's combined offering of Reown's domain registry.
+
+When a user initiates a connection with an application, Verify API enables wallets to present their users with four key states that can help them determine whether the domain they’re about to connect to might be malicious.
+
+Possible states:
+
+- Domain match
+- Unverified
+- Mismatch
+- Threat
+<Frame>
+![Verify States](/images/verify-states-1.png)
+</Frame>
+<Frame>
+![Verify States](/images/verify-states-2.png)
+</Frame>
+
+<Note>
+
+Verify API is not designed to be bulletproof but to make the impersonation attack harder and require a somewhat sophisticated attacker. We are working on a new standard with various partners to close those gaps and make it bulletproof.
+
+</Note>
+
+### Domain risk detection[](https://docs.reown.com/walletkit/web/verify#domain-risk-detection)
+
+The Verify security system will discriminate session proposals & session requests with distinct validations that can be either `VALID`, `INVALID` or `UNKNOWN`.
+
+- **Domain match:** The domain linked to this request has been verified as this application's domain.
+  - This interface appears when the domain a user is attempting to connect to has been ‘verified’ in our domain registry as the registered domain of the application the user is trying to connect to, and the domain has not returned as suspicious from either of the security tools we work with. The `verifyContext` included in the request will have a validation of `VALID`.
+- **Unverified:** The domain sending the request cannot be verified.
+  - This interface appears when the domain a user is attempting to connect to has not been verified in our domain registry, but the domain has not returned as suspicious from either of the security tools we work with. The `verifyContext` included in the request will have a validation of `UNKNOWN`.
+- **Mismatch:** The application's domain doesn't match the sender of this request.
+  - This interface appears when the domain a user is attempting to connect to has been flagged as a different domain to the one this application has verified in our domain registry, but the domain has not returned as suspicious from either of the security tools we work with. The `verifyContext` included in the request will have a validation of `INVALID`
+- **Threat:** This domain is flagged as malicious and potentially harmful.
+  - This interface appears when the domain a user is attempting to connect to has been flagged as malicious on one or more of the security tools we work with. The `verifyContext` included in the request will contain parameter `isScam` with value `true`.
+
+### Verify API Implementation
+
+To see how to implement Verify API for your framework, see [Verify API](./features/verify) page and select your platform to see code examples.
+
+### How to test
+
+To test Verify API with a malicious domain, you can check out the [Malicious React dapp](https://malicious-app-verify-simulation.vercel.app/), created specifically for testing. This app is flagged as malicious and will have the `isScam` parameter set to `true` in the `verifyContext` of the request. You can use this app to test how your wallet behaves when connecting to a malicious domain.
+
+### Error messages
+<Frame>
+![Verify API flagged domain](/images/assets/verify-api-flagged-domain.png)
+</Frame>
+_A sample error warning when trying to connect to a malicious domain_
+
+## 5. Latest SDK
+
+Numerous features have been introduced, bugs have been identified and fixed over time, stability has improved, but many dapps and wallets continue to use older SDK versions with known issues, affecting overall reliability.
+
+Make sure you are using the latest version of the SDK for your platform
+
+<Tabs>
+  <Tab title="iOS">
+  - **WalletConnectSwiftV2**: [Latest release](https://github.com/reown-com/reown-swift/releases/latest/)
+  </Tab>
+
+<Tab title="Android" label="Android">
+  - **WalletConnectKotlinV2**: [Latest
+  release](https://github.com/WalletConnect/WalletConnectKotlinV2/releases/latest)
+</Tab>
+
+<Tab title="Flutter" label="Flutter">
+  - **WalletConnectFlutterV2**: [Latest
+  release](https://github.com/WalletConnect/WalletConnectFlutterV2/releases/latest)
+</Tab>
+
+  <Tab title="React Native">
+  - **AppKit for React Native**: [Latest release](https://github.com/WalletConnect/reown-react-native/releases/latest)
+  </Tab>
+</Tabs>
+
+### Subscribe to updates
+
+To stay up to date with the latest SDK releases, you can use GitHub's native feature to subscribe to releases. This way, you will be notified whenever a new release is published. You can find the "Watch" button on the top right of the repository page. Click on it, then select "Custom" and "Releases only". You'll get a helpful ping whenever a new release is out.
+
+![Subscribe to releases](/images/assets/subsribe-to-release-updates.png)
+
+## Resources
+
+- [React Wallet](https://react-wallet.reown.com/) - for testing dapps, features, Verify API messages, etc.
+- [React dapp](https://react-app.reown.com/) - for testing wallets
+- [Malicious React dapp](https://malicious-app-verify-simulation.vercel.app/) - for testing Verify API with malicious domain
+</file>
+
+<file path="walletkit/overview.mdx">
+---
+title: WalletKit
+sidebarTitle: Overview
+---
+
+Unlock powerful wallet-native features and provide a simple, secure way for your wallet users to easily connect with thousands of apps and enjoy unbeaten experiences across connectivity, security, and communication.
+
+## Quickstart
+
+<CardGroup cols={2}>
+  <Card title="Android" icon="android" href="/walletkit/android/installation">
+    Get started with WalletKit in Android.
+  </Card>
+
+  <Card title="iOS" icon="apple" href="/walletkit/ios/installation">
+    Get started with WalletKit in iOS.
+  </Card>
+
+  <Card title="React Native" icon="react" href="/walletkit/react-native/installation">
+    Get started with WalletKit in React Native.
+  </Card>
+
+  <Card title="Flutter" icon="flutter" href="/walletkit/flutter/installation">
+    Get started with WalletKit in Flutter.
+  </Card>
+
+  <Card title="Web" icon="js" href="/walletkit/web/installation">
+    Get started with WalletKit in Web.
+  </Card>
+
+  <Card title=".NET" icon="code" href="/walletkit/c-sharp/installation">
+    Get started with WalletKit in .NET.
+  </Card>
+</CardGroup>
+
+
+### Features
+<Frame>
+![WalletKit banner](/images/walletkit.png)
+</Frame>
+Some of the key features of WalletKit include:
+
+- **Sign API**: Allows dapps to request that the user sign a transaction or message.
+- **Auth API**: Allows dapps to verify wallet address ownership through a single signature request, realizing login in one action.
+- **Chain agnostic**: WalletKit is designed to work with any blockchain, so you can easily support multiple chains without having to write separate integration code.
+</file>
+
+</files>

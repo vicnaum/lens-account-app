@@ -1,0 +1,5442 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+docs.family.co_connectkit_advanced.md
+docs.family.co_connectkit_api-reference.md
+docs.family.co_connectkit_auth-with-custom-backend.md
+docs.family.co_connectkit_auth-with-nextjs.md
+docs.family.co_connectkit_authentication.md
+docs.family.co_connectkit_avatar.md
+docs.family.co_connectkit_border-radius.md
+docs.family.co_connectkit_colors.md
+docs.family.co_connectkit_connect-button.md
+docs.family.co_connectkit_customization.md
+docs.family.co_connectkit_family-accounts.md
+docs.family.co_connectkit_fonts.md
+docs.family.co_connectkit_getting-started.md
+docs.family.co_connectkit_going-live.md
+docs.family.co_connectkit_libraries.md
+docs.family.co_connectkit_migration-guide.md
+docs.family.co_connectkit_rpc-providers.md
+docs.family.co_connectkit_theming.md
+docs.family.co_connectkit_translations.md
+docs.family.co_connectkit_try-it-out.md
+docs.family.co_connectkit_usesiwe-hook.md
+docs.family.co_connectkit.md
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="docs.family.co_connectkit_advanced.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+[](https://docs.family.co/connectkit/advanced#advanced)
+
+Advanced
+========
+
+Some additional options to customize ConnectKit to suit your users needs.
+
+[### Connect Button\
+\
+Learn how to build a fully custom button that matches the style and intention of your app.](https://docs.family.co/connectkit/connect-button)
+[### Chains\
+\
+Learn how to configure ConnectKit for Ethereum Mainnet as well as other Ethereum L2 chains.](https://docs.family.co/connectkit/chains)
+[### RPC Providers\
+\
+Learn how to configure RPC Providers for your supported chains.](https://docs.family.co/connectkit/rpc-providers)
+
+### Wallets Coming Soon
+
+Learn how to configure which wallets to show to users in the ConnectKit modal.
+</file>
+
+<file path="docs.family.co_connectkit_api-reference.md">
+[](https://family.co)
+
+[Documentation](/connectkit)
+
+Powered by
+
+A design system from Family
+
+Send Feedback
+
+Report an Issue
+
+[](#api-reference)
+
+API Reference
+=============
+
+This page describes the APIs for ConnectKit which you can reference during development.
+
+* * *
+
+[](#api-reference-components-and-hooks)
+
+Components and Hooks
+--------------------
+
+Below is a list of the React.js components and Hooks we provide as part of the ConnectKit library:
+
+| Component / Hook | Description |     |
+| --- | --- | --- |
+| <ConnectKitProvider /> | Provides state and data to various ConnectKit components. Wrap ConnectKitProvider around your React.js app. |     |
+| <ConnectKitButton /> | The ConnectKit button. Place this component where you’d like the Connect Wallet button to appear. |     |
+| <ConnectKitButton.Custom /> | Design your own Connect button. Various wallet connection states are provided through render props. |     |
+| <Avatar /> | Change the avatar used in ConnectKit to more closely match the look and feel of your app. |     |
+| <ChainIcon /> | To help with consistency, you can access ConnectKit's chain icons from within your app. |     |
+| useModal() | Programmatically control some aspects of the modal. |     |
+| useSIWE() | Programmatically control some aspects of SIWE. |     |
+| useChains() | Access the configured chains via this convenient Hook. |     |
+
+[](#connectkitprovider)
+
+ConnectKitProvider
+==================
+
+Wrap <ConnectKitProvider> around your React.js app to provide state and data to various ConnectKit components.
+
+[](#connectkitprovider-theme)
+
+theme
+-----
+
+Sets which theme ConnectKit should use. Below is a table of values for the theme property.
+
+| Theme Prop | Description | Light/Dark Mode Support |     |
+| --- | --- | --- | --- |
+| `default` | Default theme |     |     |
+| `web95` | Web95 theme |     |     |
+| `retro` | Retro theme |     |     |
+| `soft` | Soft theme |     |     |
+| `midnight` | Midnight theme |     |     |
+| `minimal` | Minimal theme |     |     |
+| `rounded` | Rounded theme |     |     |
+| `nouns` | Nouns theme |     |     |
+
+[](#connectkitprovider-mode)
+
+mode
+----
+
+Sets which dark/light mode configuration ConnectKit should use. Below is a table of values for the mode property.
+
+| Mode Prop | Description |     |
+| --- | --- | --- |
+| `auto` | Either dark or light that matches the user's system color scheme |     |
+| `dark` | Dark mode |     |
+| `light` | Light mode |     |
+
+[](#connectkitprovider-customtheme)
+
+customTheme
+-----------
+
+Configure individual styles for ConnectKit, overriding styles from the selected theme. Below is a table of values for the customTheme property.
+
+Overriding theme variables isn't a stable feature yet and could change in future versions of ConnectKit. We suggest only customizing the theme if you're confident you can migrate any changes when upgrading.
+
+#### Connect Wallet Button variables
+
+#### Primary Button variables
+
+#### Secondary Button variables
+
+#### Tertiary Button variables
+
+#### Modal variables
+
+#### Text variables
+
+#### Miscellaneous variables
+
+[](#connectkitprovider-options)
+
+options
+-------
+
+Configuration options you can toggle on/off. Below is a list of options and their default values that are available for the options property.
+
+[](#avoidLayoutShift)
+
+`avoidLayoutShift`
+
+**boolean**
+
+**Default is true**
+
+Avoids layout shift when the ConnectKit modal is open by adding padding to the<body>. Alternatively, set this to false and create your own solution using the css variable \--ck-scrollbar-width
+
+[](#bufferPolyfill)
+
+`bufferPolyfill`
+
+**boolean**
+
+**Default is true**
+
+Some bundlers require a [Buffer](https://www.npmjs.com/package/buffer)
+ polyfill for WalletConnect. We check and implement this by default, but if you need to disable our implementation then you can set this option to false.
+
+[](#customAvatar)
+
+`customAvatar`
+
+**React.ReactNode**
+
+Change the avatar used in ConnectKit to more closely match the look and feel of your app. To learn more, visit the [custom avatar docs](/connectkit/avatar)
+.
+
+[](#disableSiweRedirect)
+
+`disableSiweRedirect`
+
+**boolean**
+
+Disable the redirect to SIWE page when the user connects to a wallet.
+
+[](#disclaimer)
+
+`disclaimer`
+
+**ReactNode | string**
+
+**Default is null**
+
+Provide a disclaimer for things like terms and conditions that will be displayed to users in the ConenctKit modal when they're not yet connected.
+
+[](#embedGoogleFonts)
+
+`embedGoogleFonts`
+
+**boolean**
+
+**Default is false**
+
+Automatically embeds Google Font of the current theme.
+
+[](#enforceSupportedChains)
+
+`enforceSupportedChains`
+
+**boolean**
+
+**Default is false**
+
+By default, ConnectKit will only allow users to connect to chains that are supported by your app. Set this to false to allow users to connect to any chain.
+
+[](#ethereumOnboardingUrl)
+
+`ethereumOnboardingUrl`
+
+**string**
+
+**Default is https://ethereum.org/en/wallets/**
+
+Link to a resource for learning more about Ethereum.
+
+[](#hideBalance)
+
+`hideBalance`
+
+**boolean**
+
+Hide balance in the profile view.
+
+[](#hideNoWalletCTA)
+
+`hideNoWalletCTA`
+
+**boolean**
+
+Hide the "I don't have a wallet" call to action in the ConnectKit modal
+
+[](#hideQuestionMarkCTA)
+
+`hideQuestionMarkCTA`
+
+**boolean**
+
+Hide the question mark in top-left of the ConnectKit modal that leads to the "About Wallets" page
+
+[](#hideRecentBadge)
+
+`hideRecentBadge`
+
+**boolean**
+
+**Default is false**
+
+Hide the "Recent" badge that appears on the most recently connected wallet connector.
+
+[](#hideTooltips)
+
+`hideTooltips`
+
+**boolean**
+
+Hide any tooltips that would normally appear
+
+[](#initialChainId)
+
+`initialChainId`
+
+**number**
+
+**Default is the first chain in your wagmi config**
+
+Target a specific chain to request connection to. By default ConnectKit will autotarget the first chain defined in your WagmiProvider's config'. Set this to 0 to remove chain targetting.
+
+[](#language)
+
+`language`
+
+**'en-US' | 'ar-AE' | 'ca-AD' | 'ee-EE' | 'es-ES' | 'fa-IR' | 'fr-FR' | 'pt-BR' | 'ru-RU' | 'tr-TR' | 'vi-VN' | 'zh-CN'**
+
+Customize the language used in ConnectKit to better suit your audience.
+
+[](#overlayBlur)
+
+`overlayBlur`
+
+**number**
+
+Accepts a numerical value to control the degree of blur applied to the overlay. Alternatively you can use the [theme variable](/connectkit/theming#theme-variables)
+ \--ck-overlay-backdrop-filter to achieve the same effect.
+
+[](#truncateLongENSAddress)
+
+`truncateLongENSAddress`
+
+**boolean**
+
+**Default is true**
+
+Truncates long ENS addresses in the connect button with ellipsis.
+
+[](#walletConnectCTA)
+
+`walletConnectCTA`
+
+**'modal' | 'link' | 'both'**
+
+**Default is 'link'**
+
+When viewing the WalletConnect QR code, we display a button to open the official WalletConnect modal. This allows users to access more niche connectors if needed.  
+Use `link` to display a button to copy the WalletConnect URI. To show both options, use `both`.
+
+[](#walletConnectName)
+
+`walletConnectName`
+
+**string**
+
+**Default is 'Other Wallets'**
+
+By default, the WalletConnect option is named "Other Wallets". Use this option to change the name to, e.g., "WalletConnect" by providing a string.
+
+[](#walletOnboardingUrl)
+
+`walletOnboardingUrl`
+
+**string**
+
+**Default is https://ethereum.org/en/wallets/find-wallet/**
+
+Link to a resource for learning more about Wallets.
+
+[](#connectkitprovider-onconnect)
+
+onConnect
+---------
+
+Callback function that is called when a wallet is connected.
+
+The onConnect callback function is called with the following arguments:
+
+| Argument | Type | Description |     |
+| --- | --- | --- | --- |
+| address | string | The connected wallet address. |     |
+| connectorId | string | The ID of the wallet connector that was used to connect the wallet. |     |
+
+[](#connectkitprovider-ondisconnect)
+
+onDisconnect
+------------
+
+Callback function that is called when a wallet is disconnected.
+
+[](#connectkitbutton)
+
+ConnectKitButton
+================
+
+Place this component where you’d like the Connect Wallet button to appear.
+
+[](#ConnectKitButton-label)
+
+`label`
+
+**string**
+
+**Default is "Connect Wallet"**
+
+Customize the connect button text/label.
+
+[](#ConnectKitButton-showBalance)
+
+`showBalance`
+
+**boolean**
+
+**Default is false**
+
+Display the connected wallet's balance in the connect button when the wallet is connected.
+
+[](#ConnectKitButton-showAvatar)
+
+`showAvatar`
+
+**boolean**
+
+**Default is true**
+
+Display the avatar visual in the connect button when a wallet is connected.
+
+[](#connectkitbuttoncustom)
+
+ConnectKitButton.Custom
+=======================
+
+Design your own Connect button. Various wallet connection states are provided through render props.
+
+[](#connectkitbuttoncustom-render-props)
+
+Render Props
+------------
+
+The custom ConnectKit button has various render props to make building a custom button easier. Below is a table of which render props are available.
+
+[](#ConnectKitButtonCustom-isConnected)
+
+`isConnected`
+
+**boolean**
+
+Whether or not a wallet is connected.
+
+[](#ConnectKitButtonCustom-isConnecting)
+
+`isConnecting`
+
+**boolean**
+
+If ConnectKit is currently connecting.
+
+[](#ConnectKitButtonCustom-show)
+
+`show`
+
+**function**
+
+Function to show the modal. In the example above we bind this to onClick for the custom button.
+
+[](#ConnectKitButtonCustom-hide)
+
+`hide`
+
+**boolean**
+
+Function to hide the modal. Mainly if you need to programmatically hide the modal.
+
+[](#ConnectKitButtonCustom-address)
+
+`address`
+
+**string**
+
+The address of the connected wallet.
+
+[](#ConnectKitButtonCustom-truncatedAddress)
+
+`truncatedAddress`
+
+**string**
+
+**Default is true**
+
+A truncated version of the connected wallet address.
+
+[](#ConnectKitButtonCustom-ensName)
+
+`ensName`
+
+**string**
+
+ENS name if the connected wallet address has one. Otherwise empty string.
+
+[](#ConnectKitButtonCustom-chain)
+
+`chain`
+
+**Chain**
+
+The chain the connected wallet is connected to.
+
+[](#hooks)
+
+Hooks
+=====
+
+* * *
+
+[](#hooks-usemodal)
+
+useModal
+--------
+
+A convenience Hook to show/dismiss the modal. Must be used within a <ConnectKitProvider>.
+
+[](#useModal-open)
+
+`open`
+
+**boolean**
+
+Whether or not the modal is open.
+
+[](#useModal-setOpen)
+
+`setOpen`
+
+**(boolean) => void**
+
+Programmatically show/dismiss the modal.
+
+[](#useModal-openAbout)
+
+`openAbout`
+
+**() => void**
+
+More info
+
+Open the modal on the About page.
+
+[](#useModal-openOnboarding)
+
+`openOnboarding`
+
+**() => void**
+
+More info
+
+Open the modal on the Onboarding page.
+
+[](#useModal-openProfile)
+
+`openProfile`
+
+**() => void**
+
+More info
+
+Open the modal on the Profile page.
+
+[](#useModal-openSwitchNetworks)
+
+`openSwitchNetworks`
+
+**() => void**
+
+More info
+
+Open the modal on the Switch Network prompt.
+
+[](#useModal-openSIWE)
+
+`openSIWE`
+
+**(triggerSIWE?: boolean) => void**
+
+More info
+
+Open the modal on the Sign In With Ethereum page. If \`triggerSIWE\` is set to \`true\` the signing request will also be prompted.
+
+[](#useModal-onConnect)
+
+`onConnect`
+
+**(address: string, connectorId: string) => void**
+
+Callback function that is called when a wallet is connected.
+
+[](#useModal-onDisconnect)
+
+`onDisconnect`
+
+**() => void**
+
+Callback function that is called when a wallet is disconnected.
+
+* * *
+
+[](#hooks-usesiwe)
+
+useSIWE
+-------
+
+A convenience Hook to access SIWE state. Must be used with [Sign In With Ethereum](/connectkit/authentication)
+.
+
+[](#useSIWE-isSignedIn)
+
+`isSignedIn`
+
+**boolean**
+
+Whether or not the wallet has signed in.
+
+[](#useSIWE-data)
+
+`data`
+
+**SIWESession**
+
+Returned data when a wallet has signed in.
+
+data properties
+
+[](#address)
+
+`address`
+
+**string**
+
+Wallet address.
+
+[](#chainId)
+
+`chainId`
+
+**number**
+
+Connected Chain ID.
+
+[](#useSIWE-error)
+
+`error`
+
+**Error**
+
+Error thrown if there was an error signing the message.
+
+[](#useSIWE-isRejected)
+
+`isRejected`
+
+**boolean**
+
+If the user has rejected the signing message.
+
+[](#useSIWE-isError)
+
+`isError`
+
+**boolean**
+
+If there was an error signing the message.
+
+[](#useSIWE-isLoading)
+
+`isLoading`
+
+**boolean**
+
+If the app is waiting for the user to sign the message.
+
+[](#useSIWE-isSuccess)
+
+`isSuccess`
+
+**boolean**
+
+If the user has successfully signed in.
+
+[](#useSIWE-isReady)
+
+`isReady`
+
+**boolean**
+
+If the app is ready for the user to sign in.
+
+[](#useSIWE-signIn)
+
+`signIn`
+
+**() => Promise<boolean>**
+
+Prompt the user to sign in.
+
+[](#useSIWE-signOut)
+
+`signOut`
+
+**() => Promise<boolean>**
+
+Sign out the user.
+
+[](#useSIWE-reset)
+
+`reset`
+
+**() => void**
+
+Reset the hook to a fresh state.
+
+* * *
+
+[](#hooks-usechains)
+
+useChains
+---------
+
+You can conveniently access your dApps configured chains via the useChains Hook. This works well with the [ChainIcon](/connectkit/api-reference#additional-components-chain-icon)
+ component.
+
+import { useChains, ChainIcon } from "connectkit";
+
+const MyComponent \= () \=> {
+
+  const chains \= useChains();
+
+  return (
+
+    <\>
+
+      <p\>This dApp is supported on the following chains:</p\>
+
+      {chains.map((chain) \=> (
+
+        <div key\={chain.id}\>
+
+          <ChainIcon id\={chain.id} />
+
+          <span\>{chain.name}</span\>
+
+        </div\>
+
+      ))}
+
+    </\>
+
+  );
+
+};
+
+[](#additional-components)
+
+Additional Components
+=====================
+
+To help support easily development we export a few components that we believe some developers might find useful.
+
+[](#additional-components-avatar)
+
+Avatar
+------
+
+To help with consistency, you can access the ConnectKit <Avatar> component from within your app. You can use this component to display the user’s ENS avatar outside ConnectKit in, e.g., a profile header
+
+If you have set up a [custom avatar](/connectkit/avatar)
+ then this avatar component will return your custom version instead.
+
+import { Avatar } from "connectkit";
+
+<Avatar name\="vitalik.eth" />
+
+<Avatar name\="vitalik.eth" size\={64} radius\={10} />
+
+<Avatar name\="vitalik.eth" size\={32} radius\={0} />
+
+<Avatar address\="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" size\={16} />
+
+<Avatar address\="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" size\={8} />
+
+Below are the various props that can be passed to the Avatar component.
+
+[](#Avatar-address)
+
+`address`
+
+**string**
+
+Wallet address
+
+[](#Avatar-name)
+
+`name`
+
+**string**
+
+ENS name
+
+[](#Avatar-size)
+
+`size`
+
+**number**
+
+**Default is 96**
+
+Size in pixels
+
+[](#Avatar-radius)
+
+`radius`
+
+**number**
+
+**Default is fully rounded**
+
+Radius in pixels
+
+[](#additional-components-chain-icon)
+
+Chain Icon
+----------
+
+To help with consistency, you can access ConnectKit's <ChainIcon> component from within your app.
+
+| Chain Name | Chain ID | Chain Icon | Unsupported |
+| --- | --- | --- | --- |
+|     | null |     |     |
+| Ethereum | Ethereum |     |     |
+| Expanse Network | Expanse Network |     |     |
+| Goerli | Goerli |     |     |
+| ThaiChain | ThaiChain |     |     |
+| Ubiq Mainnet | Ubiq Mainnet |     |     |
+| ZKsync CLI Local Hyperchain L1 | ZKsync CLI Local Hyperchain L1 |     |     |
+| OP Mainnet | OP Mainnet |     |     |
+| Metadium Network | Metadium Network |     |     |
+| Flare Mainnet | Flare Mainnet |     |     |
+| Diode Prenet | Diode Prenet |     |     |
+| Songbird Testnet Coston | Songbird Testnet Coston |     |     |
+| Songbird Canary-Network | Songbird Canary-Network |     |     |
+| Elastos Smart Chain | Elastos Smart Chain |     |     |
+| Elastos Smart Chain Testnet | Elastos Smart Chain Testnet |     |     |
+| KardiaChain Mainnet | KardiaChain Mainnet |     |     |
+| Cronos Mainnet | Cronos Mainnet |     |     |
+| Rootstock Mainnet | Rootstock Mainnet |     |     |
+| Rootstock Testnet | Rootstock Testnet |     |     |
+| Telos | Telos |     |     |
+| Telos | Telos |     |     |
+| LUKSO | LUKSO |     |     |
+| Crab Network | Crab Network |     |     |
+| Darwinia Network | Darwinia Network |     |     |
+| Acria IntelliChain | Acria IntelliChain |     |     |
+| XDC Network | XDC Network |     |     |
+| Apothem Network | Apothem Network |     |     |
+| CoinEx Mainnet | CoinEx Mainnet |     |     |
+| BNB Smart Chain | BNB Smart Chain |     |     |
+| Syscoin Mainnet | Syscoin Mainnet |     |     |
+| GoChain | GoChain |     |     |
+| Ethereum Classic | Ethereum Classic |     |     |
+| OKC | OKC |     |     |
+| Conflux eSpace Testnet | Conflux eSpace Testnet |     |     |
+| IDChain Mainnet | IDChain Mainnet |     |     |
+| Meter | Meter |     |     |
+| Meter Testnet | Meter Testnet |     |     |
+| Viction | Viction |     |     |
+| Viction Testnet | Viction Testnet |     |     |
+| SwissDLT Mainnet | SwissDLT Mainnet |     |     |
+| Bitkub | Bitkub |     |     |
+| Binance Smart Chain Testnet | Binance Smart Chain Testnet |     |     |
+| Six Protocol | Six Protocol |     |     |
+| Gnosis | Gnosis |     |     |
+| WorldLand Mainnet | WorldLand Mainnet |     |     |
+| Velas EVM Mainnet | Velas EVM Mainnet |     |     |
+| ThunderCore Mainnet | ThunderCore Mainnet |     |     |
+| Shibarium | Shibarium |     |     |
+| Coinbit Mainnet | Coinbit Mainnet |     |     |
+| Flare Testnet Coston2 | Flare Testnet Coston2 |     |     |
+| ENULS Mainnet | ENULS Mainnet |     |     |
+| Fuse | Fuse |     |     |
+| Fuse Sparknet | Fuse Sparknet |     |     |
+| Unichain | Unichain |     |     |
+| HashKey Chain Testnet | HashKey Chain Testnet |     |     |
+| Polygon | Polygon |     |     |
+| Sonic | Sonic |     |     |
+| Shimmer | Shimmer |     |     |
+| Redbelly Network Mainnet | Redbelly Network Mainnet |     |     |
+| Redbelly Network Testnet | Redbelly Network Testnet |     |     |
+| Puppynet Shibarium | Puppynet Shibarium |     |     |
+| AIOZ Network | AIOZ Network |     |     |
+| Manta Pacific Mainnet | Manta Pacific Mainnet |     |     |
+| HashKey Chain | HashKey Chain |     |     |
+| ABEY Mainnet | ABEY Mainnet |     |     |
+| Ethernity | Ethernity |     |     |
+| Mint Mainnet | Mint Mainnet |     |     |
+| X1 Testnet | X1 Testnet |     |     |
+| X1 Testnet | X1 Testnet |     |     |
+| X Layer Mainnet | X Layer Mainnet |     |     |
+| BitTorrent | BitTorrent |     |     |
+| Edgeless Testnet | Edgeless Testnet |     |     |
+| opBNB | opBNB |     |     |
+| Happychain Testnet | Happychain Testnet |     |     |
+| B2  | B2  |     |     |
+| Nexilix Smart Chain | Nexilix Smart Chain |     |     |
+| Plinga | Plinga |     |     |
+| Energy Mainnet | Energy Mainnet |     |     |
+| Oasys | Oasys |     |     |
+| Fantom | Fantom |     |     |
+| Glide L1 Protocol XP | Glide L1 Protocol XP |     |     |
+| Fraxtal | Fraxtal |     |     |
+| Glide L2 Protocol XP | Glide L2 Protocol XP |     |     |
+| Swan Chain Mainnet | Swan Chain Mainnet |     |     |
+| Kroma | Kroma |     |     |
+| Guru Network Mainnet | Guru Network Mainnet |     |     |
+| ZKsync InMemory Node | ZKsync InMemory Node |     |     |
+| ZKsync InMemory Node | ZKsync InMemory Node |     |     |
+| Guru Network Testnet | Guru Network Testnet |     |     |
+| High Performance Blockchain | High Performance Blockchain |     |     |
+| ZKsync CLI Local Node | ZKsync CLI Local Node |     |     |
+| ZKsync CLI Local Hyperchain | ZKsync CLI Local Hyperchain |     |     |
+| ZKsync CLI Local Node | ZKsync CLI Local Node |     |     |
+| ZKsync CLI Local Custom Hyperchain | ZKsync CLI Local Custom Hyperchain |     |     |
+| XR One | XR One |     |     |
+| Cronos zkEVM Testnet | Cronos zkEVM Testnet |     |     |
+| Boba Network | Boba Network |     |     |
+| Orderly | Orderly |     |     |
+| Hedera Mainnet | Hedera Mainnet |     |     |
+| Hedera Testnet | Hedera Testnet |     |     |
+| Hedera Previewnet | Hedera Previewnet |     |     |
+| ZKsync Sepolia Testnet | ZKsync Sepolia Testnet |     |     |
+| ZKsync Sepolia Testnet | ZKsync Sepolia Testnet |     |     |
+| Omax Mainnet | Omax Mainnet |     |     |
+| Filecoin Mainnet | Filecoin Mainnet |     |     |
+| KCC Mainnet | KCC Mainnet |     |     |
+| ZKsync Era | ZKsync Era |     |     |
+| ZKsync Era | ZKsync Era |     |     |
+| Shiden | Shiden |     |     |
+| Cronos Testnet | Cronos Testnet |     |     |
+| Shape | Shape |     |     |
+| Theta Mainnet | Theta Mainnet |     |     |
+| Theta Testnet | Theta Testnet |     |     |
+| PulseChain | PulseChain |     |     |
+| Cronos zkEVM Mainnet | Cronos zkEVM Mainnet |     |     |
+| NEAR Protocol | NEAR Protocol |     |     |
+| NEAR Protocol Testnet | NEAR Protocol Testnet |     |     |
+| Optimism Goerli | Optimism Goerli |     |     |
+| PGN | PGN |     |     |
+| Areon Network Testnet | Areon Network Testnet |     |     |
+| Areon Network | Areon Network |     |     |
+| Form Network | Form Network |     |     |
+| World Chain | World Chain |     |     |
+| Flow EVM Testnet | Flow EVM Testnet |     |     |
+| Rollux Mainnet | Rollux Mainnet |     |     |
+| MetaChain Mainnet | MetaChain Mainnet |     |     |
+| Astar | Astar |     |     |
+| Mandala TC9 | Mandala TC9 |     |     |
+| Metis Goerli | Metis Goerli |     |     |
+| Flow EVM Previewnet | Flow EVM Previewnet |     |     |
+| Karura | Karura |     |     |
+| Redstone | Redstone |     |     |
+| Matchain | Matchain |     |     |
+| Matchain Testnet | Matchain Testnet |     |     |
+| Koi Network | Koi Network |     |     |
+| Lycan | Lycan |     |     |
+| Flow EVM Mainnet | Flow EVM Mainnet |     |     |
+| Rivalz | Rivalz |     |     |
+| QL1 | QL1 |     |     |
+| Acala | Acala |     |     |
+| Daily Network Mainnet | Daily Network Mainnet |     |     |
+| Daily Network Testnet | Daily Network Testnet |     |     |
+| Taraxa Mainnet | Taraxa Mainnet |     |     |
+| Taraxa Testnet | Taraxa Testnet |     |     |
+| Wanchain | Wanchain |     |     |
+| Mode Testnet | Mode Testnet |     |     |
+| PulseChain V4 | PulseChain V4 |     |     |
+| Lyra Chain | Lyra Chain |     |     |
+| 5ireChain | 5ireChain |     |     |
+| 5ireChain Thunder Testnet | 5ireChain Thunder Testnet |     |     |
+| Wanchain Testnet | Wanchain Testnet |     |     |
+| Zora Goerli Testnet | Zora Goerli Testnet |     |     |
+| Kairos Testnet | Kairos Testnet |     |     |
+| Klaytn Baobab Testnet | Klaytn Baobab Testnet |     |     |
+| Ekta Testnet | Ekta Testnet |     |     |
+| Newton | Newton |     |     |
+| BNB Greenfield Chain | BNB Greenfield Chain |     |     |
+| BitTorrent Chain Testnet | BitTorrent Chain Testnet |     |     |
+| Conflux eSpace | Conflux eSpace |     |     |
+| Bronos Testnet | Bronos Testnet |     |     |
+| Bronos | Bronos |     |     |
+| Shimmer Testnet | Shimmer Testnet |     |     |
+| IOTA EVM Testnet | IOTA EVM Testnet |     |     |
+| Metis | Metis |     |     |
+| Dymension | Dymension |     |     |
+| Polygon zkEVM | Polygon zkEVM |     |     |
+| WEMIX | WEMIX |     |     |
+| WEMIX Testnet | WEMIX Testnet |     |     |
+| Core Dao | Core Dao |     |     |
+| B2 Testnet | B2 Testnet |     |     |
+| DeFiChain EVM Mainnet | DeFiChain EVM Mainnet |     |     |
+| DeFiChain EVM Testnet | DeFiChain EVM Testnet |     |     |
+| Lisk | Lisk |     |     |
+| ADF Chain | ADF Chain |     |     |
+| Ultron Testnet | Ultron Testnet |     |     |
+| Ultron Mainnet | Ultron Mainnet |     |     |
+| Step Network | Step Network |     |     |
+| Moonbeam Development Node | Moonbeam Development Node |     |     |
+| Moonbeam | Moonbeam |     |     |
+| Moonriver | Moonriver |     |     |
+| Moonbase Alpha | Moonbase Alpha |     |     |
+| Unichain Sepolia | Unichain Sepolia |     |     |
+| Story Aeneid | Story Aeneid |     |     |
+| Sei Testnet | Sei Testnet |     |     |
+| Sei Network | Sei Network |     |     |
+| Localhost | Localhost |     |     |
+| Elysium Testnet | Elysium Testnet |     |     |
+| Polygon zkEVM Testnet | Polygon zkEVM Testnet |     |     |
+| MetaChain Istanbul | MetaChain Istanbul |     |     |
+| Story Testnet | Story Testnet |     |     |
+| Story | Story |     |     |
+| Story Odyssey | Story Odyssey |     |     |
+| Tenet | Tenet |     |     |
+| Gravity Alpha Mainnet | Gravity Alpha Mainnet |     |     |
+| Horizen Gobi Testnet | Horizen Gobi Testnet |     |     |
+| Mint Sepolia Testnet | Mint Sepolia Testnet |     |     |
+| Reya Network | Reya Network |     |     |
+| Metal L2 | Metal L2 |     |     |
+| Soneium Mainnet | Soneium Mainnet |     |     |
+| Whitechain | Whitechain |     |     |
+| LightLink Phoenix Mainnet | LightLink Phoenix Mainnet |     |     |
+| LightLink Pegasus Testnet | LightLink Pegasus Testnet |     |     |
+| Swellchain | Swellchain |     |     |
+| Soneium Minato Testnet | Soneium Minato Testnet |     |     |
+| B3 Sepolia | B3 Sepolia |     |     |
+| Ekta | Ekta |     |     |
+| edeXa Testnet | edeXa Testnet |     |     |
+| Sanko | Sanko |     |     |
+| Dogechain | Dogechain |     |     |
+| Telcoin Adiri Testnet | Telcoin Adiri Testnet |     |     |
+| Ronin | Ronin |     |     |
+| Edgeware EdgeEVM Mainnet | Edgeware EdgeEVM Mainnet |     |     |
+| Saigon Testnet | Saigon Testnet |     |     |
+| Beresheet BereEVM Testnet | Beresheet BereEVM Testnet |     |     |
+| Swan Saturn Testnet | Swan Saturn Testnet |     |     |
+| Edgeless Network | Edgeless Network |     |     |
+| Aleph Zero Testnet | Aleph Zero Testnet |     |     |
+| Vanar Mainnet | Vanar Mainnet |     |     |
+| SnaxChain | SnaxChain |     |     |
+| Kava EVM Testnet | Kava EVM Testnet |     |     |
+| Kava EVM | Kava EVM |     |     |
+| RSS3 VSL Sepolia Testnet | RSS3 VSL Sepolia Testnet |     |     |
+| Atleta Olympia | Atleta Olympia |     |     |
+| GOAT | GOAT |     |     |
+| Silicon zkEVM | Silicon zkEVM |     |     |
+| Kroma Sepolia | Kroma Sepolia |     |     |
+| Polygon zkEVM Cardona | Polygon zkEVM Cardona |     |     |
+| Fraxtal Testnet | Fraxtal Testnet |     |     |
+| inEVM Mainnet | inEVM Mainnet |     |     |
+| Whitechain Testnet | Whitechain Testnet |     |     |
+| Morph Sepolia | Morph Sepolia |     |     |
+| XR Sepolia | XR Sepolia |     |     |
+| Abstract | Abstract |     |     |
+| Morph Holesky | Morph Holesky |     |     |
+| Morph | Morph |     |     |
+| Chips Network | Chips Network |     |     |
+| HYCHAIN | HYCHAIN |     |     |
+| Bifrost Mainnet | Bifrost Mainnet |     |     |
+| SatoshiVM Alpha Mainnet | SatoshiVM Alpha Mainnet |     |     |
+| SatoshiVM Testnet | SatoshiVM Testnet |     |     |
+| Filecoin Hyperspace | Filecoin Hyperspace |     |     |
+| Peaq | Peaq |     |     |
+| Botanix Testnet | Botanix Testnet |     |     |
+| Crossbell | Crossbell |     |     |
+| Astar zkEVM | Astar zkEVM |     |     |
+| DOS Chain Testnet | DOS Chain Testnet |     |     |
+| APEX Testnet | APEX Testnet |     |     |
+| Fantom Testnet | Fantom Testnet |     |     |
+| Oasis Testnet | Oasis Testnet |     |     |
+| Merlin | Merlin |     |     |
+| LUKSO Testnet | LUKSO Testnet |     |     |
+| Lisk Sepolia | Lisk Sepolia |     |     |
+| Merlin Erigon Testnet | Merlin Erigon Testnet |     |     |
+| Nexi | Nexi |     |     |
+| Beam | Beam |     |     |
+| Orderly Sepolia | Orderly Sepolia |     |     |
+| IoTeX | IoTeX |     |     |
+| IoTeX Testnet | IoTeX Testnet |     |     |
+| MEVerse Chain Testnet | MEVerse Chain Testnet |     |     |
+| BlackFort Exchange Network Testnet | BlackFort Exchange Network Testnet |     |     |
+| World Chain Sepolia | World Chain Sepolia |     |     |
+| BlackFort Exchange Network | BlackFort Exchange Network |     |     |
+| Mantle | Mantle |     |     |
+| Mantle Testnet | Mantle Testnet |     |     |
+| Mantle Sepolia Testnet | Mantle Sepolia Testnet |     |     |
+| Ham | Ham |     |     |
+| Citrea Testnet | Citrea Testnet |     |     |
+| Seismic Devnet | Seismic Devnet |     |     |
+| Bahamut | Bahamut |     |     |
+| Humanode | Humanode |     |     |
+| Superseed | Superseed |     |     |
+| edeXa | edeXa |     |     |
+| Saga | Saga |     |     |
+| Nahmii 2 Mainnet | Nahmii 2 Mainnet |     |     |
+| opBNB Testnet | opBNB Testnet |     |     |
+| Syscoin Tanenbaum Testnet | Syscoin Tanenbaum Testnet |     |     |
+| Chang Chain Foundation Mainnet | Chang Chain Foundation Mainnet |     |     |
+| BounceBit Testnet | BounceBit Testnet |     |     |
+| BounceBit Mainnet | BounceBit Mainnet |     |     |
+| MegaETH Testnet | MegaETH Testnet |     |     |
+| Nibiru | Nibiru |     |     |
+| Tomb Mainnet | Tomb Mainnet |     |     |
+| ZetaChain | ZetaChain |     |     |
+| ZetaChain Athens Testnet | ZetaChain Athens Testnet |     |     |
+| Planq Mainnet | Planq Mainnet |     |     |
+| Bitrock Mainnet | Bitrock Mainnet |     |     |
+| exSat Network | exSat Network |     |     |
+| InitVerse Mainnet | InitVerse Mainnet |     |     |
+| InitVerse Genesis Testnet | InitVerse Genesis Testnet |     |     |
+| Horizen EON | Horizen EON |     |     |
+| MEVerse Chain Mainnet | MEVerse Chain Mainnet |     |     |
+| Cyber | Cyber |     |     |
+| The Root Network | The Root Network |     |     |
+| The Root Network - Porcini | The Root Network - Porcini |     |     |
+| Canto | Canto |     |     |
+| Kinto Mainnet | Kinto Mainnet |     |     |
+| DOS Chain | DOS Chain |     |     |
+| Polynomial | Polynomial |     |     |
+| iSunCoin Mainnet | iSunCoin Mainnet |     |     |
+| Shardeum Sphinx | Shardeum Sphinx |     |     |
+| Kaia | Kaia |     |     |
+| Klaytn | Klaytn |     |     |
+| B3  | B3  |     |     |
+| ZenChain Testnet | ZenChain Testnet |     |     |
+| THAT Mainnet | THAT Mainnet |     |     |
+| Base | Base |     |     |
+| Hela Mainnet | Hela Mainnet |     |     |
+| IOTA EVM | IOTA EVM |     |     |
+| SuperLumio | SuperLumio |     |     |
+| Unique Mainnet | Unique Mainnet |     |     |
+| Quartz Mainnet | Quartz Mainnet |     |     |
+| Opal Testnet | Opal Testnet |     |     |
+| JIBCHAIN L1 | JIBCHAIN L1 |     |     |
+| Evmos Testnet | Evmos Testnet |     |     |
+| Evmos | Evmos |     |     |
+| WeaveVM Alphanet | WeaveVM Alphanet |     |     |
+| OORT MainnetDev | OORT MainnetDev |     |     |
+| Monad Testnet | Monad Testnet |     |     |
+| Gnosis Chiado | Gnosis Chiado |     |     |
+| Arthera | Arthera |     |     |
+| Arthera Testnet | Arthera Testnet |     |     |
+| Shape Sepolia Testnet | Shape Sepolia Testnet |     |     |
+| Bool Beta Mainnet | Bool Beta Mainnet |     |     |
+| Abstract Testnet | Abstract Testnet |     |     |
+| HAQQ Mainnet | HAQQ Mainnet |     |     |
+| BEVM Mainnet | BEVM Mainnet |     |     |
+| Artela Testnet | Artela Testnet |     |     |
+| Fibo Chain | Fibo Chain |     |     |
+| Huddle01 dRTC Chain | Huddle01 dRTC Chain |     |     |
+| L3X Protocol | L3X Protocol |     |     |
+| L3X Protocol Testnet | L3X Protocol Testnet |     |     |
+| RSS3 VSL Mainnet | RSS3 VSL Mainnet |     |     |
+| SnaxChain Testnet | SnaxChain Testnet |     |     |
+| Beam Testnet | Beam Testnet |     |     |
+| Cannon | Cannon |     |     |
+| Immutable zkEVM | Immutable zkEVM |     |     |
+| Phoenix Blockchain | Phoenix Blockchain |     |     |
+| Immutable zkEVM Testnet | Immutable zkEVM Testnet |     |     |
+| Humanode Testnet 5 | Humanode Testnet 5 |     |     |
+| LoopNetwork Mainnet | LoopNetwork Mainnet |     |     |
+| EOS EVM Testnet | EOS EVM Testnet |     |     |
+| Genesys Mainnet | Genesys Mainnet |     |     |
+| 0G Newton Testnet | 0G Newton Testnet |     |     |
+| Holesky | Holesky |     |     |
+| Garnet Testnet | Garnet Testnet |     |     |
+| EOS EVM | EOS EVM |     |     |
+| Unreal | Unreal |     |     |
+| Ultra EVM Testnet | Ultra EVM Testnet |     |     |
+| Ultra EVM | Ultra EVM |     |     |
+| Fluent Testnet | Fluent Testnet |     |     |
+| Nautilus Mainnet | Nautilus Mainnet |     |     |
+| MAP Protocol | MAP Protocol |     |     |
+| PremiumBlock Testnet | PremiumBlock Testnet |     |     |
+| Oasis Sapphire | Oasis Sapphire |     |     |
+| Oasis Sapphire Testnet | Oasis Sapphire Testnet |     |     |
+| DreyerX Mainnet | DreyerX Mainnet |     |     |
+| DreyerX Testnet | DreyerX Testnet |     |     |
+| Bitkub Testnet | Bitkub Testnet |     |     |
+| Boba Sepolia | Boba Sepolia |     |     |
+| HYCHAIN Testnet | HYCHAIN Testnet |     |     |
+| MCH Verse | MCH Verse |     |     |
+| Anvil | Anvil |     |     |
+| Foundry | Foundry |     |     |
+| Hardhat | Hardhat |     |     |
+| Bitgert Mainnet | Bitgert Mainnet |     |     |
+| Fusion Mainnet | Fusion Mainnet |     |     |
+| Zilliqa | Zilliqa |     |     |
+| Zilliqa Testnet | Zilliqa Testnet |     |     |
+| Curtis | Curtis |     |     |
+| Ape Chain | Ape Chain |     |     |
+| Funki | Funki |     |     |
+| Mode Mainnet | Mode Mainnet |     |     |
+| Q Mainnet | Q Mainnet |     |     |
+| Q Testnet | Q Testnet |     |     |
+| Lens Testnet | Lens Testnet |     |     |
+| Aleph Zero | Aleph Zero |     |     |
+| EDU Chain | EDU Chain |     |     |
+| Donatuz | Donatuz |     |     |
+| WMC Testnet | WMC Testnet |     |     |
+| Arbitrum One | Arbitrum One |     |     |
+| Arbitrum Nova | Arbitrum Nova |     |     |
+| Celo | Celo |     |     |
+| AssetChain Mainnet | AssetChain Mainnet |     |     |
+| AssetChain Testnet | AssetChain Testnet |     |     |
+| ZKFair Mainnet | ZKFair Mainnet |     |     |
+| Etherlink | Etherlink |     |     |
+| Hemi | Hemi |     |     |
+| Avalanche Fuji | Avalanche Fuji |     |     |
+| Avalanche | Avalanche |     |     |
+| ZKFair Testnet | ZKFair Testnet |     |     |
+| Alfajores | Alfajores |     |     |
+| Juneo JUNE-Chain | Juneo JUNE-Chain |     |     |
+| Juneo DAI1-Chain | Juneo DAI1-Chain |     |     |
+| Juneo USDT1-Chain | Juneo USDT1-Chain |     |     |
+| Juneo USD1-Chain | Juneo USD1-Chain |     |     |
+| Juneo mBTC1-Chain | Juneo mBTC1-Chain |     |     |
+| Juneo GLD1-Chain | Juneo GLD1-Chain |     |     |
+| Juneo LTC1-Chain | Juneo LTC1-Chain |     |     |
+| Juneo DOGE1-Chain | Juneo DOGE1-Chain |     |     |
+| Juneo EUR1-Chain | Juneo EUR1-Chain |     |     |
+| Juneo SGD1-Chain | Juneo SGD1-Chain |     |     |
+| Juneo BCH1-Chain | Juneo BCH1-Chain |     |     |
+| Juneo LINK1-Chain | Juneo LINK1-Chain |     |     |
+| Fusion Testnet | Fusion Testnet |     |     |
+| Neo X Mainnet | Neo X Mainnet |     |     |
+| REI Mainnet | REI Mainnet |     |     |
+| Zircuit Garfield Testnet | Zircuit Garfield Testnet |     |     |
+| Zircuit Testnet | Zircuit Testnet |     |     |
+| Zircuit Mainnet | Zircuit Mainnet |     |     |
+| Yooldo Verse | Yooldo Verse |     |     |
+| Yooldo Verse Testnet | Yooldo Verse Testnet |     |     |
+| Sophon | Sophon |     |     |
+| Somnia Testnet | Somnia Testnet |     |     |
+| Reddio Sepolia | Reddio Sepolia |     |     |
+| Electroneum Mainnet | Electroneum Mainnet |     |     |
+| Superseed Sepolia | Superseed Sepolia |     |     |
+| BirdLayer | BirdLayer |     |     |
+| DODOchain Testnet | DODOchain Testnet |     |     |
+| DFK Chain | DFK Chain |     |     |
+| HAQQ Testedge 2 | HAQQ Testedge 2 |     |     |
+| Superposition | Superposition |     |     |
+| Rollux Testnet | Rollux Testnet |     |     |
+| Sonic Blaze Testnet | Sonic Blaze Testnet |     |     |
+| Ink | Ink |     |     |
+| PGN | PGN |     |     |
+| Linea Goerli Testnet | Linea Goerli Testnet |     |     |
+| Linea Goerli Testnet | Linea Goerli Testnet |     |     |
+| Linea Sepolia Testnet | Linea Sepolia Testnet |     |     |
+| Linea Mainnet | Linea Mainnet |     |     |
+| Metis Sepolia | Metis Sepolia |     |     |
+| BOB | BOB |     |     |
+| Treasure | Treasure |     |     |
+| Optopia Testnet | Optopia Testnet |     |     |
+| Optopia | Optopia |     |     |
+| TikTrix Testnet | TikTrix Testnet |     |     |
+| Geist Mainnet | Geist Mainnet |     |     |
+| Sonic Testnet | Sonic Testnet |     |     |
+| Fantom Sonic Open Testnet | Fantom Sonic Open Testnet |     |     |
+| Creator | Creator |     |     |
+| Godwoken Mainnet | Godwoken Mainnet |     |     |
+| Polygon Mumbai | Polygon Mumbai |     |     |
+| Polygon Amoy | Polygon Amoy |     |     |
+| Polynomia Sepolia | Polynomia Sepolia |     |     |
+| Berachain Bepolia | Berachain Bepolia |     |     |
+| Berachain bArtio | Berachain bArtio |     |     |
+| Berachain Artio | Berachain Artio |     |     |
+| Berachain | Berachain |     |     |
+| Forta Chain | Forta Chain |     |     |
+| Blast | Blast |     |     |
+| Base Goerli | Base Goerli |     |     |
+| Base Sepolia | Base Sepolia |     |     |
+| Chiliz Spicy Testnet | Chiliz Spicy Testnet |     |     |
+| Chiliz Chain | Chiliz Chain |     |     |
+| Jibchain Testnet | Jibchain Testnet |     |     |
+| Lumoz | Lumoz |     |     |
+| Sidra Chain | Sidra Chain |     |     |
+| Plume Devnet (Legacy) | Plume Devnet (Legacy) |     |     |
+| Plume (Legacy) | Plume (Legacy) |     |     |
+| Plume | Plume |     |     |
+| Plume Testnet | Plume Testnet |     |     |
+| Vechain | Vechain |     |     |
+| Socotra JUNE-Chain | Socotra JUNE-Chain |     |     |
+| Creditcoin3 Mainnet | Creditcoin3 Mainnet |     |     |
+| Creditcoin3 Testnet | Creditcoin3 Testnet |     |     |
+| Stratis Mainnet | Stratis Mainnet |     |     |
+| Lumoz Testnet | Lumoz Testnet |     |     |
+| re.al | re.al |     |     |
+| Mitosis Testnet | Mitosis Testnet |     |     |
+| Etherlink Testnet | Etherlink Testnet |     |     |
+| Form Testnet | Form Testnet |     |     |
+| Taiko Mainnet | Taiko Mainnet |     |     |
+| Taiko (Alpha-3 Testnet) | Taiko (Alpha-3 Testnet) |     |     |
+| Taiko Jolnir (Alpha-5 Testnet) | Taiko Jolnir (Alpha-5 Testnet) |     |     |
+| Taiko Katla (Alpha-6 Testnet) | Taiko Katla (Alpha-6 Testnet) |     |     |
+| Taiko Hekla L2 | Taiko Hekla L2 |     |     |
+| Bitlayer Testnet | Bitlayer Testnet |     |     |
+| Bitlayer Testnet | Bitlayer Testnet |     |     |
+| Bitlayer Mainnet | Bitlayer Mainnet |     |     |
+| Bitlayer | Bitlayer |     |     |
+| Auroria Testnet | Auroria Testnet |     |     |
+| One World Chain Mainnet | One World Chain Mainnet |     |     |
+| Filecoin Calibration | Filecoin Calibration |     |     |
+| LAVITA Mainnet | LAVITA Mainnet |     |     |
+| Arbitrum Goerli | Arbitrum Goerli |     |     |
+| Arbitrum Sepolia | Arbitrum Sepolia |     |     |
+| Pumpfi Testnet | Pumpfi Testnet |     |     |
+| DisChain | DisChain |     |     |
+| Scroll Sepolia | Scroll Sepolia |     |     |
+| Scroll | Scroll |     |     |
+| Zero Network | Zero Network |     |     |
+| DustBoy IoT | DustBoy IoT |     |     |
+| Hoodi | Hoodi |     |     |
+| Polter Testnet | Polter Testnet |     |     |
+| Bear Network Chain Mainnet | Bear Network Chain Mainnet |     |     |
+| EDU Chain Testnet | EDU Chain Testnet |     |     |
+| Xai Mainnet | Xai Mainnet |     |     |
+| Vision Testnet | Vision Testnet |     |     |
+| Pyrope Testnet | Pyrope Testnet |     |     |
+| Sei Devnet | Sei Devnet |     |     |
+| Hemi Sepolia | Hemi Sepolia |     |     |
+| Bear Network Chain Testnet | Bear Network Chain Testnet |     |     |
+| Ternoa | Ternoa |     |     |
+| Ink Sepolia | Ink Sepolia |     |     |
+| BOB Sepolia | BOB Sepolia |     |     |
+| zkLink Nova | zkLink Nova |     |     |
+| zkLink Nova Sepolia Testnet | zkLink Nova Sepolia Testnet |     |     |
+| exSat Testnet | exSat Testnet |     |     |
+| Vision | Vision |     |     |
+| Odyssey Testnet | Odyssey Testnet |     |     |
+| Treasure Topaz Testnet | Treasure Topaz Testnet |     |     |
+| Forma | Forma |     |     |
+| Forma Sketchpad | Forma Sketchpad |     |     |
+| Zhejiang | Zhejiang |     |     |
+| XRPL EVM Devnet | XRPL EVM Devnet |     |     |
+| XRPL EVM Testnet | XRPL EVM Testnet |     |     |
+| PlayFi Albireo Testnet | PlayFi Albireo Testnet |     |     |
+| Huddle01 dRTC Chain Testnet | Huddle01 dRTC Chain Testnet |     |     |
+| Funki Sepolia Sandbox | Funki Sepolia Sandbox |     |     |
+| Manta Pacific Testnet | Manta Pacific Testnet |     |     |
+| Manta Pacific Sepolia Testnet | Manta Pacific Sepolia Testnet |     |     |
+| Electroneum Testnet | Electroneum Testnet |     |     |
+| Astar zkEVM Testnet zKyoto | Astar zkEVM Testnet zKyoto |     |     |
+| Saakuru Mainnet | Saakuru Mainnet |     |     |
+| Zora | Zora |     |     |
+| Fluence | Fluence |     |     |
+| AlienX Mainnet | AlienX Mainnet |     |     |
+| ALIENX Hal Testnet | ALIENX Hal Testnet |     |     |
+| Sepolia | Sepolia |     |     |
+| OP Sepolia | OP Sepolia |     |     |
+| Neo X Testnet T4 | Neo X Testnet T4 |     |     |
+| DBK chain | DBK chain |     |     |
+| Swan Proxima Testnet | Swan Proxima Testnet |     |     |
+| ETP Mainnet | ETP Mainnet |     |     |
+| Corn | Corn |     |     |
+| Corn Testnet | Corn Testnet |     |     |
+| Excelon Mainnet | Excelon Mainnet |     |     |
+| Ancient8 Testnet | Ancient8 Testnet |     |     |
+| SKALE Nebula Testnet | SKALE Nebula Testnet |     |     |
+| Otim Devnet | Otim Devnet |     |     |
+| Fluence Testnet | Fluence Testnet |     |     |
+| Cyber Testnet | Cyber Testnet |     |     |
+| Plume Testnet (Legacy) | Plume Testnet (Legacy) |     |     |
+| Blast Sepolia | Blast Sepolia |     |     |
+| Neon EVM DevNet | Neon EVM DevNet |     |     |
+| Neon EVM MainNet | Neon EVM MainNet |     |     |
+| SKALE \| Razor Network | SKALE \| Razor Network |     |     |
+| Meld | Meld |     |     |
+| SKALE \| Block Brawlers | SKALE \| Block Brawlers |     |     |
+| Sophon Testnet | Sophon Testnet |     |     |
+| Degen | Degen |     |     |
+| Tron | Tron |     |     |
+| Ancient8 | Ancient8 |     |     |
+| SKALE Calypso Testnet | SKALE Calypso Testnet |     |     |
+| Lumia Mainnet | Lumia Mainnet |     |     |
+| Zora Sepolia | Zora Sepolia |     |     |
+| SKALE Titan Hub | SKALE Titan Hub |     |     |
+| SKALE \| CryptoBlades | SKALE \| CryptoBlades |     |     |
+| SKALE \| Crypto Colosseum | SKALE \| Crypto Colosseum |     |     |
+| SKALE \| Human Protocol | SKALE \| Human Protocol |     |     |
+| Aurora | Aurora |     |     |
+| Aurora Testnet | Aurora Testnet |     |     |
+| SKALE \| Titan Community Hub | SKALE \| Titan Community Hub |     |     |
+| SKALE Europa Testnet | SKALE Europa Testnet |     |     |
+| SKALE \| Nebula Gaming Hub | SKALE \| Nebula Gaming Hub |     |     |
+| Haust Network Testnet | Haust Network Testnet |     |     |
+| SKALE \| Calypso NFT Hub | SKALE \| Calypso NFT Hub |     |     |
+| Status Network Sepolia | Status Network Sepolia |     |     |
+| Status Network Sepolia | Status Network Sepolia |     |     |
+| Harmony One | Harmony One |     |     |
+| Silicon Sepolia zkEVM | Silicon Sepolia zkEVM |     |     |
+| Kakarot Sepolia | Kakarot Sepolia |     |     |
+| Lumia Testnet | Lumia Testnet |     |     |
+| SKALE \| Europa Liquidity Hub | SKALE \| Europa Liquidity Hub |     |     |
+| SKALE \| Exorde | SKALE \| Exorde |     |     |
+| Mekong Pectra Devnet | Mekong Pectra Devnet |     |     |
+| Palm Testnet | Palm Testnet |     |     |
+| Palm | Palm |     |     |
+| Xai Testnet | Xai Testnet |     |     |
+| Fluence Stage | Fluence Stage |     |     |
+| Basecamp Testnet | Basecamp Testnet |     |     |
+| Zeniq Mainnet | Zeniq Mainnet |     |     |
+| Kakarot Starknet Sepolia | Kakarot Starknet Sepolia |     |     |
+| Dchain Testnet | Dchain Testnet |     |     |
+| Dchain | Dchain |     |     |
+
+import { ChainIcon } from "connectkit";
+
+import { useAccount, useConfig } from "wagmi";
+
+const { chain } \= useAccount();
+
+const { chains } \= useConfig()
+
+<ChainIcon id\={1} />
+
+<ChainIcon id\={chain?.id} unsupported\={chains.find((c) \=> c.id \=== chain?.id) \=== undefined} />
+
+<ChainIcon id\={chains?.\[0\].id} />
+
+Below are the various props that can be passed to the ChainIcon component.
+
+[](#ChainIcon-id)
+
+`id`
+
+**number**
+
+**Required**
+
+Chain ID
+
+[](#ChainIcon-unsupported)
+
+`unsupported`
+
+**boolean**
+
+Show unsupported icon
+
+[](#ChainIcon-size)
+
+`size`
+
+**number | string**
+
+**Default is 24**
+
+Width and height in pixels, or a string for percentage if necessary (e.g. 50%)
+
+[](#ChainIcon-radius)
+
+`radius`
+
+**number | string**
+
+**Default is 50%**
+
+Radius in pixels, or a string for percentage (e.g. 50% for fully rounded)
+
+[](#additional-components-siwe-button)
+
+SIWE Button
+-----------
+
+ConnectKit exports an easy to use Sign In With Ethereum button for you to use within your app.
+
+Just import <SIWEButton> and useSIWE to check if the user has successfully signed in.
+
+import { SIWEButton, useSIWE } from "connectkit";
+
+// This component must be used within the SIWE context provider
+
+const MyComponent \= () \=> {
+
+  const { isSignedIn, data } \= useSIWE();
+
+  return <\>
+
+    <SIWEButton showSignOutButton />
+
+    {isSignedIn && <p\>Signed in as {data.address}</p\>
+
+  </\>;
+
+};
+
+Below are the various props that can be passed to the SIWEButton component.
+
+[](#SIWEButton-showSignOutButton)
+
+`showSignOutButton`
+
+**boolean**
+
+Displays a sign out button after signing in
+
+[](#SIWEButton-onSignIn)
+
+`onSignIn`
+
+**() => void**
+
+Event handler on a successful sign in
+
+[Previous\
+\
+**Continue with Family**](/connectkit/family-accounts)
+[Next\
+\
+**Libraries**](/connectkit/libraries)
+
+###### On this page
+
+*   [API Reference](#api-reference)
+    *   [Components and Hooks](#api-reference-components-and-hooks)
+        
+*   [ConnectKitProvider](#connectkitprovider)
+    *   [theme](#connectkitprovider-theme)
+        
+    *   [mode](#connectkitprovider-mode)
+        
+    *   [customTheme](#connectkitprovider-customtheme)
+        
+    *   [options](#connectkitprovider-options)
+        
+    *   [onConnect](#connectkitprovider-onconnect)
+        
+    *   [onDisconnect](#connectkitprovider-ondisconnect)
+        
+*   [ConnectKitButton](#connectkitbutton)
+    
+*   [ConnectKitButton.Custom](#connectkitbuttoncustom)
+    *   [Render Props](#connectkitbuttoncustom-render-props)
+        
+*   [Hooks](#hooks)
+    *   [useModal](#hooks-usemodal)
+        
+    *   [useSIWE](#hooks-usesiwe)
+        
+    *   [useChains](#hooks-usechains)
+        
+*   [Additional Components](#additional-components)
+    *   [Avatar](#additional-components-avatar)
+        
+    *   [Chain Icon](#additional-components-chain-icon)
+        
+    *   [SIWE Button](#additional-components-siwe-button)
+</file>
+
+<file path="docs.family.co_connectkit_auth-with-custom-backend.md">
+[](https://family.co)
+
+[Documentation](/connectkit)
+
+Powered by
+
+A design system from Family
+
+Send Feedback
+
+Report an Issue
+
+[](#siwe-custom-implementation)
+
+# SIWE — Custom Implementation
+
+ConnectKit provides a streamlined user experience when implementing [Sign In With Ethereum](https://login.xyz/)
+(SIWE) to your app.
+
+If using ConnectKit with Next.js, we recommend using our [Next.js + Sign In With Ethereum package](/connectkit/auth-with-nextjs)
+.
+
+[](#siwe-custom-implementation-section-1-install)
+
+## 1\. Install
+
+Once you've [set up ConnectKit](/connectkit/getting-started)
+, install the official [Sign In With Ethereum package](https://www.npmjs.com/package/siwe)
+.
+
+##### Terminal
+
+npm install viem@">=2.12.0"
+
+[](#siwe-custom-implementation-section-2-configure)
+
+## 2\. Configure
+
+ConnectKit exports the SIWEProvider and the SIWEConfig type to smoothly integrate with your backend and session management setup.
+
+import { SIWEProvider, SIWEConfig, ConnectKitProvider } from 'connectkit';
+
+import { SiweMessage } from 'siwe';
+
+const siweConfig: SIWEConfig \= {
+
+...
+
+};
+
+<SIWEProvider {...siweConfig}\>
+
+<ConnectKitProvider\>
+
+    ...
+
+</ConnectKitProvider\>
+
+</SIWEProvider\>
+
+The getNonce method acts like a CSRF token to avoid spoofing. The siwe package exports a generateNonce() helper, or you can use a CSRF token if your backend already has one.
+
+ConnectKit will poll this endpoint (every 5 minutes by default, configured by nonceRefetchInterval), so it's recommended to create the nonce once and remove it or regenerate it once used (see the [connectkit-next-siwe package on GitHub](https://github.com/family/connectkit/tree/main/packages/connectkit-next-siwe)
+for an example).
+
+const siweConfig: SIWEConfig \= {
+
+...
+
+getNonce: async () \=> fetch('/api/siwe/nonce').then((res) \=> res.text()),
+
+...
+
+};
+
+The official siwe package provides an easy way to create an [EIP-4361](https://docs.login.xyz/general-information/siwe-overview/eip-4361)
+\-compatible message that can later be verified with the same package. The nonce argument comes from your getNonce endpoint, while the address and chainId variables come from the currently connected wallet.
+
+const siweConfig: SIWEConfig \= {
+
+...
+
+createMessage: ({ nonce, address, chainId }) \=> new SiweMessage({
+
+    version: '1',
+
+    domain: window.location.host,
+
+    uri: window.location.origin,
+
+    address,
+
+    chainId,
+
+    nonce,
+
+    // Human-readable ASCII assertion that the user will sign, and it must not contain \`\\n\`.
+
+    statement: 'Sign in With Ethereum.',
+
+}).prepareMessage(),
+
+...
+
+};
+
+The verifyMessage method should lean on the siwe package's new SiweMessage(message).validate(signature) to ensure the message is valid, has not been tampered with, and has been appropriately signed by the wallet address.
+
+const siweConfig: SIWEConfig \= {
+
+...
+
+verifyMessage: async ({ message, signature }) \=> fetch('/api/siwe/verify', {
+
+    method: 'POST',
+
+    headers: {
+
+      'Content-Type': 'application/json',
+
+    },
+
+    body: JSON.stringify({ message, signature }),
+
+}).then((res) \=> res.ok),
+
+...
+
+};
+
+The backend session should store the associated address and chainId and return it via the getSession method.
+
+const siweConfig: SIWEConfig \= {
+
+...
+
+getSession: async () \=> fetch('/api/siwe/session').then((res) \=> res.ok ? res.json() : null),
+
+...
+
+};
+
+The users session can be destroyed calling signOut.
+
+const siweConfig: SIWEConfig \= {
+
+...
+
+signOut: async () \=> fetch('/api/siwe/logout').then((res) \=> res.ok),
+
+...
+
+};
+
+Each of these methods should throw an error if the fetch fails or experiences backend fails (e.g connection issues, invalid request, invalid session, expired session, etc.). This will allow ConnectKit to gracefully handle errors when syncing the user experience with your backend.
+
+And that's it—the ConnectKit modal will now automatically walk your users through how to Sign In With Ethereum after connecting their wallet to your app.
+
+[](#siwe-custom-implementation-api-reference)
+
+## API Reference
+
+type SIWEConfig \= {
+
+// Required
+
+getNonce: () \=> Promise<string\>;
+
+createMessage: (args: { nonce: string; address: string; chainId: number }) \=> string;
+
+verifyMessage: (args: { message: string; signature: string }) \=> Promise<boolean\>;
+
+getSession: () \=> Promise<SIWESession | null\>;
+
+signOut: () \=> Promise<boolean\>;
+
+// Optional
+
+enabled?: boolean; // defaults true
+
+nonceRefetchInterval?: number; // in milliseconds, defaults to 5 minutes
+
+sessionRefetchInterval?: number; // in milliseconds, defaults to 5 minutes
+
+signOutOnDisconnect?: boolean; // defaults true
+
+signOutOnAccountChange?: boolean; // defaults true
+
+signOutOnNetworkChange?: boolean; // defaults true
+
+onSignIn?: (session?: SIWESession) \=> void;
+
+onSignOut?: () \=> void;
+
+};
+
+[](#SIWEConfig-getNonce)
+
+`getNonce`
+
+**() => Promise<string>**
+
+**Required**
+
+[](#SIWEConfig-createMessage)
+
+`createMessage`
+
+**(args: { nonce: string; address: string; chainId: number }) => string**
+
+**Required**
+
+[](#SIWEConfig-verifyMessage)
+
+`verifyMessage`
+
+**(args: { message: string; signature: string }) => Promise<boolean>**
+
+**Required**
+
+[](#SIWEConfig-getSession)
+
+`getSession`
+
+**() => Promise<SIWESession | null>**
+
+**Required**
+
+[](#SIWEConfig-signOut)
+
+`signOut`
+
+**Promise<boolean>**
+
+**Required**
+
+[](#SIWEConfig-enabled)
+
+`enabled`
+
+**boolean**
+
+**Default is true**
+
+Whether or not to enable SIWE.
+
+[](#SIWEConfig-nonceRefetchInterval)
+
+`nonceRefetchInterval`
+
+**number**
+
+**Default is 300000**
+
+How often to refetch the nonce, in milliseconds.
+
+[](#SIWEConfig-sessionRefetchInterval)
+
+`sessionRefetchInterval`
+
+**number**
+
+**Default is 300000**
+
+How often to refetch the session, in milliseconds.
+
+[](#SIWEConfig-signOutOnDisconnect)
+
+`signOutOnDisconnect`
+
+**boolean**
+
+**Default is true**
+
+Whether or not to sign out when the user disconnects their wallet.
+
+[](#SIWEConfig-signOutOnAccountChange)
+
+`signOutOnAccountChange`
+
+**boolean**
+
+**Default is true**
+
+Keeps SIWE session matching connected account
+
+[](#SIWEConfig-signOutOnNetworkChange)
+
+`signOutOnNetworkChange`
+
+**boolean**
+
+**Default is true**
+
+Keeps the SIWE session and the connected account/network in sync
+
+[](#SIWEConfig-onSignIn)
+
+`onSignIn`
+
+**function**
+
+Callback when user signs in
+
+[](#SIWEConfig-onSignOut)
+
+`onSignOut`
+
+**function**
+
+Callback when user signs out
+
+[Previous\
+\
+**Next.js Implementation**](/connectkit/auth-with-nextjs)
+
+###### On this page
+
+- [SIWE — Custom Implementation](#siwe-custom-implementation)
+  - [1\. Install](#siwe-custom-implementation-section-1-install)
+  - [2\. Configure](#siwe-custom-implementation-section-2-configure)
+  - [API Reference](#siwe-custom-implementation-api-reference)
+</file>
+
+<file path="docs.family.co_connectkit_auth-with-nextjs.md">
+[](https://family.co)
+
+[Documentation](/connectkit)
+
+Powered by
+
+A design system from Family
+
+Send Feedback
+
+Report an Issue
+
+[](#siwe-nextjs-implementation)
+
+# SIWE — Next.js Implementation
+
+ConnectKit provides a simple way to add [Sign In With Ethereum](https://login.xyz/)
+(SIWE) to your Next.js app.
+
+[](#siwe-nextjs-implementation-section-1-install)
+
+## 1\. Install
+
+Once you've [set up ConnectKit](/connectkit/getting-started)
+, install our [SIWE helper package](https://www.npmjs.com/package/connectkit-next-siwe)
+to your Next.js project.
+
+##### Terminal
+
+npm install connectkit-next-siwe viem@">=2.13.3"
+
+[](#siwe-nextjs-implementation-section-2-configure)
+
+## 2\. Configure
+
+Our SIWE package includes session handling and route helpers. You'll need to configure them before they can be used. We recommend creating two separate utility files that you can import into other areas of your app for easily retrieving session data.
+
+The apiRoutePrefix refers to a new directory you'll create inside your pages/api directory for the SIWE-specific routes.
+
+,
+
+##### @/utils/siweClient.ts
+
+import { configureClientSIWE } from "connectkit-next-siwe";
+
+export const siweClient \= configureClientSIWE({
+
+apiRoutePrefix: "/api/siwe", // Your API route directory
+
+statement: "Sign In With Ethereum to prove you control this wallet.", // optional
+
+});
+
+The server configuration needs to be separate from the client so it does not get built into the frontend bundle.
+
+You can import your ckConfig from your Web3Provider component to bring over your chains and transports configuration to use as the public client to verify the SIWE signature.
+
+,
+
+##### @/components/Web3Provider.tsx
+
+import { getDefaultConfig } from "connectkit";
+
+export const ckConfig \= getDefaultConfig({ ... });
+
+,
+
+##### @/utils/siweServer.ts
+
+import { configureServerSideSIWE } from "connectkit-next-siwe";
+
+import { ckConfig } from "@/components/Web3Provider";
+
+export const siweServer \= configureServerSideSIWE({
+
+config: {
+
+    chains: ckConfig.chains,
+
+    transports: ckConfig.transports,
+
+},
+
+session: {
+
+    cookieName: "connectkit-next-siwe",
+
+    password: process.env.SESSION\_SECRET,
+
+    cookieOptions: {
+
+      secure: process.env.NODE\_ENV \=== "production",
+
+    },
+
+},
+
+});
+
+You'll also want to set up an environment variable called SESSION_SECRET — a randomly generated, strong password of **at least 32 characters**. This is used to encrypt the browser cookie used by the session. Alternatively, you can set the session secret directly with session: { password: ... } } when using configureServerSideSIWE.
+
+,
+
+##### .env
+
+SESSION_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+Add a new catch-all API route to your app inside the directory that we configured with apiRoutePrefix.
+
+It's important that this file be named \[...route\].ts to take advantage of [Next's dynamic routing](https://nextjs.org/docs/routing/dynamic-routes)
+and because our package expects route as a named query parameter.
+
+,
+
+##### pages/api/siwe/\[...route\].ts
+
+import { siweServer } from "@/utils/siweServer"; // Your path to siweServer.ts
+
+export default siweServer.apiRouteHandler;
+
+Once configured, wrap your Next.js app using the <siweClient.Provider> component, just like you've done previously with the ConnectKitProvider. This lets ConnectKit know that you're using SIWE and how to talk to your API routes.
+
+,
+
+##### pages/\_app.tsx
+
+import { ConnectKitProvider, SIWESession} from "connectkit";
+
+import { siweClient } from "@/utils/siweClient";
+
+<siweClient.Provider
+
+// Optional parameters
+
+enabled\={true} // defaults true
+
+nonceRefetchInterval\={300000} // in milliseconds, defaults to 5 minutes
+
+sessionRefetchInterval\={300000}// in milliseconds, defaults to 5 minutes
+
+signOutOnDisconnect\={true} // defaults true
+
+signOutOnAccountChange\={true} // defaults true
+
+signOutOnNetworkChange\={true} // defaults true
+
+onSignIn\={(session?: SIWESession) \=> void}
+
+onSignOut\={() \=> void}
+
+\>
+
+<ConnectKitProvider\>
+
+    /\* Your App \*/
+
+</ConnectKitProvider\>
+
+</siweClient.Provider\>
+
+And that's it—the ConnectKit modal will now automatically walk your users through how to Sign In With Ethereum after connecting their wallet to your app.
+
+If you wish to not show the SIWE page in the ConnectKit modal, you can set enabledSiweRedirect to false on the [ConnectKitProvider](/connectkit/api-reference#disableSiweRedirect)
+options.
+
+[](#example)
+
+# Example
+
+Let's wire up a simple token-gated page. We want to make sure that this page only returns data server-side when the user has verified ownership of their wallet using SIWE and the wallet has collected a specific token.
+
+,
+
+##### pages/collectors-only.tsx
+
+import type { GetServerSideProps, NextPage } from "next";
+
+import { siweServer } from "@/utils/siweServer";
+
+const walletHasToken \= async (address: string): Promise<boolean\> \=> {
+
+return // Your implementation of token-gated logic goes here
+
+}
+
+export const getServerSideProps: GetServerSideProps \= async ({ req, res }) \=> {
+
+const { address } \= await siweServer.getSession(req, res);
+
+if (!address || !(await walletHasToken(address))) {
+
+    return {
+
+      redirect: {
+
+        permanent: false,
+
+        destination: '/login', // Redirect if wallet does not have the required token
+
+      },
+
+    };
+
+}
+
+return {
+
+    props: {},
+
+};
+
+});
+
+const CollectorsOnlyPage: NextPage \= () \=> {
+
+return <\>Welcome, collector.</\>;
+
+};
+
+export default CollectorsOnlyPage;
+
+And that's it—we'll leave it to you to implement your token-gating logic in walletHasToken.
+
+[](#api-reference)
+
+# API Reference
+
+[](#api-reference-configureserversidesiwe-props)
+
+## configureServerSideSIWE Props
+
+[](#configureServerSideSIWE-config)
+
+`config`
+
+**object**
+
+config properties
+
+[](#chains)
+
+`chains`
+
+**Chains\[\]**
+
+The chains to use for verifying the SIWE signature.
+
+[](#transports)
+
+`transports`
+
+**Record<number, Transport>**
+
+The transports to use for verifying the SIWE signature.
+
+[](#configureServerSideSIWE-session)
+
+`session`
+
+**object**
+
+session properties
+
+[](#cookieName)
+
+`cookieName`
+
+**string**
+
+**Default is "connectkit-next-siwe"**
+
+[](#password)
+
+`password`
+
+**string**
+
+**Default is process.env.SESSION_SECRET**
+
+[](#cookieOptions)
+
+`cookieOptions`
+
+cookieOptions properties
+
+[](#secure)
+
+`secure`
+
+**boolean**
+
+**Default is true**
+
+Defaults to false if process.env.NODE_ENV != 'production'.  
+See [npmjs.com/package/cookie](https://www.npmjs.com/package/cookie)
+for other options.
+
+[](#configureServerSideSIWE-options)
+
+`options`
+
+**object**
+
+options properties
+
+[](#afterLogout)
+
+`afterLogout`
+
+**Promise<void>**
+
+[](#afterNonce)
+
+`afterNonce`
+
+**Promise<void>**
+
+[](#afterSession)
+
+`afterSession`
+
+**Promise<void>**
+
+[](#afterVerify)
+
+`afterVerify`
+
+**Promise<void>**
+
+configureServerSideSIWE({
+
+session: {
+
+    cookieName: string, // defaults to "connectkit-next-siwe"
+
+    password: string, // defaults to \`process.env.SESSION\_SECRET\`
+
+    cookieOptions: {
+
+      secure: boolean, // defaults to true if \`process.env.NODE\_ENV === 'production'\`
+
+      // see https://www.npmjs.com/package/cookie for other options
+
+    },
+
+},
+
+options: {
+
+    afterLogout: Promise<void\>,
+
+    afterNonce: Promise<void\>,
+
+    afterSession: Promise<void\>,
+
+    afterVerify: Promise<void\>,
+
+},
+
+});
+
+[](#api-reference-configureclientsiwe-props)
+
+## configureClientSIWE Props
+
+[](#configureClientSIWE-apiRoutePrefix)
+
+`apiRoutePrefix`
+
+**string**
+
+**Required**
+
+[](#configureClientSIWE-statement)
+
+`statement`
+
+**string**
+
+**Default is "Sign In With Ethereum."**
+
+Human-readable ASCII assertion that the user will sign, and it must not contain \`\\n\`.
+
+configureClientSIWE({
+
+apiRoutePrefix: string,
+
+statement: string, // defaults to "Sign In With Ethereum."
+
+});
+
+[](#api-reference-configureclientsiweprovider-props)
+
+## configureClientSIWE.Provider Props
+
+[](#configureClientSIWE-enabled)
+
+`enabled`
+
+**boolean**
+
+**Default is true**
+
+Whether or not to enable SIWE.
+
+[](#configureClientSIWE-nonceRefetchInterval)
+
+`nonceRefetchInterval`
+
+**number**
+
+**Default is 300000**
+
+How often to refetch the nonce, in milliseconds.
+
+[](#configureClientSIWE-sessionRefetchInterval)
+
+`sessionRefetchInterval`
+
+**number**
+
+**Default is 300000**
+
+How often to refetch the session, in milliseconds.
+
+[](#configureClientSIWE-signOutOnDisconnect)
+
+`signOutOnDisconnect`
+
+**boolean**
+
+**Default is true**
+
+Whether or not to sign out when the user disconnects their wallet.
+
+[](#configureClientSIWE-signOutOnAccountChange)
+
+`signOutOnAccountChange`
+
+**boolean**
+
+**Default is true**
+
+Keeps SIWE session matching connected account
+
+[](#configureClientSIWE-signOutOnNetworkChange)
+
+`signOutOnNetworkChange`
+
+**boolean**
+
+**Default is true**
+
+Keeps the SIWE session and the connected account/network in sync
+
+[](#configureClientSIWE-onSignIn)
+
+`onSignIn`
+
+**function**
+
+Callback when user signs in
+
+[](#configureClientSIWE-onSignOut)
+
+`onSignOut`
+
+**function**
+
+Callback when user signs out
+
+import { ConnectKitProvider, SIWESession} from "connectkit";
+
+import { siweClient } from "@/utils/siweClient";
+
+<siweClient.Provider
+
+// Optional parameters
+
+enabled\={true} // defaults true
+
+nonceRefetchInterval\={300000} // in milliseconds, defaults to 5 minutes
+
+sessionRefetchInterval\={300000}// in milliseconds, defaults to 5 minutes
+
+signOutOnDisconnect\={true} // defaults true
+
+signOutOnAccountChange\={true} // defaults true
+
+signOutOnNetworkChange\={true} // defaults true
+
+onSignIn\={(session?: SIWESession) \=> void}
+
+onSignOut\={() \=> void}
+
+/>
+
+[Next\
+\
+**Custom Implementation**](/connectkit/auth-with-custom-backend)
+
+###### On this page
+
+- [SIWE — Next.js Implementation](#siwe-nextjs-implementation)
+  - [1\. Install](#siwe-nextjs-implementation-section-1-install)
+  - [2\. Configure](#siwe-nextjs-implementation-section-2-configure)
+- [Example](#example)
+- [API Reference](#api-reference)
+  - [configureServerSideSIWE Props](#api-reference-configureserversidesiwe-props)
+  - [configureClientSIWE Props](#api-reference-configureclientsiwe-props)
+  - [configureClientSIWE.Provider Props](#api-reference-configureclientsiweprovider-props)
+</file>
+
+<file path="docs.family.co_connectkit_authentication.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+[](https://docs.family.co/connectkit/authentication#sign-in-with-ethereum)
+
+Sign In With Ethereum
+=====================
+
+ConnectKit provides a simple solution for integrating SIWE, a secure [authentication standard](https://docs.login.xyz/general-information/siwe-overview/eip-4361)
+, to your application.
+
+This helps enable you to build features that require proving a user has full control over their wallet.
+
+[](https://docs.family.co/connectkit/authentication#sign-in-with-ethereum-features)
+
+Features
+--------
+
+Get the experience you and your users deserve.
+
+### Secure Authentication Standard
+
+Enable a secure communication between client and server with the [EIP-4361](https://docs.login.xyz/general-information/siwe-overview/eip-4361)
+ protocol.
+
+### Dedicated Next.js Package
+
+Streamline the process of adding SIWE to your Next.js app.
+
+### Optional Custom Backend
+
+If you're not using Next.js, you can set up a custom backend instead.
+
+### Build Authenticated Features
+
+Use SIWE to build features like token gating, account creation, and more.
+
+### Streamlined UX
+
+ConnectKit handles the user journey and authentication flow for you.
+
+### Simple Setup
+
+Let ConnectKit do the heavy lifting and get started in minutes.
+
+[](https://docs.family.co/connectkit/authentication#sign-in-with-ethereum-try-it-out)
+
+Try It Out
+----------
+
+Connect a Wallet below to see the Sign In With Ethereum prompt. If you have already connected a wallet, open the ConnectKit modal to see the prompt.
+
+Connect Wallet
+
+If this is your first time implementing Sign In With Ethereum, have a read first and familiarize yourself with some of the core concepts.
+
+[](https://docs.family.co/connectkit/authentication#sign-in-with-ethereum-context)
+
+Context
+-------
+
+A SIWE flow generally consists of two parts, the client-side and the server-side.
+
+The client-side is responsible for authenticating the user with a signed message and the server-side is responsible for verifying and storing the user's authentication state.
+
+Here's what a typical SIWE flow would look like:
+
+1.  User connects their wallet to a client-side app.
+    
+2.  Client-side app prompts user to sign a SIWE message generated using a nonce from the backend.
+    
+3.  User signs the message, and then sends the message with the signature to the backend for verification. This proves to the backend that the user controls the connected wallet address.
+    
+4.  Upon successful verification, the backend establishes a session via your choice of session storage (cookie, JWT, or similar).
+    
+
+[](https://docs.family.co/connectkit/authentication#sign-in-with-ethereum-setup)
+
+Setup
+-----
+
+To help streamline the process of adding SIWE to your project, we offer a small, easy-to-install [package for Next.js apps](https://docs.family.co/connectkit/auth-with-nextjs)
+. For all other frameworks see the [custom backend setup](https://docs.family.co/connectkit/auth-with-custom-backend)
+.
+
+[### Next.js\
+\
+Set up SIWE using ConnectKit's Next.js helper package.](https://docs.family.co/connectkit/auth-with-nextjs)
+[### Custom Backend\
+\
+Set up SIWE using your own custom backend implementation.](https://docs.family.co/connectkit/auth-with-custom-backend)
+
+###### On this page
+
+*   [Sign In With Ethereum](https://docs.family.co/connectkit/authentication#sign-in-with-ethereum)
+    *   [Features](https://docs.family.co/connectkit/authentication#sign-in-with-ethereum-features)
+        
+    *   [Try It Out](https://docs.family.co/connectkit/authentication#sign-in-with-ethereum-try-it-out)
+        
+    *   [Context](https://docs.family.co/connectkit/authentication#sign-in-with-ethereum-context)
+        
+    *   [Setup](https://docs.family.co/connectkit/authentication#sign-in-with-ethereum-setup)
+</file>
+
+<file path="docs.family.co_connectkit_avatar.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+*   [Customization](https://docs.family.co/connectkit/customization)
+    
+*   /
+*   [Avatar](https://docs.family.co/connectkit/avatar)
+    
+
+[](https://docs.family.co/connectkit/avatar#avatar)
+
+Avatar
+======
+
+Change the avatar used in ConnectKit to more closely match the look and feel of your app.
+
+By default ConnectKit has an avatar component that generates a random gradient based on the users wallet address in case their ENS image is not set. You can customize this by providing your own avatar component.
+
+[](https://docs.family.co/connectkit/avatar#avatar-example)
+
+Example
+-------
+
+First import Types, then create a custom avatar component:
+
+import { Types } from "connectkit";
+
+const MyCustomAvatar \= ({ address, ensImage, ensName, size, radius }: Types.CustomAvatarProps) \=> {
+
+  return (
+
+    <div
+
+      style\={{
+
+        overflow: "hidden",
+
+        borderRadius: radius,
+
+        height: size,
+
+        width: size,
+
+        background: generateColorFromAddress(address), // your function here
+
+      }}
+
+    \>
+
+      {ensImage && <img src\={ensImage} alt\={ensName ?? address} width\="100%" height\="100%" />}
+
+    </div\>
+
+  );
+
+};
+
+export default MyCustomAvatar;
+
+Then apply your avatar component to the <ConnectKitProvider> via the customAvatar option:
+
+import MyCustomAvatar from "./MyCustomAvatar";
+
+<ConnectKitProvider
+
+  options\={{
+
+    customAvatar: MyCustomAvatar,
+
+  }}
+
+\>
+
+  {/\* Your App \*/}
+
+</ConnectKitProvider\>;
+
+That's it—you will now have replaced all usage of the <Avatar /> component used within ConnectKit.
+
+[Previous\
+\
+**Colors**](https://docs.family.co/connectkit/colors)
+[Next\
+\
+**Translations**](https://docs.family.co/connectkit/translations)
+
+###### On this page
+
+*   [Avatar](https://docs.family.co/connectkit/avatar#avatar)
+    *   [Example](https://docs.family.co/connectkit/avatar#avatar-example)
+</file>
+
+<file path="docs.family.co_connectkit_border-radius.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+*   [Customization](https://docs.family.co/connectkit/customization)
+    
+*   /
+*   [Border Radius](https://docs.family.co/connectkit/border-radius)
+    
+
+[](https://docs.family.co/connectkit/border-radius#border-radius)
+
+Border Radius
+=============
+
+You can easily customize the border radius used in ConnectKit to more closely match the look and feel of your app.
+
+If you're looking to customize the connect button, check out [Custom Connect Button.](https://docs.family.co/connectkit/connect-button)
+
+[](https://docs.family.co/connectkit/border-radius#border-radius-example)
+
+Example
+-------
+
+To change the border radius, provide a customTheme prop to your <ConnectKitProvider />.
+
+This example sets the border radius to 42px:
+
+<ConnectKitProvider
+
+  customTheme\={{
+
+    "--ck-border-radius": 42,
+
+  }}
+
+\>
+
+  {/\* Your App \*/}
+
+</ConnectKitProvider\>
+
+That's it—the custom theme now extends the default theme to support your custom border radius.
+
+Here it is in action:
+
+Connect Wallet
+
+Border Radius
+
+##### 0px
+
+##### 8px
+
+##### 12px
+
+##### 16px
+
+##### 24px
+
+##### 30px
+
+[Previous\
+\
+**Fonts**](https://docs.family.co/connectkit/fonts)
+[Next\
+\
+**Colors**](https://docs.family.co/connectkit/colors)
+
+###### On this page
+
+*   [Border Radius](https://docs.family.co/connectkit/border-radius#border-radius)
+    *   [Example](https://docs.family.co/connectkit/border-radius#border-radius-example)
+</file>
+
+<file path="docs.family.co_connectkit_colors.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+*   [Customization](https://docs.family.co/connectkit/customization)
+    
+*   /
+*   [Colors](https://docs.family.co/connectkit/colors)
+    
+
+[](https://docs.family.co/connectkit/colors#colors)
+
+Colors
+======
+
+You can easily customize the accent color used in ConnectKit to more closely match the look and feel of your app.
+
+Accent colors can only be applied when using the default theme. Check out [Theming](https://docs.family.co/connectkit/theming)
+ for more information about themes and advanced styling.
+
+[](https://docs.family.co/connectkit/colors#colors-example)
+
+Example
+-------
+
+To change the accent color, provide a customTheme prop to your <ConnectKitProvider />
+
+Below is an example that sets the accent color to #00D54B and the accent text color to #FFFFFF
+
+<ConnectKitProvider
+
+  customTheme\={{
+
+    "--ck-accent-color": "#00D54B",
+
+    "--ck-accent-text-color": "#ffffff",
+
+  }}
+
+\>
+
+  {/\* Your App \*/}
+
+</ConnectKitProvider\>
+
+That's it—the custom theme now extends the default theme to support your custom accent color.
+
+Here it is in action:
+
+Connect Wallet
+
+[Previous\
+\
+**Border Radius**](https://docs.family.co/connectkit/border-radius)
+[Next\
+\
+**Avatar**](https://docs.family.co/connectkit/avatar)
+
+###### On this page
+
+*   [Colors](https://docs.family.co/connectkit/colors#colors)
+    *   [Example](https://docs.family.co/connectkit/colors#colors-example)
+</file>
+
+<file path="docs.family.co_connectkit_connect-button.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+*   [Advanced](https://docs.family.co/connectkit/advanced)
+    
+*   /
+*   [Connect Button](https://docs.family.co/connectkit/connect-button)
+    
+
+[](https://docs.family.co/connectkit/connect-button#connect-button)
+
+Connect Button
+==============
+
+ConnectKit provides a custom component with render props for all the necessary wallet connection states for you to build your own connect button. This allows for unique behavior such as displaying custom copy for the button itself or changing when the ConnectKit modal shows/hides.
+
+This page is for developers looking to build a custom connect button from scratch. If you're looking to just customize the font, theme, or colors; check out [Customization.](https://docs.family.co/connectkit/customization)
+
+[](https://docs.family.co/connectkit/connect-button#connect-button-example)
+
+Example
+-------
+
+First import ConnectKitButton, then create a custom button component:
+
+import { ConnectKitButton } from "connectkit";
+
+export const ExampleButton \= () \=> {
+
+  return (
+
+    <ConnectKitButton.Custom\>
+
+      {({ isConnected, isConnecting, show, hide, address, ensName, chain }) \=> {
+
+        return (
+
+          <button onClick\={show} style\={yourButtonStyle}\>
+
+            {isConnected ? address : "Custom Connect"}
+
+          </button\>
+
+        );
+
+      }}
+
+    </ConnectKitButton.Custom\>
+
+  );
+
+};
+
+You can now try styling your ExampleButton component and use some of the render props to display some additional states using any preference of styling techniques. The following example uses [styled components](https://styled-components.com/)
+:
+
+import { ConnectKitButton } from "connectkit";
+
+import styled from "styled-components";
+
+const StyledButton \= styled.button\`
+
+  cursor: pointer;
+
+  position: relative;
+
+  display: inline-block;
+
+  padding: 14px 24px;
+
+  color: #ffffff;
+
+  background: #1a88f8;
+
+  font-size: 16px;
+
+  font-weight: 500;
+
+  border-radius: 10rem;
+
+  box-shadow: 0 4px 24px \-6px #1a88f8;
+
+  transition: 200ms ease;
+
+  &:hover {
+
+    transform: translateY(\-6px);
+
+    box-shadow: 0 6px 40px \-6px #1a88f8;
+
+  }
+
+  &:active {
+
+    transform: translateY(\-3px);
+
+    box-shadow: 0 6px 32px \-6px #1a88f8;
+
+  }
+
+\`;
+
+export const ExampleButton \= () \=> {
+
+  return (
+
+    <ConnectKitButton.Custom\>
+
+      {({ isConnected, show, truncatedAddress, ensName }) \=> {
+
+        return (
+
+          <StyledButton onClick\={show}\>
+
+            {isConnected ? ensName ?? truncatedAddress : "Connect Wallet"}
+
+          </StyledButton\>
+
+        );
+
+      }}
+
+    </ConnectKitButton.Custom\>
+
+  );
+
+};
+
+And that's it—you've now successfully built a custom blue connect button that shows a loading state and ENS name (when available).
+
+Here's it in action:
+
+Connect Wallet
+
+[](https://docs.family.co/connectkit/connect-button#connect-button-render-props-specification)
+
+Render Props Specification
+--------------------------
+
+For more advanced usage, ConnectKitButton.Custom provides the following render props:
+
+| Props | Description | Type |     |
+| --- | --- | --- | --- |
+| `isConnected` | Whether or not a wallet is connected. | boolean |     |
+| `isConnecting` | If ConnectKit is currently connecting. | boolean |     |
+| `show` | Function to show the modal. In the example above we bind this to onClick for the custom button. | Function |     |
+| `hide` | Function to hide the modal. Mainly if you need to programmatically hide the modal. | Function |     |
+| `address` | The address of the connected wallet. | string |     |
+| `truncatedAddress` | A truncated version of the connected wallet. | string |     |
+| `ensName` | ENS name if the connected wallet address has one. Otherwise empty string. | string |     |
+
+[Next\
+\
+**Chains**](https://docs.family.co/connectkit/chains)
+
+###### On this page
+
+*   [Connect Button](https://docs.family.co/connectkit/connect-button#connect-button)
+    *   [Example](https://docs.family.co/connectkit/connect-button#connect-button-example)
+        
+    *   [Render Props Specification](https://docs.family.co/connectkit/connect-button#connect-button-render-props-specification)
+        
+
+![Preview image of URL https://styled-components.com](https://docs.family.co/previews/https:@@styled-components.com.png)
+
+![Preview image of URL https://styled-components.com](https://docs.family.co/previews/https:@@styled-components.com.png)
+</file>
+
+<file path="docs.family.co_connectkit_customization.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+[](https://docs.family.co/connectkit/customization#customization)
+
+Customization
+=============
+
+We offer multiple ways to customize ConnectKit to your liking.
+
+[### Theming\
+\
+Learn how to change the appearance of ConnectKit through predefined themes and theming variables.](https://docs.family.co/connectkit/theming)
+[### Fonts\
+\
+Learn how to customize the font used in ConnectKit to match your app.](https://docs.family.co/connectkit/fonts)
+[### Border Radius\
+\
+Learn how to change the border radius for ConnectKit elements.](https://docs.family.co/connectkit/border-radius)
+[### Colors\
+\
+Learn how to customize certain colors in ConnectKit to match the style of your app.](https://docs.family.co/connectkit/colors)
+[### Avatar\
+\
+Learn how to customize the avatar used in ConnectKit to match your app.](https://docs.family.co/connectkit/avatar)
+[### Translations\
+\
+Change the language used in ConnectKit to better suit your audience.](https://docs.family.co/connectkit/translations)
+</file>
+
+<file path="docs.family.co_connectkit_family-accounts.md">
+[](https://family.co)
+
+[Documentation](/connectkit)
+
+Powered by
+
+A design system from Family
+
+Send Feedback
+
+Report an Issue
+
+[](#continue-with-family)
+
+# Continue with Family
+
+Family makes onboarding to web3 simple, handling account creation and wallet management so you don’t have to. Users can sign up with an email or phone, secured by a passkey or password — no seed phrases required.
+
+With ConnectKit, developers can integrate this authentication flow for free with no extra code, inheriting all of Family’s built-in features like transaction simulation, security checks, and more.
+
+This allows users to get or access an Ethereum wallet instantly when using your dapp, with Family managing the underlying infrastructure.
+
+[](#continue-with-family-try-it-out)
+
+## Try It Out
+
+[](#continue-with-family-options)
+
+## Options
+
+[](#continue-with-family-opting-out)
+
+### Opting Out
+
+If you would like your app to opt-out of the Family accounts experience, you can do so by setting the enableFamily option to false in your getDefaultConfig options.
+
+,
+
+##### Web3Provider.tsx
+
+import { WagmiProvider, createConfig, http } from "wagmi";
+
+import { getDefaultConfig } from "connectkit";
+
+const config \= createConfig(
+
+getDefaultConfig({
+
+    ... // your config
+
+    enableFamily: false, // true by default
+
+}),
+
+);
+
+<WagmiProvider config\={config}\>
+
+...
+
+</WagmiProvider\>
+
+[](#continue-with-family-account-wallet-management)
+
+## Account & Wallet Management
+
+By enabling Family as an authentication option, users can access their account and wallet(s) in the future at any time via the Family [iOS App](https://family.co/download)
+or [Web Dashboard](https://app.family.co)
+.
+
+![](https://docs.family.co/connectkit/fa-01.png)
+
+[](#continue-with-family-integrated-modals)
+
+## Integrated Modals
+
+By enabling Family as an authentication option, users can access their account and wallet(s) in the future at any time via the Family iOS app or web dashboard.
+
+![](https://docs.family.co/connectkit/fa-02.png)
+
+[Next\
+\
+**API Reference**](/connectkit/api-reference)
+
+###### On this page
+
+- [Continue with Family](#continue-with-family)
+  - [Try It Out](#continue-with-family-try-it-out)
+  - [Options](#continue-with-family-options)
+  - [Account & Wallet Management](#continue-with-family-account-wallet-management)
+  - [Integrated Modals](#continue-with-family-integrated-modals)
+</file>
+
+<file path="docs.family.co_connectkit_fonts.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+*   [Customization](https://docs.family.co/connectkit/customization)
+    
+*   /
+*   [Fonts](https://docs.family.co/connectkit/fonts)
+    
+
+[](https://docs.family.co/connectkit/fonts#fonts)
+
+Fonts
+=====
+
+You can easily customize the font used in ConnectKit to more closely match the look and feel of your app.
+
+If you're looking to customize the connect button, check out [Custom Connect Button.](https://docs.family.co/connectkit/connect-button)
+
+[](https://docs.family.co/connectkit/fonts#fonts-example)
+
+Example
+-------
+
+To change the font, provide a customTheme prop to your <ConnectKitProvider />.
+
+This example sets the font to Comic Sans:
+
+<ConnectKitProvider
+
+  customTheme\={{
+
+    "--ck-font-family": '"Comic Sans MS", "Comic Sans", cursive',
+
+  }}
+
+\>
+
+  {/\* Your App \*/}
+
+</ConnectKitProvider\>
+
+That's it—the custom theme prop now extends the default theme to support your custom font.
+
+Here it is in action:
+
+Connect Wallet
+
+[](https://docs.family.co/connectkit/fonts#google-fonts)
+
+Google Fonts
+============
+
+If you'd like, it's also possible to use any custom font from a font provider such as Google Fonts (works for other font providers as well).
+
+[](https://docs.family.co/connectkit/fonts#google-fonts-example)
+
+Example
+-------
+
+First, start by including some font assets from Google Fonts by copying in the following html into <head> (other font providers have similar html code). In this example, we'll use [IBM Plex Serif](https://fonts.google.com/specimen/IBM+Plex+Serif)
+:
+
+<link rel\="preconnect" href\="https://fonts.googleapis.com" />
+
+<link rel\="preconnect" href\="https://fonts.gstatic.com" crossorigin />
+
+<link
+
+  href\="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@300&display=swap"
+
+  rel\="stylesheet"
+
+/>
+
+To use IBM Plex Serif in ConnectKit, provide a customTheme prop to your <ConnectKitProvider /> like following:
+
+<ConnectKitProvider
+
+  customTheme\={{
+
+    "--ck-font-family": "IBM Plex Serif",
+
+  }}
+
+\>
+
+  {/\* Your App \*/}
+
+</ConnectKitProvider\>
+
+That's it—the custom theme prop now extends the default theme to support the font loaded from Google Fonts.
+
+Here it is in action:
+
+Connect Wallet
+
+[Previous\
+\
+**Theming**](https://docs.family.co/connectkit/theming)
+[Next\
+\
+**Border Radius**](https://docs.family.co/connectkit/border-radius)
+
+###### On this page
+
+*   [Fonts](https://docs.family.co/connectkit/fonts#fonts)
+    *   [Example](https://docs.family.co/connectkit/fonts#fonts-example)
+        
+*   [Google Fonts](https://docs.family.co/connectkit/fonts#google-fonts)
+    *   [Example](https://docs.family.co/connectkit/fonts#google-fonts-example)
+</file>
+
+<file path="docs.family.co_connectkit_getting-started.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+[](https://docs.family.co/connectkit/getting-started#getting-started)
+
+Getting Started
+===============
+
+ConnectKit is the simplest way to integrate a connect wallet experience into your React.js web application. It comes with sensible defaults out of the box so you can focus on building.
+
+[](https://docs.family.co/connectkit/getting-started#getting-started-section-1-install)
+
+1\. Install
+-----------
+
+Install ConnectKit and its peer dependencies:
+
+npm install connectkit wagmi viem@2.x @tanstack/react-query
+
+*   [Wagmi](https://wagmi.sh/)
+     is a React Hooks library for Ethereum, this is the library you will use to interact with the connected wallet.
+    
+*   [Viem](https://viem.sh/)
+     is a TypeScript interface for Ethereum that performs blockchain operations.
+    
+*   [TanStack Query](https://tanstack.com/query/v5)
+     is an async state manager that handles requests, caching, and more.
+    
+*   [TypeScript](https://wagmi.sh/react/typescript)
+     is optional, but highly recommended.
+    
+
+[](https://docs.family.co/connectkit/getting-started#getting-started-section-2-api-keys)
+
+2\. API Keys
+------------
+
+ConnectKit utilises [WalletConnect](https://walletconnect.com/)
+'s SDK to help with connecting wallets. WalletConnect 2.0 requires a projectId which you can create quickly and easily for free over at [WalletConnect Cloud](https://cloud.walletconnect.com/sign-in)
+.
+
+[](https://docs.family.co/connectkit/getting-started#getting-started-section-3-implementation)
+
+3\. Implementation
+------------------
+
+It is recommended to wrap your app within a new component that will help you set up ConnectKit and its dependencies.
+
+Start by creating a new component called Web3Provider. Here you will import the required providers and create a config using wagmi's [createConfig](https://wagmi.sh/react/api/createConfig)
+ method. ConnectKit supplies a pre-configured getDefaultConfig function to simplify the process of creating a config.
+
+Below is a simple example app using getDefaultConfig() to help you get started:
+
+When using a framework that supports [React Server Components](https://react.dev/learn/start-a-new-react-project#bleeding-edge-react-frameworks)
+, you will need to include the "use client" directive at the beginning of this file.
+
+import { WagmiProvider, createConfig, http } from "wagmi";
+
+import { mainnet } from "wagmi/chains";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+import { ConnectKitProvider, getDefaultConfig } from "connectkit";
+
+const config \= createConfig(
+
+  getDefaultConfig({
+
+    // Your dApps chains
+
+    chains: \[mainnet\],
+
+    transports: {
+
+      // RPC URL for each chain
+
+      \[mainnet.id\]: http(
+
+        \`https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT\_PUBLIC\_ALCHEMY\_ID}\`,
+
+      ),
+
+    },
+
+    // Required API Keys
+
+    walletConnectProjectId: process.env.NEXT\_PUBLIC\_WALLETCONNECT\_PROJECT\_ID,
+
+    // Required App Info
+
+    appName: "Your App Name",
+
+    // Optional App Info
+
+    appDescription: "Your App Description",
+
+    appUrl: "https://family.co", // your app's url
+
+    appIcon: "https://family.co/logo.png", // your app's icon, no bigger than 1024x1024px (max. 1MB)
+
+  }),
+
+);
+
+const queryClient \= new QueryClient();
+
+export const Web3Provider \= ({ children }) \=> {
+
+  return (
+
+    <WagmiProvider config\={config}\>
+
+      <QueryClientProvider client\={queryClient}\>
+
+        <ConnectKitProvider\>{children}</ConnectKitProvider\>
+
+      </QueryClientProvider\>
+
+    </WagmiProvider\>
+
+  );
+
+};
+
+Now that you have your Web3Provider component, you can wrap your app with it:
+
+import { Web3Provider } from "./Web3Provider";
+
+import { ConnectKitButton } from "connectkit";
+
+const App \= () \=> {
+
+  return (
+
+    <Web3Provider\>
+
+      <ConnectKitButton />
+
+    </Web3Provider\>
+
+  );
+
+};
+
+And voilà, you've successfully set up ConnectKit.
+
+[](https://docs.family.co/connectkit/getting-started#getting-started-section-4-connected-wallet-info)
+
+4\. Connected Wallet Info
+-------------------------
+
+In a lot of use cases, you will want to access the connected wallet from ConnectKit in order to be able to interact with it further. You can do so by using the different hooks, such as [useAccount](https://wagmi.sh/docs/hooks/useAccount)
+, from wagmi (a ConnectKit dependency).
+
+In the previous example above we wrapped our app with a <ConnectKitProvider> top-level. Before utilizing any wagmi hook, make sure the components you build are mounted under this provider.
+
+Below is a simple example component that utilizes the useAccount hook to access connection state and the connected wallet address:
+
+import { useAccount } from "wagmi";
+
+// Make sure that this component is wrapped with ConnectKitProvider
+
+const MyComponent \= () \=> {
+
+  const { address, isConnecting, isDisconnected } \= useAccount();
+
+  if (isConnecting) return <div\>Connecting...</div\>;
+
+  if (isDisconnected) return <div\>Disconnected</div\>;
+
+  return <div\>Connected Wallet: {address}</div\>;
+
+};
+
+That's it—you now have a simple component that displays the connected wallet's address.
+
+[](https://docs.family.co/connectkit/getting-started#getting-started-additional-build-tooling-setup)
+
+Additional Build Tooling Setup
+------------------------------
+
+Some build tools require additional setup to work with ConnectKit.
+
+[](https://docs.family.co/connectkit/getting-started#getting-started-nextjs)
+
+### Next.js
+
+ConnectKit uses [WalletConnect](https://walletconnect.com/)
+'s SDK to help with connecting wallets. WalletConnect 2.0 pulls in Node.js dependencies that Next.js does not support by default.
+
+You can mitigate this by adding the following to your next.config.js file:
+
+module.exports \= {
+
+  webpack: (config) \=> {
+
+    config.resolve.fallback \= { fs: false, net: false, tls: false };
+
+    return config;
+
+  },
+
+};
+
+[](https://docs.family.co/connectkit/getting-started#getting-started-nextjs-app-router)
+
+### Next.js App Router
+
+If using Next.js App Router, or any framework that supports React Server Components, you will need to include the "use client" directive at the beginning of your Web3Provider file.
+
+"use client"
+
+...
+
+export const Web3Provider \= ({ children }) \=> {
+
+  return (
+
+    ...
+
+  );
+
+};
+
+[](https://docs.family.co/connectkit/getting-started#getting-started-components)
+
+Components
+----------
+
+Below is a list of React.js components we provide as part of the library:
+
+| Component | Description |     |
+| --- | --- | --- |
+| <ConnectKitProvider /> | Provides state and data to various ConnectKit components. Wrap ConnectKitProvider around your React.js app. |     |
+| <ConnectKitButton /> | The ConnectKit button. Place this component where you’d like the Connect Wallet button to appear. |     |
+| <ConnectKitButton.Custom /> | Design your own Connect button. Various wallet connection states are provided through render props. |     |
+
+[](https://docs.family.co/connectkit/getting-started#getting-started-quick-start)
+
+Quick Start
+-----------
+
+To get started quickly, feel free to use any of our example apps below.
+
+[github.com\
+\
+### Create a Next.js App](https://github.com/family/connectkit/tree/main/examples/nextjs)
+[github.com\
+\
+### Create a React App](https://github.com/family/connectkit/tree/main/examples/cra)
+[github.com\
+\
+### Create a Vite App](https://github.com/family/connectkit/tree/main/examples/vite)
+
+[Next\
+\
+**Customization**](https://docs.family.co/connectkit/customization)
+
+###### On this page
+
+*   [Getting Started](https://docs.family.co/connectkit/getting-started#getting-started)
+    *   [1\. Install](https://docs.family.co/connectkit/getting-started#getting-started-section-1-install)
+        
+    *   [2\. API Keys](https://docs.family.co/connectkit/getting-started#getting-started-section-2-api-keys)
+        
+    *   [3\. Implementation](https://docs.family.co/connectkit/getting-started#getting-started-section-3-implementation)
+        
+    *   [4\. Connected Wallet Info](https://docs.family.co/connectkit/getting-started#getting-started-section-4-connected-wallet-info)
+        
+    *   [Additional Build Tooling Setup](https://docs.family.co/connectkit/getting-started#getting-started-additional-build-tooling-setup)
+        
+    *   [Components](https://docs.family.co/connectkit/getting-started#getting-started-components)
+        
+    *   [Quick Start](https://docs.family.co/connectkit/getting-started#getting-started-quick-start)
+</file>
+
+<file path="docs.family.co_connectkit_going-live.md">
+[](https://family.co)
+
+[Documentation](/connectkit)
+
+Powered by
+
+A design system from Family
+
+###### ConnectKit 1.9.0
+
+*   [Introduction](/connectkit)
+    
+*   [Try It Out](/connectkit/try-it-out)
+    
+*   [Getting Started](/connectkit/getting-started)
+    
+*   [Customization](/connectkit/customization)
+    
+    *   [Theming](/connectkit/theming)
+        
+    *   [Fonts](/connectkit/fonts)
+        
+    *   [Border Radius](/connectkit/border-radius)
+        
+    *   [Colors](/connectkit/colors)
+        
+    *   [Avatar](/connectkit/avatar)
+        
+    *   [Translations](/connectkit/translations)
+        
+    *   [Theme Builder Try It](/connectkit/theme-builder)
+        
+    
+*   [Advanced](/connectkit/advanced)
+    
+    *   [Connect Button](/connectkit/connect-button)
+        
+    *   [Chains](/connectkit/chains)
+        
+    *   [RPC Providers](/connectkit/rpc-providers)
+        
+    
+*   [Sign In With Ethereum](/connectkit/authentication)
+    
+    *   [Next.js Implementation](/connectkit/auth-with-nextjs)
+        
+    *   [Custom Implementation](/connectkit/auth-with-custom-backend)
+        
+    *   [useSIWE Hook](/connectkit/usesiwe-hook)
+        
+    
+*   [Continue with Family](/connectkit/family-accounts)
+    
+*   [API Reference](/connectkit/api-reference)
+    
+*   [Libraries](/connectkit/libraries)
+    
+*   [Migration Guide](/connectkit/migration-guide)
+    
+*   [Going Live](/connectkit/going-live)
+    
+
+###### Community
+
+*   [X (Twitter)](https://twitter.com/family)
+    
+*   [GitHub](https://github.com/family)
+    
+
+Send Feedback
+
+Report an Issue
+
+[](#going-live-checklist)
+
+Going Live Checklist
+====================
+
+Make sure you're ready to go live to production by going through this checklist.
+
+If you’re planning to use ConnectKit for your project, we’d love to hear from you. [Please reach out](/cdn-cgi/l/email-protection#11626461617e63655177707c787d683f727e)
+ and we’d be happy to discuss your needs and answer any questions about implementation.
+
+*   Setup Wallet ConnectMake sure you've set up a WalletConnect Project ID.
+    
+*   Setup chainsMake sure you've selected which chains you want ConnectKit to be able to switch to for your app.
+    
+*   Setup your RPC ProvidersMake sure you've set up your necessary RPC Providers for each chain you want to support.
+    
+*   Setup themeMake sure you've selected a theme that fits the look and feel of your app.
+    
+*   Setup faviconMake sure you've set a favicon so that your app appears in wallet apps correctly when users connect their wallet.
+    
+*   Setup app nameMake sure you've set an app name in ConnectKit so that your app appears with the correct name when users connect with their wallets.
+    
+*   Test your connect experienceWe recommend that you run through a full end-to-end test of your connect experience using a real wallet. This will ensure that your app is working as expected when you go live.
+    
+*   Test on desktop and mobileWe recommend that you test desktop and mobile to ensure that your app works as expected with ConnectKit on both platforms.
+    
+
+[](#going-live-checklist-frequently-asked-questions)
+
+Frequently Asked Questions
+--------------------------
+
+This list of FAQs will continue to be updated over time.
+
+#### Is ConnectKit open source?
+
+#### Where do I get my API keys?
+
+#### What is a RPC Provider?
+
+#### How do I use my own connect button design with ConnectKit?
+
+#### How do I customize which chains / networks to support? E.g., I only want to display Optimism?
+
+#### Why won't my app icon appear in a mobile wallet when scanning with WalletConnect?
+
+#### Why does the default Coinbase Wallet modal appear when I try and connect with Coinbase?
+
+#### Why does the default WalletConnect modal appear when I try and connect with WalletConnect?
+
+#### How do I disable the Buffer polyfill?
+
+#### Why does my ConnectKit modal/button design not look right?
+
+Open Source
+-----------
+
+BSD-2-Clause License
+
+ConnectKit is open source via GitHub.
+
+If you’d like to support ongoing development, consider leaving a
+
+[View on GitHub](https://github.com/family/connectkit)
+
+[Previous\
+\
+**Migration Guide**](/connectkit/migration-guide)
+
+###### On this page
+
+*   [Going Live Checklist](#going-live-checklist)
+    *   [Frequently Asked Questions](#going-live-checklist-frequently-asked-questions)
+</file>
+
+<file path="docs.family.co_connectkit_libraries.md">
+[](https://family.co)
+
+[Documentation](/connectkit)
+
+Powered by
+
+A design system from Family
+
+Send Feedback
+
+Report an Issue
+
+[](#libraries)
+
+# Libraries
+
+ConnectKit uses two key open source libraries, [wagmi](https://wagmi.sh)
+and [viem](https://viem.sh)
+, to achieve its intended use cases. Both libraries may be helpful if your app requires any additional functionality outside of ConnectKit.
+
+---
+
+[](#wagmi)
+
+# wagmi
+
+ConnectKit uses [wagmi](https://wagmi.sh)
+internally and therefore it's possible to use hooks from wagmi to fetch data such as info about the connected account. Below are a couple of examples of some wagmi hooks in use.
+
+[](#wagmi-connected-wallet-info)
+
+## Connected Wallet Info
+
+Start by importing useAccount from wagmi into your app. Then simply use the hook as following:
+
+,
+
+##### Example.tsx
+
+import { useAccount } from "wagmi";
+
+const App \= () \=> {
+
+const { address } \= useAccount();
+
+return <div\>{address ?? "Loading address"}</div\>;
+
+};
+
+That's it—you should now be able to access things like the address and ENS name for the active account. You can read more about useAccount on [wagmi](https://wagmi.sh/docs/hooks/useAccount)
+.
+
+[](#wagmi-disconnecting-account)
+
+## Disconnecting Account
+
+Let's say you wanted to build a disconnect button that interacts with ConnectKit. Start by importing useDisconnect from wagmi into your app. Then simply use the hook as following:
+
+,
+
+##### Example.tsx
+
+import { useDisconnect } from "wagmi";
+
+const App \= () \=> {
+
+const { disconnect } \= useDisconnect();
+
+return <button onClick\={disconnect}\>Disconnect</button\>;
+
+};
+
+[](#wagmi-additional-hooks)
+
+## Additional Hooks
+
+In the examples above, we use some of wagmi's hooks for some common use cases. Make sure to check out the [wagmi documentation](https://wagmi.sh)
+for a full list of all available hooks and their use cases.
+
+[](#viem)
+
+# viem
+
+[viem](https://viem.sh)
+is a lightweight, composable, and type-safe modules that interface with Ethereum. It provides methods and functionality around parsing data and interacting with smart contracts.
+
+[](#tanstack-query)
+
+# TanStack Query
+
+[TanStack Query](https://tanstack.com/query/latest)
+is an async state manager that handles requests, caching, and more.It's used by wagmi to handle all of its data fetching and caching.
+
+[Next\
+\
+**Migration Guide**](/connectkit/migration-guide)
+
+###### On this page
+
+- [Libraries](#libraries)
+- [wagmi](#wagmi)
+  - [Connected Wallet Info](#wagmi-connected-wallet-info)
+  - [Disconnecting Account](#wagmi-disconnecting-account)
+  - [Additional Hooks](#wagmi-additional-hooks)
+- [viem](#viem)
+- [TanStack Query](#tanstack-query)
+</file>
+
+<file path="docs.family.co_connectkit_migration-guide.md">
+[](https://family.co)
+
+[Documentation](/connectkit)
+
+Powered by
+
+A design system from Family
+
+[](#migration-guide)
+
+# Migration Guide
+
+If you are coming from an earlier version of ConnectKit, you will need to make sure to update the following APIs listed below.
+
+---
+
+[](#section-170-breaking-changes)
+
+# 1.7.0 Breaking Changes
+
+[](#section-170-breaking-changes-update-packages)
+
+## Update Packages
+
+1.  Peer dependency wagmi updated to 2.x.
+2.  Peer dependency viem updated to 2.x.
+3.  Install the new peer dependency @tanstack/react-query at a minimum version of ^5.
+
+npm i [\[email protected\]](/cdn-cgi/l/email-protection)
+[\[email protected\]](/cdn-cgi/l/email-protection)
+@tanstack/react-query@^5
+
+[](#section-170-breaking-changes-update-files)
+
+## Update Files
+
+Read the [wagmi migration guide for migrating from v1 to v2](https://wagmi.sh/react/guides/migrate-from-v1-to-v2)
+to make sure your application is compatible.
+
+1.  Rename wagmi's provider, and TanStack Query moved from wagmi into peer dependencies.
+
+Replace <WagmiConfig> with <WagmiProvider>, and include TanStack Query's <QueryClientProvider>.
+
+,
+
+##### \_app.tsx
+
+import {
+
+\- WagmiConfig,
+
+- WagmiProvider,
+
+  createConfig,
+
+} from 'wagmi';
+
+import { mainnet, polygon, optimism, arbitrum } from 'wagmi/chains';
+
++import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+import { ConnectKitProvider, getDefaultConfig } from 'connectkit';
+
+const config = createConfig(
+
+getDefaultConfig({
+
+    ... // your config
+
+})
+
+);
+
++const queryClient = new QueryClient();
+
+export const Web3Provider = ({ children }) => {
+
+return (
+
+\- <WagmiConfig config={config}>
+
+- <WagmiProvider config={config}>
+
+-      <QueryClientProvider client={queryClient}>
+
+        <ConnectKitProvider>{children}</ConnectKitProvider>
+
+-      </QueryClientProvider>
+
+- </WagmiProvider>
+
+\- </WagmiConfig>
+
+);
+
+};
+
+2.  Remove alchemyId and infuraId in favor for wagmi [transports](https://wagmi.sh/react/api/transports)
+    .
+
+These provider IDs no longer handled via the ConnectKit getDefaultConfig function, as they are now replaced with wagmi [transports](https://wagmi.sh/react/api/transports)
+.
+
+It is recommended to add in transports for each chain you want to support. You can read more about how to set up transports over at our [RPC Providers](/connectkit/rpc-providers)
+documentation.
+
+Learn more about this change in the [wagmi migration guide](https://wagmi.sh/react/guides/migrate-from-v1-to-v2#removed-wagmi-providers-entrypoints)
+.
+
+,
+
+##### \_app.tsx
+
+import { createConfig, http, fallback } from "wagmi";
+
+import { mainnet } from 'wagmi/chains';
+
+const config = createConfig(
+
+getDefaultConfig({
+
+    chains: \[mainnet\],
+
+\- alchemyId: process.env.ALCHEMY_ID,
+
+\- infuraId: process.env.INFURA_ID,
+
+- transports: \[\
+  \
+-       \[mainnet.id\]: fallback(\[\
+  \
+-         http(\`https://mainnet.infura.io/v3/${process.env.INFURA\_ID}\`),\
+  \
+-         http(\`https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY\_ID}\`),\
+  \
+-         http(), // public fallback\
+  \
+-       \]),\
+  \
+- \]
+
+})
+
+);
+
+---
+
+[](#section-140-breaking-changes)
+
+# 1.4.0 Breaking Changes
+
+[](#section-140-breaking-changes-update-packages)
+
+## Update Packages
+
+1.  Peer dependency wagmi updated to 1.0.0.
+2.  Removed ethers peer dependency in favour of [viem](https://viem.sh)
+    .
+
+npm uninstall ethers
+
+npm i [\[email protected\]](/cdn-cgi/l/email-protection)
+[\[email protected\]](/cdn-cgi/l/email-protection)
+
+[](#section-140-breaking-changes-update-files)
+
+## Update Files
+
+Read the [wagmi migration guide for 1.x.x](https://wagmi.sh/core/migration-guide#1xx-breaking-changes)
+to make sure your application is compatible.
+
+1.  Replace getDefaultClient with getDefaultConfig.
+
+This change is to make the API more consistent with the rest of the wagmi ecosystem.
+
+,
+
+##### pages/\_app.tsx
+
+\-import { createClient } from "wagmi";
+
++import { createConfig } from "wagmi";
+
+\-import { getDefaultClient } from "connectkit";
+
++import { getDefaultConfig } from "connectkit";
+
+---
+
+[](#section-130-breaking-changes)
+
+# 1.3.0 Breaking Changes
+
+WalletConnect v1 has been sunset and ConnectKit now uses WalletConnect v2 by default.
+
+To learn more about this change, please read the [WalletConnect v2 announcement](https://medium.com/walletconnect/how-to-prepare-for-the-walletconnect-v1-0-shutdown-1a954da1dbff)
+.
+
+ConnectKit will continue to support WalletConnect v1 via the [legacyWalletConnect connector](https://wagmi.sh/react/connectors/walletConnectLegacy)
+up until June 28. However, it is recommended to migrate to WalletConnect v2 as soon as possible.
+
+1.  Upgrade dependencies
+
+Upgrade connectkit and wagmi:
+
+npm install connectkit@^1.3.0 wagmi@^0.12.0
+
+2.  Include a projectId in your client configuration
+
+WalletConnect v2 requires a projectId to be included in the client configuration. You can get a projectId by signing up for a free account at [WalletConnect Cloud](https://cloud.walletconnect.com)
+.
+
+,
+
+##### App.tsx
+
+...
+
+const client = createConfig(
+
+getDefaultConfig({
+
+    ...
+
+- walletConnectProjectId: process.env.WALLETCONNECT_PROJECT_ID,
+
+
+    ...
+
+}),
+
+);
+
+...
+
+If you are using a more advanced custom configuration, you will need to [include the projectId within your WalletConnectConnector object](https://wagmi.sh/react/connectors/walletConnect#projectid)
+.
+
+[](#section-120-breaking-changes)
+
+# 1.2.0 Breaking Changes
+
+If you are using the connectkit-siwe-next package, you will need to update your application to be compatible with the latest version.
+
+connectkit-siwe-next has been updated to 0.1.0. Follow the steps below to make sure your application is compatible with this update.
+
+[](#section-120-breaking-changes-update-packages)
+
+## Update Packages
+
+For an in-depth guide on how to set up your application, please read the [Sign In With Ethereum Documentation](/connectkit/authentication)
+.
+
+[](#section-120-breaking-changes-update-files)
+
+## Update Files
+
+1.  First you will need to split your siwe helper into two separate helpers, siweServer and siweClient.
+
+,
+
+##### siwe.ts (removed)
+
+\- import { siwe } from '../siwe';
+
+,
+
+##### siweServer.ts (new)
+
+import { configureServerSideSIWE } from 'connectkit-next-siwe';
+
+export const siweServer \= configureServerSideSIWE(
+
+session: {
+
+    cookieName: string, // defaults to "connectkit-next-siwe"
+
+    password: string, // defaults to \`process.env.SESSION\_SECRET\`
+
+    cookieOptions: {
+
+      secure: boolean, // defaults to true if \`process.env.NODE\_ENV === 'production'\`
+
+      // see https://www.npmjs.com/package/cookie for other options
+
+    },
+
+},
+
+);
+
+,
+
+##### siweClient.ts (new)
+
+import { configureClientSIWE } from "connectkit-next-siwe";
+
+export const siweClient \= configureClientSIWE({
+
+apiRoutePrefix: string,
+
+statement: string, // defaults to "Sign In With Ethereum"
+
+});
+
+2.  Replace the siwe import in your pages/api/\[...routes\].ts file with the siweServer helper.
+
+,
+
+##### pages/api/\[...routes\].ts
+
+\- import { siwe } from '../../../siwe';
+
+- import { siweServer } from '../../../siweServer';
+
+export default siweServer.apiRouteHandler;
+
+3.  Replace the siwe import in your \_app.tsx file with the siweClient helper.
+
+,
+
+##### pages/\_app.tsx
+
+\- import { siwe } from '../siwe';
+
+\- <siwe.Provider>
+
+...
+
+\- </siwe.Provider>
+
+- import { siweClient } from '../siweClient';
+
+- <siweClient.Provider>
+
+...
+
+- </siweClient.Provider>
+
+4.  Replace the siwe import in your getServerSideProps functions with the siweServer helper.
+
+,
+
+##### pages/index.tsx
+
+\- import { siwe } from '../../siwe';
+
+- import { siweServer } from '../../siweServer';
+
+export const getServerSideProps: GetServerSideProps<Props> = async ({ req, res, }) => {
+
+\- const { address } = await siwe.getSession(req, res);
+
+- const { address } = await siweServer.getSession(req, res);
+
+...
+
+});
+
+For further reading please see the [Sign In With Ethereum Documentation](/connectkit/authentication)
+.
+
+---
+
+[](#section-111-breaking-changes)
+
+# 1.1.1 Breaking Changes
+
+ConnectKit has updated the wagmi peer dependency to 0.9.x.
+
+Read the [wagmi migration guide for 0.9.x](https://wagmi.sh/react/migration-guide#09x-breaking-changes)
+to make sure your application is compatible.
+
+---
+
+[](#section-110-breaking-changes)
+
+# 1.1.0 Breaking Changes
+
+1.  ConnectKit is now a pure [ES module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+    , removing CommonJS support. If you are using modern tooling, like [Next.js](https://nextjs.org)
+    , [Vite](https://vitejs.dev)
+    , or [Vitest](https://vitest.dev)
+    , you likely don't need to do anything. [Remix](https://remix.run/docs/en/v1/pages/gotchas#importing-esm-packages)
+    and [Jest](https://jestjs.io/docs/ecmascript-modules)
+    require some additional configuration. Check out [this guide](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c)
+    for more info on ESM support and Frequently Asked Questions across various tools and setups.
+2.  ConnectKit has updated the wagmi peer dependency to 0.8.x. Read more below to learn how to make sure your application is compatible.
+
+[](#section-110-breaking-changes-dependency-updates)
+
+## Dependency Updates
+
+The peer dependency wagmi has been updated to 0.8.x. Follow the steps below to make sure your application is compatible with this update.
+
+1.  Upgrade dependencies
+
+Upgrade ConnectKit and wagmi to their latest versions:
+
+npm install connectkit@^1.1.0 wagmi@^0.8.0
+
+2.  Check for breaking changes in wagmi
+
+You will need to review if your application has been affected by breaking changes in wagmi.
+
+Check out the [wagmi migration guide for 0.8.x](https://wagmi.sh/docs/migration-guide#08x-breaking-changes)
+. Since this update skips version 0.7.x of wagmi, you will also need to review the [wagmi migration guide for 0.7.x](https://wagmi.sh/docs/migration-guide#07x-breaking-changes)
+as well.
+
+###### On this page
+
+- [Migration Guide](#migration-guide)
+- [1.7.0 Breaking Changes](#section-170-breaking-changes)
+  - [Update Packages](#section-170-breaking-changes-update-packages)
+  - [Update Files](#section-170-breaking-changes-update-files)
+- [1.4.0 Breaking Changes](#section-140-breaking-changes)
+  - [Update Packages](#section-140-breaking-changes-update-packages)
+  - [Update Files](#section-140-breaking-changes-update-files)
+- [1.3.0 Breaking Changes](#section-130-breaking-changes)
+- [1.2.0 Breaking Changes](#section-120-breaking-changes)
+  - [Update Packages](#section-120-breaking-changes-update-packages)
+  - [Update Files](#section-120-breaking-changes-update-files)
+- [1.1.1 Breaking Changes](#section-111-breaking-changes)
+- [1.1.0 Breaking Changes](#section-110-breaking-changes)
+  - [Dependency Updates](#section-110-breaking-changes-dependency-updates)
+</file>
+
+<file path="docs.family.co_connectkit_rpc-providers.md">
+[](https://family.co)
+
+[Documentation](/connectkit)
+
+Powered by
+
+A design system from Family
+
+[](#rpc-providers)
+
+# RPC Providers
+
+createConfig can be instantiated with a set of [Transports](https://wagmi.sh/react/api/transports)
+for each chain. A Transport is the intermediary layer that is responsible for executing outgoing JSON-RPC requests to the RPC Provider (e.g. [Alchemy](https://alchemy.com)
+, [Infura](https://infura.io)
+, etc).
+
+By default, ConnectKit sets up your dApp with public RPC Providers for development and testing that are heavily limited and not fit for production use. It is recommended to provide your own RPC Providers to prevent being rate-limited.
+
+import { createConfig, http, fallback } from "wagmi";
+
+import { getDefaultConfig } from "connectkit";
+
+import { mainnet } from "wagmi/chains";
+
+const config \= createConfig(
+
+getDefaultConfig({
+
+    chains: \[mainnet\],
+
+    transports: {
+
+      \[mainnet.id\]: fallback(\[\
+
+\
+ http(\`https://mainnet.infura.io/v3/${process.env.NEXT\_PUBLIC\_INFURA\_ID}\`),\
+\
+ http(\`https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT\_PUBLIC\_ALCHEMY\_ID}\`),\
+\
+ \]),
+
+    },
+
+}),
+
+);
+
+[](#rpc-provider-choices)
+
+# RPC Provider Choices
+
+There are many RPC Providers to choose from, each with their own pros and cons. Below is a list of some of the most popular RPC Providers:
+
+[](#rpc-provider-choices-alchemy)
+
+## Alchemy
+
+At the time of writing, Alchemy supports both EVM and non-EVM chains. To learn more about Alchemy's supported chains, visit [the Alchemy docs](https://docs.alchemy.com/docs/choosing-a-web3-network)
+.
+
+To use Alchemy, you will need to create an account and generate an API key. You can do this by visiting the [Alchemy dashboard](https://dashboard.alchemy.com/)
+, then implement the API key with Alchemy's RPC URL.
+
+[](#rpc-provider-choices-infura)
+
+## Infura
+
+At the time of writing, Infura supports Ethereum, Layer 2s, EVM and non-EVM compatible chains. To learn more about Infura's supported chains, visit [Infura's supported networks page](https://www.infura.io/networks)
+.
+
+To use Infura, you will need to create an account and generate an API key. You can do this by visiting the [Infura dashboard](https://infura.io/dashboard)
+, then implement the API key with Infura's RPC URL.
+
+[](#rpc-provider-choices-custom-providers)
+
+## Custom Providers
+
+For advanced use-cases, you may want to use a custom RPC Provider for a specific chain.
+
+With ConnectKit, you can choose to combine multiple providers such as [Alchemy](https://www.alchemy.com/)
+for Ethereum and [avax.network](https://avax.network/)
+for Avalanche.
+
+Start by creating a file called customChains.ts and add your custom chain configuration like following:
+
+,
+
+##### customChains.ts
+
+import { type Chain } from "viem";
+
+export const avalanche: Chain \= {
+
+id: 43_114,
+
+name: "Avalanche",
+
+nativeCurrency: {
+
+    decimals: 18,
+
+    name: "Avalanche",
+
+    symbol: "AVAX",
+
+},
+
+rpcUrls: {
+
+    default: { http: \["https://api.avax.network/ext/bc/C/rpc"\] },
+
+},
+
+blockExplorers: {
+
+    default: { name: "SnowTrace", url: "https://snowtrace.io" },
+
+    snowtrace: { name: "SnowTrace", url: "https://snowtrace.io" },
+
+},
+
+testnet: false,
+
+};
+
+Then importing your preferred [chains from wagmi](https://wagmi.sh/react/chains)
+that you want to use like following:
+
+,
+
+##### Web3Provider.tsx
+
+import { ConnectKitProvider } from "connectkit";
+
+import { WagmiProvider, createConfig, http } from "wagmi";
+
+import { mainnet } from "wagmi/chains";
+
+import { avalanche } from "./customChains";
+
+const config \= createConfig(
+
+getDefaultConfig({
+
+    chains: \[mainnet, avalanche\],
+
+    transports: {
+
+      \[mainnet.id\]: http(
+
+        // or your custom rpc url
+
+        \`https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT\_PUBLIC\_ALCHEMY\_ID}\`,
+
+      ),
+
+      \[avalanche.id\]: http(
+
+        // or your custom rpc url
+
+        avalanche.rpcUrls.default,
+
+      ),
+
+    },
+
+}),
+
+);
+
+export const Web3Provider \= () \=> {
+
+return <WagmiProvider config\={config}\>...</WagmiProvider\>;
+
+};
+
+That's it—ConnectKit will now use different providers for different chains.
+
+For more info, check out the [wagmi docs](https://wagmi.sh/react/api/createConfig#transports)
+which describes a similar scenario to above around multiple providers.
+
+[Previous\
+\
+**Chains**](/connectkit/chains)
+[Next\
+\
+**Sign In With Ethereum**](/connectkit/authentication)
+
+###### On this page
+
+- [RPC Providers](#rpc-providers)
+- [RPC Provider Choices](#rpc-provider-choices)
+  - [Alchemy](#rpc-provider-choices-alchemy)
+  - [Infura](#rpc-provider-choices-infura)
+  - [Custom Providers](#rpc-provider-choices-custom-providers)
+</file>
+
+<file path="docs.family.co_connectkit_theming.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+*   [Customization](https://docs.family.co/connectkit/customization)
+    
+*   /
+*   [Theming](https://docs.family.co/connectkit/theming)
+    
+
+[](https://docs.family.co/connectkit/theming#theming)
+
+Theming
+=======
+
+ConnectKit comes with beautiful themes to match your app, as well as the ability to customize to your liking using theming variables. Below you can try various customization options.
+
+[Edit Theme](https://docs.family.co/connectkit/theme-builder?edit=auto)
+
+Connect Wallet
+
+Default Themes
+
+[Build your own theme](https://docs.family.co/connectkit/theme-builder)
+
+![Default](https://docs.family.co/connectkit/default.png)
+
+Default
+
+![Web95](https://docs.family.co/connectkit/web95.png)
+
+Web95
+
+![Retro](https://docs.family.co/connectkit/retro.png)
+
+Retro
+
+![Soft](https://docs.family.co/connectkit/soft.png)
+
+Soft
+
+![Minimal](https://docs.family.co/connectkit/minimal.png)
+
+Minimal
+
+![Rounded](https://docs.family.co/connectkit/rounded.png)
+
+Rounded
+
+![Midnight](https://docs.family.co/connectkit/midnight.png)
+
+Midnight
+
+![Nouns](https://docs.family.co/connectkit/nouns.png)
+
+Nouns
+
+<ConnectKitProvider theme\="auto" mode\="light"\>
+
+  /\* Your App \*/
+
+</ConnectKitProvider/\>
+
+[](https://docs.family.co/connectkit/theming#theming-example)
+
+Example
+-------
+
+To set a theme, simply provide a theme prop to the <ConnectKitProvider /> (and optionally a mode prop as well):
+
+If you're looking to customize the connect button, check out [Custom Connect Button.](https://docs.family.co/connectkit/connect-button)
+
+<ConnectKitProvider theme\="default" mode\="dark"\>
+
+  {/\* Your App \*/}
+
+</ConnectKitProvider\>
+
+That's it—ConnectKit should now appear with the default theme in dark mode as shown below:
+
+Connect Wallet
+
+[](https://docs.family.co/connectkit/theming#theming-theme-props)
+
+Theme Props
+-----------
+
+In the table below, you'll find additional theme values you can provide:
+
+| Theme Prop | Description | Light/Dark Mode Support |     |
+| --- | --- | --- | --- |
+| `default` | Default theme |     |     |
+| `web95` | Web95 theme |     |     |
+| `retro` | Retro theme |     |     |
+| `soft` | Soft theme |     |     |
+| `midnight` | Midnight theme |     |     |
+| `minimal` | Minimal theme |     |     |
+| `rounded` | Rounded theme |     |     |
+| `nouns` | Nouns theme |     |     |
+
+[](https://docs.family.co/connectkit/theming#theming-enable-google-fonts-for-themes)
+
+Enable Google Fonts for Themes
+------------------------------
+
+If you decide to use a theme other than the default theme, we strongly suggest enabling the embedGoogleFonts option so that fonts will appear correctly.
+
+This option is turned off by default to avoid loading any fonts from Google without your opt-in.
+
+Here's how you enable the option:
+
+<ConnectKitProvider
+
+  theme\="web95"
+
+  options\={{
+
+    embedGoogleFonts: true,
+
+  }}
+
+\>
+
+  {/\* Your App \*/}
+
+</ConnectKitProvider\>
+
+[](https://docs.family.co/connectkit/theming#theming-mode-props)
+
+Mode Props
+----------
+
+For themes that support light/dark mode it's possible to configure which one to show. Alternatively, it's possible to set it to auto and ConnectKit will automatically present light/dark mode depending on the color scheme of user's system.
+
+Please note that only the default theme currently supports a light/dark mode.
+
+| Mode Prop | Description |     |
+| --- | --- | --- |
+| `auto` | Either dark or light that matches the user's system color scheme |     |
+| `dark` | Dark mode |     |
+| `light` | Light mode |     |
+
+[](https://docs.family.co/connectkit/theming#theme-variables)
+
+Theme Variables
+===============
+
+It's possible to override various styles of a theme by providing a customTheme prop to <ConnectKitProvider />.
+
+Overriding theme variables isn't a stable feature yet and could change in future versions of ConnectKit. We suggest only customizing the theme if you're confident you can migrate any changes when upgrading.
+
+[](https://docs.family.co/connectkit/theming#theme-variables-example)
+
+Example
+-------
+
+Below is an example of overriding the default overlay color:
+
+<ConnectKitProvider
+
+  customTheme\={{
+
+    "--ck-overlay-background": "rgba(255, 0, 0, 0.5)",
+
+  }}
+
+\>
+
+  {/\* Your App \*/}
+
+</ConnectKitProvider\>
+
+That's it—ConnectKit should now have a semi-transparent red overlay when it appears.
+
+[](https://docs.family.co/connectkit/theming#theme-variables-variables)
+
+Variables
+---------
+
+In the tables below, you'll find the full list of styling variables that you can provide:
+
+#### Connect Wallet Button variables
+
+#### Primary Button variables
+
+#### Secondary Button variables
+
+#### Tertiary Button variables
+
+#### Modal variables
+
+#### Text variables
+
+#### Miscellaneous variables
+
+[](https://docs.family.co/connectkit/theming#additional-options)
+
+Additional Options
+==================
+
+To access additional configuration options, provide an options prop to your <ConnectKitProvider />.
+
+If you're looking to provide an even more custom experience, we offer a few key configuration options that have a larger impact than pure visual changes. We only suggest using these in very specific situations, as they may make your connection experience more difficult for novices.
+
+[](https://docs.family.co/connectkit/theming#additional-options-example)
+
+Example
+-------
+
+Below is an example of how to add a custom disclaimer element to ConnectKit that will be displayed in the modal before the user has a wallet connected.
+
+<ConnectKitProvider
+
+  options\={{
+
+    disclaimer: (
+
+      <\>
+
+        By connecting your wallet you agree to the{" "}
+
+        <a
+
+          target\="\_blank"
+
+          rel\="noopener noreferrer"
+
+          href\="https://en.wikipedia.org/wiki/Terms\_of\_service"
+
+        \>
+
+          Terms of Service
+
+        </a\>{" "}
+
+        and{" "}
+
+        <a
+
+          target\="\_blank"
+
+          rel\="noopener noreferrer"
+
+          href\="https://en.wikipedia.org/wiki/Privacy\_policy"
+
+        \>
+
+          Privacy Policy
+
+        </a\>
+
+      </\>
+
+    ),
+
+  }}
+
+\>
+
+  {/\* Your App \*/}
+
+</ConnectKitProvider\>
+
+That's it—ConnectKit should now appear with your disclaimer as shown below:
+
+Connect Wallet
+
+[](https://docs.family.co/connectkit/theming#additional-options-options)
+
+Options
+-------
+
+In the table below you'll find the full list of configuration options for ConnectKit:
+
+[](https://docs.family.co/connectkit/theming#avoidLayoutShift)
+
+`avoidLayoutShift`
+
+**boolean**
+
+**Default is true**
+
+Avoids layout shift when the ConnectKit modal is open by adding padding to the<body>. Alternatively, set this to false and create your own solution using the css variable \--ck-scrollbar-width
+
+[](https://docs.family.co/connectkit/theming#bufferPolyfill)
+
+`bufferPolyfill`
+
+**boolean**
+
+**Default is true**
+
+Some bundlers require a [Buffer](https://www.npmjs.com/package/buffer)
+ polyfill for WalletConnect. We check and implement this by default, but if you need to disable our implementation then you can set this option to false.
+
+[](https://docs.family.co/connectkit/theming#customAvatar)
+
+`customAvatar`
+
+**React.ReactNode**
+
+Change the avatar used in ConnectKit to more closely match the look and feel of your app. To learn more, visit the [custom avatar docs](https://docs.family.co/connectkit/avatar)
+.
+
+[](https://docs.family.co/connectkit/theming#disableSiweRedirect)
+
+`disableSiweRedirect`
+
+**boolean**
+
+Disable the redirect to SIWE page when the user connects to a wallet.
+
+[](https://docs.family.co/connectkit/theming#disclaimer)
+
+`disclaimer`
+
+**ReactNode | string**
+
+**Default is null**
+
+Provide a disclaimer for things like terms and conditions that will be displayed to users in the ConenctKit modal when they're not yet connected.
+
+[](https://docs.family.co/connectkit/theming#embedGoogleFonts)
+
+`embedGoogleFonts`
+
+**boolean**
+
+**Default is false**
+
+Automatically embeds Google Font of the current theme.
+
+[](https://docs.family.co/connectkit/theming#enforceSupportedChains)
+
+`enforceSupportedChains`
+
+**boolean**
+
+**Default is false**
+
+By default, ConnectKit will only allow users to connect to chains that are supported by your app. Set this to false to allow users to connect to any chain.
+
+[](https://docs.family.co/connectkit/theming#ethereumOnboardingUrl)
+
+`ethereumOnboardingUrl`
+
+**string**
+
+**Default is https://ethereum.org/en/wallets/**
+
+Link to a resource for learning more about Ethereum.
+
+[](https://docs.family.co/connectkit/theming#hideBalance)
+
+`hideBalance`
+
+**boolean**
+
+Hide balance in the profile view.
+
+[](https://docs.family.co/connectkit/theming#hideNoWalletCTA)
+
+`hideNoWalletCTA`
+
+**boolean**
+
+Hide the "I don't have a wallet" call to action in the ConnectKit modal
+
+[](https://docs.family.co/connectkit/theming#hideQuestionMarkCTA)
+
+`hideQuestionMarkCTA`
+
+**boolean**
+
+Hide the question mark in top-left of the ConnectKit modal that leads to the "About Wallets" page
+
+[](https://docs.family.co/connectkit/theming#hideRecentBadge)
+
+`hideRecentBadge`
+
+**boolean**
+
+**Default is false**
+
+Hide the "Recent" badge that appears on the most recently connected wallet connector.
+
+[](https://docs.family.co/connectkit/theming#hideTooltips)
+
+`hideTooltips`
+
+**boolean**
+
+Hide any tooltips that would normally appear
+
+[](https://docs.family.co/connectkit/theming#initialChainId)
+
+`initialChainId`
+
+**number**
+
+**Default is the first chain in your wagmi config**
+
+Target a specific chain to request connection to. By default ConnectKit will autotarget the first chain defined in your WagmiProvider's config'. Set this to 0 to remove chain targetting.
+
+[](https://docs.family.co/connectkit/theming#language)
+
+`language`
+
+**'en-US' | 'ar-AE' | 'ca-AD' | 'ee-EE' | 'es-ES' | 'fa-IR' | 'fr-FR' | 'pt-BR' | 'ru-RU' | 'tr-TR' | 'vi-VN' | 'zh-CN'**
+
+Customize the language used in ConnectKit to better suit your audience.
+
+[](https://docs.family.co/connectkit/theming#overlayBlur)
+
+`overlayBlur`
+
+**number**
+
+Accepts a numerical value to control the degree of blur applied to the overlay. Alternatively you can use the [theme variable](https://docs.family.co/connectkit/theming#theme-variables)
+ \--ck-overlay-backdrop-filter to achieve the same effect.
+
+[](https://docs.family.co/connectkit/theming#truncateLongENSAddress)
+
+`truncateLongENSAddress`
+
+**boolean**
+
+**Default is true**
+
+Truncates long ENS addresses in the connect button with ellipsis.
+
+[](https://docs.family.co/connectkit/theming#walletConnectCTA)
+
+`walletConnectCTA`
+
+**'modal' | 'link' | 'both'**
+
+**Default is 'link'**
+
+When viewing the WalletConnect QR code, we display a button to open the official WalletConnect modal. This allows users to access more niche connectors if needed.  
+Use `link` to display a button to copy the WalletConnect URI. To show both options, use `both`.
+
+[](https://docs.family.co/connectkit/theming#walletConnectName)
+
+`walletConnectName`
+
+**string**
+
+**Default is 'Other Wallets'**
+
+By default, the WalletConnect option is named "Other Wallets". Use this option to change the name to, e.g., "WalletConnect" by providing a string.
+
+[](https://docs.family.co/connectkit/theming#walletOnboardingUrl)
+
+`walletOnboardingUrl`
+
+**string**
+
+**Default is https://ethereum.org/en/wallets/find-wallet/**
+
+Link to a resource for learning more about Wallets.
+
+[Previous\
+\
+**Customization**](https://docs.family.co/connectkit/customization)
+[Next\
+\
+**Fonts**](https://docs.family.co/connectkit/fonts)
+
+###### On this page
+
+*   [Theming](https://docs.family.co/connectkit/theming#theming)
+    *   [Example](https://docs.family.co/connectkit/theming#theming-example)
+        
+    *   [Theme Props](https://docs.family.co/connectkit/theming#theming-theme-props)
+        
+    *   [Enable Google Fonts for Themes](https://docs.family.co/connectkit/theming#theming-enable-google-fonts-for-themes)
+        
+    *   [Mode Props](https://docs.family.co/connectkit/theming#theming-mode-props)
+        
+*   [Theme Variables](https://docs.family.co/connectkit/theming#theme-variables)
+    *   [Example](https://docs.family.co/connectkit/theming#theme-variables-example)
+        
+    *   [Variables](https://docs.family.co/connectkit/theming#theme-variables-variables)
+        
+*   [Additional Options](https://docs.family.co/connectkit/theming#additional-options)
+    *   [Example](https://docs.family.co/connectkit/theming#additional-options-example)
+        
+    *   [Options](https://docs.family.co/connectkit/theming#additional-options-options)
+</file>
+
+<file path="docs.family.co_connectkit_translations.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+*   [Customization](https://docs.family.co/connectkit/customization)
+    
+*   /
+*   [Translations](https://docs.family.co/connectkit/translations)
+    
+
+[](https://docs.family.co/connectkit/translations#translations)
+
+Translations
+============
+
+You can easily customize the language used in ConnectKit to better suit your audience.
+
+[](https://docs.family.co/connectkit/translations#translations-example)
+
+Example
+-------
+
+Choose your preferred language by changing the language option within the <ConnectKitProvider>:
+
+<ConnectKitProvider
+
+  options\={{
+
+    language: "ja-JP",
+
+  }}
+
+\>
+
+  {/\* Your App \*/}
+
+</ConnectKitProvider\>
+
+That's it—ConnectKit will now be using your preferred language.
+
+Here it is in action:
+
+ウォレットの接続
+
+[](https://docs.family.co/connectkit/translations#translations-supported-languages)
+
+Supported Languages
+-------------------
+
+We’re always working to support additional languages in ConnectKit. If you’d like us to support an additional language, let us know by raising a [discussion on GitHub](https://github.com/family/connectkit/discussions)
+.
+
+| Language | Value |
+| --- | --- |
+| ![](https://docs.family.co/_next/static/media/US.d2d809c4.svg)<br><br>English (US) | en-US |
+| ![](https://docs.family.co/_next/static/media/AE.42f10cd0.svg)<br><br>العربية | ar-AE |
+| ![](https://docs.family.co/_next/static/media/AD.36b3e152.svg)<br><br>Català | ca-AD |
+| ![](https://docs.family.co/_next/static/media/EE.16e287da.svg)<br><br>Eesti | ee-EE |
+| ![](https://docs.family.co/_next/static/media/ES.ff249d7f.svg)<br><br>Español | es-ES |
+| ![](https://docs.family.co/_next/static/media/IR.7f0996c7.svg)<br><br>فارسی | fa-IR |
+| ![](https://docs.family.co/_next/static/media/FR.bca0be15.svg)<br><br>Français | fr-FR |
+| ![](https://docs.family.co/_next/static/media/BR.70894870.svg)<br><br>Português | pt-BR |
+| ![](https://docs.family.co/_next/static/media/RU.e93e818e.svg)<br><br>Русский | ru-RU |
+| ![](https://docs.family.co/_next/static/media/TR.49d7cdd0.svg)<br><br>Türkçe | tr-TR |
+| ![](https://docs.family.co/_next/static/media/VN.f9f8bb80.svg)<br><br>Tiếng Việt | vi-VN |
+| ![](https://docs.family.co/_next/static/media/CN.121e5c1e.svg)<br><br>中文 | zh-CN |
+
+[Previous\
+\
+**Avatar**](https://docs.family.co/connectkit/avatar)
+[Next\
+\
+**Advanced**](https://docs.family.co/connectkit/advanced)
+
+###### On this page
+
+*   [Translations](https://docs.family.co/connectkit/translations#translations)
+    *   [Example](https://docs.family.co/connectkit/translations#translations-example)
+        
+    *   [Supported Languages](https://docs.family.co/connectkit/translations#translations-supported-languages)
+</file>
+
+<file path="docs.family.co_connectkit_try-it-out.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+[](https://docs.family.co/connectkit/try-it-out#try-it-out)
+
+Try It Out
+==========
+
+Test out ConnectKit in context to experience it fully.
+
+Connect Wallet
+
+Try it out!
+
+Contextual Preview
+
+Preview in Context
+
+Theme
+
+Default
+
+Web95
+
+Retro
+
+Soft
+
+Minimal
+
+Rounded
+
+Midnight
+
+Nouns
+
+Build Your Own
+
+Default
+
+[Previous\
+\
+**Introduction**](https://docs.family.co/connectkit)
+[Next\
+\
+**Getting Started**](https://docs.family.co/connectkit/getting-started)
+</file>
+
+<file path="docs.family.co_connectkit_usesiwe-hook.md">
+[](https://family.co)
+
+[Documentation](/connectkit)
+
+Powered by
+
+A design system from Family
+
+[](#usesiwe-hook)
+
+# useSIWE Hook
+
+A convenience Hook to access SIWE state. Must be used with [Sign In With Ethereum](/connectkit/authentication)
+.
+
+Simply use the useSIWE Hook to prompt sign-in and sign-out functions and read the current state of requests.
+
+const { data, isSignedIn, signOut, signIn } \= useSIWE();
+
+[](#usesiwe-hook-example)
+
+## Example
+
+,
+
+##### MyCustomSIWEComponent.tsx
+
+import { useSIWE, useModal, SIWESession } from "connectkit";
+
+import { useAccount } from "wagmi";
+
+const CustomSIWEButton \= () \=> {
+
+const { setOpen } \= useModal();
+
+const { isConnected } \= useAccount();
+
+const { data, isReady, isRejected, isLoading, isSignedIn, signOut, signIn } \= useSIWE({
+
+    onSignIn: (session?: SIWESession) \=> {
+
+      // Do something with the data
+
+    },
+
+    onSignOut: () \=> {
+
+      // Do something when signed out
+
+    },
+
+});
+
+const handleSignIn \= async () \=> {
+
+    await signIn()?.then((session?: SIWESession) \=> {
+
+      // Do something when signed in
+
+    });
+
+};
+
+const handleSignOut \= async () \=> {
+
+    await signOut()?.then(() \=> {
+
+      // Do something when signed out
+
+    });
+
+};
+
+/\*\* Wallet is connected and signed in \*/
+
+if (isSignedIn) {
+
+    return (
+
+      <\>
+
+        <div\>Address: {data?.address}</div\>
+
+        <div\>ChainId: {data?.chainId}</div\>
+
+        <button onClick\={handleSignOut}\>Sign Out</button\>
+
+      </\>
+
+    );
+
+}
+
+/\*\* Wallet is connected, but not signed in \*/
+
+if (isConnected) {
+
+    return (
+
+      <\>
+
+        <button onClick\={handleSignIn} disabled\={isLoading}\>
+
+          {isRejected // User Rejected
+
+            ? "Try Again"
+
+            : isLoading // Waiting for signing request
+
+            ? "Awaiting request..."
+
+            : // Waiting for interaction
+
+              "Sign In"}
+
+        </button\>
+
+      </\>
+
+    );
+
+}
+
+/\*\* A wallet needs to be connected first \*/
+
+return (
+
+    <\>
+
+      <button onClick\={() \=> setOpen(true)}\>Connect Wallet</button\>
+
+    </\>
+
+);
+
+};
+
+export default CustomSIWEButton;
+
+That's it—you will now have complete control over SIWE used within ConnectKit.
+
+[](#return-values)
+
+# Return Values
+
+[](#useSIWE-isSignedIn)
+
+`isSignedIn`
+
+**boolean**
+
+Whether or not the wallet has signed in.
+
+[](#useSIWE-data)
+
+`data`
+
+**SIWESession**
+
+Returned data when a wallet has signed in.
+
+data properties
+
+[](#address)
+
+`address`
+
+**string**
+
+Wallet address.
+
+[](#chainId)
+
+`chainId`
+
+**number**
+
+Connected Chain ID.
+
+[](#useSIWE-error)
+
+`error`
+
+**Error**
+
+Error thrown if there was an error signing the message.
+
+[](#useSIWE-isRejected)
+
+`isRejected`
+
+**boolean**
+
+If the user has rejected the signing message.
+
+[](#useSIWE-isError)
+
+`isError`
+
+**boolean**
+
+If there was an error signing the message.
+
+[](#useSIWE-isLoading)
+
+`isLoading`
+
+**boolean**
+
+If the app is waiting for the user to sign the message.
+
+[](#useSIWE-isSuccess)
+
+`isSuccess`
+
+**boolean**
+
+If the user has successfully signed in.
+
+[](#useSIWE-isReady)
+
+`isReady`
+
+**boolean**
+
+If the app is ready for the user to sign in.
+
+[](#useSIWE-signIn)
+
+`signIn`
+
+**() => Promise<boolean>**
+
+Prompt the user to sign in.
+
+[](#useSIWE-signOut)
+
+`signOut`
+
+**() => Promise<boolean>**
+
+Sign out the user.
+
+[](#useSIWE-reset)
+
+`reset`
+
+**() => void**
+
+Reset the hook to a fresh state.
+
+[](#options)
+
+# Options
+
+This Hook accepts the following props:
+
+[](#options-onsignin)
+
+## onSignIn
+
+A callback function that will be called when the user has successfully signed in.
+
+const { signIn } \= useSIWE({
+
+onSignIn: (session?: SIWESession) \=> {
+
+    // Do something with the data
+
+},
+
+});
+
+[](#options-onsignout)
+
+## onSignOut
+
+A callback function that will be called when the user has successfully signed out.
+
+const { signOut } \= useSIWE({
+
+onSignOut: () \=> {
+
+    // Do something when signed out
+
+},
+
+});
+
+[](#need-help)
+
+# Need help?
+
+[](#need-help-setup-siwe)
+
+## Setup SIWE
+
+To help streamline the process of adding SIWE to your project, we offer a small, easy-to-install [package for Next.js apps](/connectkit/auth-with-nextjs)
+. For all other frameworks see the [custom backend setup](/connectkit/auth-with-custom-backend)
+.
+
+[### Next.js\
+\
+Set up SIWE using ConnectKit's Next.js helper package.](/connectkit/auth-with-nextjs)
+[### Custom Backend\
+\
+Set up SIWE using your own custom backend implementation.](/connectkit/auth-with-custom-backend)
+
+###### On this page
+
+- [useSIWE Hook](#usesiwe-hook)
+  - [Example](#usesiwe-hook-example)
+- [Return Values](#return-values)
+- [Options](#options)
+  - [onSignIn](#options-onsignin)
+  - [onSignOut](#options-onsignout)
+- [Need help?](#need-help)
+  - [Setup SIWE](#need-help-setup-siwe)
+</file>
+
+<file path="docs.family.co_connectkit.md">
+[](https://family.co/)
+
+Powered by
+
+A design system from Family
+
+[](https://docs.family.co/connectkit#connectkit)
+
+# ConnectKit 1.9.0
+
+###### ConnectKit 1.9.0
+
+- [Introduction](/connectkit)
+- [Try It Out](/connectkit/try-it-out)
+- [Getting Started](/connectkit/getting-started)
+- [Customization](/connectkit/customization)
+
+  - [Theming](/connectkit/theming)
+  - [Fonts](/connectkit/fonts)
+  - [Border Radius](/connectkit/border-radius)
+  - [Colors](/connectkit/colors)
+  - [Avatar](/connectkit/avatar)
+  - [Translations](/connectkit/translations)
+  - [Theme Builder Try It](/connectkit/theme-builder)
+
+- [Advanced](/connectkit/advanced)
+
+  - [Connect Button](/connectkit/connect-button)
+  - [Chains](/connectkit/chains)
+  - [RPC Providers](/connectkit/rpc-providers)
+
+- [Sign In With Ethereum](/connectkit/authentication)
+
+  - [Next.js Implementation](/connectkit/auth-with-nextjs)
+  - [Custom Implementation](/connectkit/auth-with-custom-backend)
+  - [useSIWE Hook](/connectkit/usesiwe-hook)
+
+- [Continue with Family](/connectkit/family-accounts)
+- [API Reference](/connectkit/api-reference)
+- [Libraries](/connectkit/libraries)
+- [Migration Guide](/connectkit/migration-guide)
+- [Going Live](/connectkit/going-live)
+
+ConnectKit is a powerful React component library for connecting a wallet to your dApp. It supports the most popular connectors and chains, and provides a beautiful, seamless experience.
+
+[Get Started](https://docs.family.co/connectkit/getting-started)
+[Try It Out](https://docs.family.co/connectkit/try-it-out)
+
+[](https://docs.family.co/connectkit#connectkit-features)
+
+## Features
+
+Get the experience you and your users deserve.
+
+### TypeScript Ready
+
+Get types straight out of the box.
+
+### Ecosystem Standards
+
+Uses top libraries such as wagmi.
+
+### Customize Chains
+
+Easily set up L2s and other chains.
+
+### Sign In With Ethereum
+
+Prove wallet ownership by authenticating.
+
+### Responsive Design
+
+Tailored experience across devices.
+
+### Simple UX
+
+Give users a simple, attractive experience.
+
+### Beautiful Themes
+
+Predesigned themes or full customization.
+
+### Translations
+
+Choose from multiple languages.
+
+## Community & Support
+
+If you’re planning to use ConnectKit for your project, we’d love to hear from you. Reach us by email or stay up to date with the latest updates on [X (Twitter).](https://twitter.com/family)
+
+[Stay Updated](https://twitter.com/family)
+[Contact Us](mailto:team@family.co)
+
+[](https://docs.family.co/connectkit#connectkit-friends-of-family)
+
+## Friends of Family
+
+See what people are saying about ConnectKit.
+
+- [![Luke Miles](https://docs.family.co/avatars/worm_emoji.png)](https://twitter.com/worm_emoji)
+- [![Jacob Bijani](https://docs.family.co/avatars/jcb.png)](https://twitter.com/jcb)
+- [![Dennis Jin](https://docs.family.co/avatars/dennis.jpg)](https://twitter.com/seldom)
+- [![Slava Kim](https://docs.family.co/avatars/slava.jpg)](https://twitter.com/slavakim_)
+- [![Malone Hedges](https://docs.family.co/avatars/malone.jpg)](https://twitter.com/malonehedges)
+- [![awkweb.eth](https://docs.family.co/avatars/awkweb.jpg)](https://twitter.com/awkweb)
+- [![Jon-Kyle Mohr](https://docs.family.co/avatars/jonkyle.png)](https://twitter.com/jondashkyle)
+- [![Shahruz](https://docs.family.co/avatars/shahruz.png)](https://twitter.com/shahruz)
+- [![Michael Wang](https://docs.family.co/avatars/michael.png)](https://twitter.com/mkwng)
+- [![Achal Srinivasan](https://docs.family.co/avatars/achal.jpg)](https://twitter.com/achalvs)
+- [![Yitong Zhang](https://docs.family.co/avatars/yitong.png)](https://twitter.com/zhayitong)
+- [![Hugh Francis](https://docs.family.co/avatars/hugh.jpg)](https://twitter.com/_HHFF)
+- [![Jordan Singer](https://docs.family.co/avatars/jordan.jpg)](https://twitter.com/jsngr)
+- [![Julian Hutton](https://docs.family.co/avatars/julian.jpg)](https://twitter.com/julianjhutton)
+- [![Miguel Piedrafita](https://docs.family.co/avatars/miguel.jpg)](https://twitter.com/m1guelpf)
+- [](mailto:team@family.co?subject=ConnectKit%20Testimonial)
+
+[Next\
+\
+**Try It Out**](https://docs.family.co/connectkit/try-it-out)
+
+###### On this page
+
+- [ConnectKit](https://docs.family.co/connectkit#connectkit)
+  - [Features](https://docs.family.co/connectkit#connectkit-features)
+  - [Friends of Family](https://docs.family.co/connectkit#connectkit-friends-of-family)
+</file>
+
+</files>

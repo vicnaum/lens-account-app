@@ -1,0 +1,451 @@
+TITLE: Importing Tailwind CSS
+DESCRIPTION: This snippet utilizes the `@import` directive to include Tailwind CSS in your stylesheet. This is necessary for using Tailwind's pre-defined styles and utilities.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/functions-and-directives.mdx#2025-04-18_snippet_0
+
+LANGUAGE: css
+CODE:
+@import "tailwindcss";
+
+----------------------------------------
+
+TITLE: Importing Tailwind CSS in Main Stylesheet
+DESCRIPTION: Basic CSS import of Tailwind CSS using the new @import statement in the main stylesheet
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/blog/tailwindcss-v4-alpha/index.mdx#2025-04-18_snippet_2
+
+LANGUAGE: css
+CODE:
+@import "tailwindcss";
+
+----------------------------------------
+
+TITLE: Importing Tailwind CSS Logo Assets with Next.js
+DESCRIPTION: Imports Tailwind CSS logo assets using Next.js Image component. The imports include the logo mark and logotype in both standard and white variants for light/dark mode support.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/app/(docs)/brand/page.mdx#2025-04-18_snippet_0
+
+LANGUAGE: jsx
+CODE:
+import Image from "next/image";
+import tailwindcssLogoMark from "./img/tailwindcss-mark.svg";
+import tailwindcssLogoType from "./img/tailwindcss-logotype.svg";
+import tailwindcssLogoTypeWhite from "./img/tailwindcss-logotype-white.svg";
+
+----------------------------------------
+
+TITLE: Importing TailwindCSS Components
+DESCRIPTION: Imports required components for the documentation page including API table, examples, figures, and responsive design components.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/text-align.mdx#2025-04-18_snippet_0
+
+LANGUAGE: jsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Default Tailwind CSS Import Structure
+DESCRIPTION: Shows the default import structure of Tailwind CSS, including the theme, preflight, and utilities layers.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/preflight.mdx#2025-04-18_snippet_13
+
+LANGUAGE: CSS
+CODE:
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+----------------------------------------
+
+TITLE: Importing TailwindCSS Components
+DESCRIPTION: Import statements for various TailwindCSS documentation components including API table, examples, figures, and content components.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/mix-blend-mode.mdx#2025-04-18_snippet_0
+
+LANGUAGE: javascript
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+import { Stripes } from "@/components/stripes.tsx";
+
+----------------------------------------
+
+TITLE: Updating Tailwind CSS Import in Stylesheets
+DESCRIPTION: Changes required in CSS files to import Tailwind CSS v4, replacing the old @tailwind directives with a standard CSS import.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/upgrade-guide.mdx#2025-04-18_snippet_4
+
+LANGUAGE: css
+CODE:
+@import "tailwindcss";
+
+----------------------------------------
+
+TITLE: Importing TailwindCSS Components
+DESCRIPTION: Imports various component modules used for displaying mask position documentation and examples.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/mask-position.mdx#2025-04-18_snippet_0
+
+LANGUAGE: typescript
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign, UsingACustomValue } from "@/components/content.tsx";
+import { Stripes } from "@/components/stripes.tsx";
+
+----------------------------------------
+
+TITLE: Importing TailwindCSS Components
+DESCRIPTION: Imports necessary components from the TailwindCSS documentation framework.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/aspect-ratio.mdx#2025-04-18_snippet_0
+
+LANGUAGE: jsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { UsingACustomValue, ResponsiveDesign, CustomizingYourTheme } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing TailwindCSS Components
+DESCRIPTION: Imports required components for the documentation page including API table, content components, examples, and figures.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/stroke-width.mdx#2025-04-18_snippet_0
+
+LANGUAGE: jsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { ResponsiveDesign, UsingACustomValue } from "@/components/content.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+
+----------------------------------------
+
+TITLE: Importing Tailwind CSS components
+DESCRIPTION: This snippet imports necessary components from local files. It imports ApiTable for displaying the utilities, CustomizingYourTheme, CustomizingYourThemeColors, ResponsiveDesign, UsingACustomValue, Example, Figure and a colors object for color values.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/box-shadow.mdx#2025-04-18_snippet_0
+
+LANGUAGE: typescript
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import {
+  CustomizingYourTheme,
+  CustomizingYourThemeColors,
+  ResponsiveDesign,
+  UsingACustomValue,
+} from "@/components/content.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import colors from "./utils/colors";
+
+export const title = "box-shadow";
+export const description = "Utilities for controlling the box shadow of an element.";
+
+----------------------------------------
+
+TITLE: Importing Tailwind CSS with Preflight in CSS
+DESCRIPTION: Shows how Preflight is automatically injected into the base layer when importing tailwindcss. The highlighted line indicates the Preflight import.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/preflight.mdx#2025-04-18_snippet_0
+
+LANGUAGE: CSS
+CODE:
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+----------------------------------------
+
+TITLE: Importing Tailwind CSS User Select Components
+DESCRIPTION: Imports necessary components for rendering API table, examples, and responsive design documentation
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/user-select.mdx#2025-04-18_snippet_0
+
+LANGUAGE: jsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing Components for Tailwind CSS Documentation
+DESCRIPTION: JSX imports for components used in the documentation page. These components include API tables, examples, figures, and other content-rendering components specific to the Tailwind CSS documentation.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/perspective-origin.mdx#2025-04-18_snippet_1
+
+LANGUAGE: jsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign, UsingACustomValue } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing CSS with Tailwind - CSS
+DESCRIPTION: Automatically bundle other CSS files with Tailwind without extra tools like Sass. Required files get imported and compiled automatically by Tailwind.
+Dependencies: None
+Parameters: Filenames of CSS files to import
+Output: Bundled CSS.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/compatibility.mdx#2025-04-18_snippet_0
+
+LANGUAGE: css
+CODE:
+@import "tailwindcss";
+@import "./typography.css";
+
+----------------------------------------
+
+TITLE: Importing Components for Tailwind CSS Documentation
+DESCRIPTION: Imports various custom components used for rendering the documentation page, including API tables, examples, figures, and responsive design components.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/transform-style.mdx#2025-04-18_snippet_0
+
+LANGUAGE: JavaScript
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing Tailwind CSS Components
+DESCRIPTION: Importing custom components for API table, examples, and responsive design from Tailwind CSS documentation components
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/backface-visibility.mdx#2025-04-18_snippet_0
+
+LANGUAGE: typescript
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Component Imports Tailwind CSS Documentation
+DESCRIPTION: This TypeScript snippet imports necessary components for displaying API tables, examples, and figures in the Tailwind CSS documentation. These components provide the structure and styling required to render documentation elements.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/field-sizing.mdx#2025-04-18_snippet_0
+
+LANGUAGE: typescript
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing Components for Tailwind CSS Documentation
+DESCRIPTION: Imports various custom components used for creating documentation pages in the Tailwind CSS project.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/visibility.mdx#2025-04-18_snippet_0
+
+LANGUAGE: JSX
+CODE:
+import { Stripes } from "@/components/stripes.tsx";
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing Components for Tailwind CSS Documentation
+DESCRIPTION: This snippet imports various components used for documenting Tailwind CSS utilities, including ApiTable, Example, Figure, and custom content components.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/transition-property.mdx#2025-04-18_snippet_0
+
+LANGUAGE: JavaScript
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign, UsingACustomValue } from "@/components/content.tsx";
+import dedent from "dedent";
+
+----------------------------------------
+
+TITLE: Importing Components for Tailwind CSS Documentation
+DESCRIPTION: Imports various components used for building the documentation page, including ApiTable, Example, Figure, and ResponsiveDesign.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/text-decoration-style.mdx#2025-04-18_snippet_0
+
+LANGUAGE: JavaScript
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing Components for Tailwind CSS Documentation
+DESCRIPTION: Imports necessary components for rendering the documentation page, including ApiTable, Example, Figure, and ResponsiveDesign.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/word-break.mdx#2025-04-18_snippet_0
+
+LANGUAGE: jsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing Tailwind CSS Utility Components
+DESCRIPTION: This JavaScript snippet imports various React components that are used throughout the documentation to demonstrate border-spacing utilities. It includes components such as 'ApiTable', 'CustomizingYourSpacingScale', 'ResponsiveDesign', 'UsingACustomValue', 'Example', and 'Figure'. The dependencies are custom components and certain CSS modules, with no specific inputs or outputs.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/border-spacing.mdx#2025-04-18_snippet_0
+
+LANGUAGE: JavaScript
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { CustomizingYourSpacingScale, ResponsiveDesign, UsingACustomValue } from "@/components/content.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+
+----------------------------------------
+
+TITLE: Importing Components for Tailwind CSS Documentation
+DESCRIPTION: Imports necessary components for creating the documentation page, including ApiTable, Example, Figure, and ResponsiveDesign.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/resize.mdx#2025-04-18_snippet_0
+
+LANGUAGE: jsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing TailwindCSS Components
+DESCRIPTION: Import statements for required components used in the text-transform documentation.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/text-transform.mdx#2025-04-18_snippet_0
+
+LANGUAGE: tsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing React Components for Tailwind CSS Documentation
+DESCRIPTION: Imports custom React components used for rendering API tables, examples, and figures in the Tailwind CSS documentation.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/pointer-events.mdx#2025-04-18_snippet_0
+
+LANGUAGE: JavaScript
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+
+export const title = "pointer-events";
+export const description = "Utilities for controlling whether an element responds to pointer events.";
+
+----------------------------------------
+
+TITLE: Importing Tailwind CSS Components for Color Scheme Documentation
+DESCRIPTION: Importing custom components used in the color scheme documentation page, including API table, example, figure, and state targeting components
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/color-scheme.mdx#2025-04-18_snippet_0
+
+LANGUAGE: tsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { TargetingSpecificStates } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing Components for Tailwind CSS Documentation
+DESCRIPTION: Imports various custom components used for displaying API tables, examples, figures, and responsive design demonstrations in the Tailwind CSS documentation.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/text-wrap.mdx#2025-04-18_snippet_0
+
+LANGUAGE: JavaScript
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing Tailwind CSS Default Theme
+DESCRIPTION: This snippet shows the default Tailwind CSS import structure, which includes theme variables, base styles, and utilities.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/theme.mdx#2025-04-18_snippet_8
+
+LANGUAGE: css
+CODE:
+@layer theme, base, components, utilities;
+
+@import "./theme.css" layer(theme);
+@import "./preflight.css" layer(base);
+@import "./utilities.css" layer(utilities);
+
+----------------------------------------
+
+TITLE: Importing TailwindCSS Components
+DESCRIPTION: Import statements for required components used in the min-width documentation page.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/min-width.mdx#2025-04-18_snippet_0
+
+LANGUAGE: jsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Stripes } from "@/components/stripes.tsx";
+import { CustomizingYourSpacingScale, ResponsiveDesign, UsingACustomValue } from "@/components/content.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+
+----------------------------------------
+
+TITLE: Importing TailwindCSS Components
+DESCRIPTION: TypeScript imports for various UI components used in the documentation.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/scroll-snap-type.mdx#2025-04-18_snippet_0
+
+LANGUAGE: typescript
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing Components and Functions for Tailwind CSS Documentation
+DESCRIPTION: Imports various components and functions used for creating API documentation and examples in a Tailwind CSS documentation page.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/text-overflow.mdx#2025-04-18_snippet_0
+
+LANGUAGE: jsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+import dedent from "dedent";
+
+----------------------------------------
+
+TITLE: Importing Tailwind CSS Documentation Components
+DESCRIPTION: Imports required React components for displaying API documentation, examples, and figures.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/mask-origin.mdx#2025-04-18_snippet_0
+
+LANGUAGE: jsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign } from "@/components/content.tsx";
+
+----------------------------------------
+
+TITLE: Importing Components in TailwindCSS Documentation
+DESCRIPTION: Import statements for React components used in the documentation page, including API table, examples, figures, and content components.
+SOURCE: https://github.com/tailwindlabs/tailwindcss.com/blob/main/src/docs/text-indent.mdx#2025-04-18_snippet_0
+
+LANGUAGE: jsx
+CODE:
+import { ApiTable } from "@/components/api-table.tsx";
+import { Example } from "@/components/example.tsx";
+import { Figure } from "@/components/figure.tsx";
+import { ResponsiveDesign, UsingACustomValue } from "@/components/content.tsx";

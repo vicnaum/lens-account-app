@@ -1,0 +1,2007 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+The content has been processed where security check has been disabled.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: docs.wrm/**/*.*
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Security check has been disabled - content may contain sensitive information
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+docs.wrm/
+  basics/
+    abi.wrm
+    index.wrm
+  cookbook/
+    ens.wrm
+    index.wrm
+    react-native.wrm
+    signing.wrm
+  links/
+    javascript.txt
+    npm.txt
+    projects.txt
+    ricmoo.txt
+    specs.txt
+    wiki.txt
+  config.mjs
+  contributing.wrm
+  getting-started.wrm
+  index.wrm
+  license.wrm
+  logo.svg
+  migrating.wrm
+  README.md
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="docs.wrm/basics/abi.wrm">
+_section: Application Binary Interfaces  @<docs-abi>
+
+When interacting with any application, whether it is on Ethereum,
+over the internet or within a compiled application on a computer
+all information is stored and sent as binary data which is just a
+sequence of bytes.
+
+So every application must agree on how to encode and decode their
+information as a sequence of bytes.
+
+An **Application Binary Interface** (ABI) provides a way to describe
+the encoding and decoding process, in a generic way so that a variety
+of types and structures of types can be defined.
+
+For example, a string is often encoded as a UTF-8 sequence of bytes,
+which uses specific bits within sub-sequences to indicate emoji and
+other special characters. Every implementation of UTF-8 must understand
+and operate under the same rules so that strings work universally. In
+this way, UTF-8 standard is itself an ABI.
+
+When interacting with Ethereum, a contract received a sequence of bytes
+as input (provided by sending a transaction or through a call) and
+returns a result as a sequence of bytes. So, each Contract has its own
+ABI that helps specify how to encode the input and how to decode the output.
+
+It is up to the contract developer to make this ABI available. Many
+Contracts implement a standard (such as ERC-20), in which case the
+ABI for that standard can be used. Many developers choose to verify their
+source code on Etherscan, in which case Etherscan computes the ABI and
+provides it through their website (which can be fetched using the ``getContract``
+method). Otherwise, beyond reverse engineering the Contract there is
+not a meaningful way to extract the contract ABI.
+
+_subsection: Call Data Representation
+
+When calling a Contract on Ethereum, the input data must be encoded
+according to the ABI.
+
+The first 4 bytes of the data are the **method selector**, which is
+the keccak256 hash of the normalized method signature.
+
+Then the method parameters are encoded and concatenated to the selector.
+
+All encoded data is made up of components padded to 32 bytes, so the length
+of input data will always be congruent to ``4 mod 32``.
+
+The result of a successful call will be encoded values, whose components
+are padded to 32 bytes each as well, so the length of a result will always
+be congruent to ``0 mod 32``, on success.
+
+The result of a reverted call will contain the **error selector** as the
+first 4 bytes, which is the keccak256 of the normalized error signature,
+followed by the encoded values, whose components are padded to 32 bytes
+each, so the length of a revert will be congruent to ``4 mod 32``.
+
+The one exception to all this is that ``revert(false)`` will return a
+result or ``0x``.
+
+
+_subsection: Event Data Representation
+
+When an Event is emitted from a contract, there are two places data is
+logged in a Log: the **topics** and the **data**.
+
+An additional fee is paid for each **topic**, but this affords a topic
+to be indexed in a bloom filter within the block, which allows efficient
+filtering.
+
+The **topic hash** is always the first topic in a Log, which is the
+keccak256 of the normalized event signature. This allows a specific
+event to be efficiently filtered, finding the matching events in a block.
+
+Each additional **indexed** parameter (i.e. parameters marked with
+``indexed`` in the signautre) are placed in the topics as well, but may be
+filtered to find matching values.
+
+All non-indexed parameters are encoded and placed in the **data**. This
+is cheaper and more compact, but does not allow filtering on these values.
+
+For example, the event ``Transfer(address indexed from, address indexed to, uint value)``
+would require 3 topics, which are the topic hash, the ``from`` address
+and the ``to`` address and the data would contain 32 bytes, which is
+the padded big-endian representation of ``value``. This allows for
+efficient filtering by the event (i.e. ``Transfer``) as well as the ``from``
+address and ``to`` address.
+
+
+_subsection: Deployment
+
+When deploying a transaction, the data provided is treated as **initcode**,
+which executes the data as normal EVM bytecode, which returns a sequence
+of bytes, but instead of that sequence of bytes being treated as data that
+result is instead the bytecode to install as the bytecode of the contract.
+
+The bytecode produced by Solidity is designed to have all constructor
+parameters encoded normally and concatenated to the bytecode and provided
+as the ``data`` to a transaction with no ``to`` address.
+</file>
+
+<file path="docs.wrm/basics/index.wrm">
+_section: Ethereum Basics @<docs-basics> @priority<99>
+
+This section aims to cover some of the basics for those interested
+in a deeper understanding of the inner-workings of Ethereum.
+
+_subsection: Topics
+
+- [Application Binary Interface](docs-abi)
+</file>
+
+<file path="docs.wrm/cookbook/ens.wrm">
+_section: Cookbook: ENS Recipes  @<cookbook-ens>
+
+Here is a collection of short, but useful examples of working with
+ENS entries.
+
+
+_subsection: Get all Text records  @<cookbook-ens-allText>
+
+Here is a short recipe to get all the text records set for an ENS
+name.
+
+It first queries all ``TextChanged`` events on the resolver, and
+uses a MulticallProvider to batch all the ``eth_call`` queries
+for each key into a single ``eth_call``. As such, you will need
+to install:
+
+``/home/ricmoo> npm install @ethers-ext/provider-multicall``
+
+
+_code: Fetching all ENS text records.  @lang<script>
+
+import { ethers } from "ethers";
+import { MulticallProvider } from "@ethers-ext/provider-multicall";
+
+async function getTextRecords(_provider, name) {
+  // Prepare a multicall-based provider to batch all the call operations
+  const provider = new MulticallProvider(_provider);
+
+  // Get the resolver for the given name
+  const resolver = await provider.getResolver(name);
+
+  // A contract instance; used filter and parse logs
+  const contract = new ethers.Contract(resolver.address, [
+    "event TextChanged(bytes32 indexed node, string indexed _key, string key)"
+  ], provider);
+
+  // A filter for the given name
+  const filter = contract.filters.TextChanged(ethers.namehash(name));
+
+  // Get the matching logs
+  const logs = await contract.queryFilter(filter);
+
+  // Filter the *unique* keys
+  const keys = [ ...(new Set(logs.map((log) => log.args.key))) ];
+
+  // Get the values for the keys; failures are discarded
+  const values = await Promise.all(keys.map((key) => {
+      try {
+          return resolver.getText(key);
+      } catch (error) { }
+      return null;
+  }));
+
+  // Return a Map of the key/value pairs
+  return keys.reduce((accum, key, index) => {
+      const value = values[index];
+      if (value != null) { accum.set(key, value); }
+      return accum;
+  }, new Map());
+}
+
+// Example usage
+(async function() {
+  const provider = new ethers.InfuraProvider();
+  console.log(await getTextRecords(provider, "ricmoo.eth"));
+})();
+</file>
+
+<file path="docs.wrm/cookbook/index.wrm">
+_section: Cookbook @<cookbook>
+
+A growing collection of code snippets for common problems and use cases
+when developing dapps and other blockchain tools.
+
+- [Signing Messages and Data](cookbook-signing)
+- [React Native Performance](cookbook-react-native)
+</file>
+
+<file path="docs.wrm/cookbook/react-native.wrm">
+_section: React Native  @<cookbook-react-native>
+
+When using React Native, many of the built-in cryptographic primitives
+can be replaced by native, substantially faster implementations.
+
+This should be available in its own package in the future, but for now
+this is highly recommended, and requires installing the
+[[link-npm-react-native-quick-crypto]] package.
+
+
+_code:
+
+import { ethers } from "ethers";
+
+import crypto from "react-native-quick-crypto";
+
+ethers.randomBytes.register((length) => {
+  return new Uint8Array(crypto.randomBytes(length));
+});
+
+ethers.computeHmac.register((algo, key, data) => {
+    return crypto.createHmac(algo, key).update(data).digest();
+});
+
+ethers.pbkdf2.register((passwd, salt, iter, keylen, algo) => {
+  return crypto.pbkdf2Sync(passwd, salt, iter, keylen, algo);
+});
+
+ethers.sha256.register((data) => {
+  return crypto.createHash('sha256').update(data).digest();
+});
+
+ethers.sha512.register((data) => {
+  return crypto.createHash('sha512').update(data).digest();
+});
+</file>
+
+<file path="docs.wrm/cookbook/signing.wrm">
+_section: Signing  @<cookbook-signing>
+
+Signing content and providing the content and signature to a
+Contract allows on-chain validation that a signer has access
+to the private key of a specific address.
+
+The ecrecover algorithm allows the public key to be determined
+given some message digest and the signature generated by the
+private key for that digest. From the public key, the address
+can then be computed.
+
+How a digest is derived depends on the type of data being
+signed and a variety of encoding formats are employed. Each
+format is designed to ensure that they do not collide, so for
+example, a user **cannot** be tricked into signing a message
+which is actually a valid transaction.
+
+For this reason, most APIs in Ethereum do not permit signing a
+raw digest, and instead require a separate API for each format
+type and require the related data be specified, protecting the
+user from accidentally authorizing an action they didn't intend.
+
+_subsection: Messages  @<cookbook-signing-messages>
+
+A signed message can be any data, but it is generally recommended
+to use human-readable text, as this is easier for a user to
+verify visually.
+
+This technique could be used, for example, to sign into a service
+by using the text ``"I am signing into ethers.org on 2023-06-04 12:57pm"``.
+The user can then see the message in MetaMask or on a Ledger
+Hardware Wallet and accept that they wish to sign the message which
+the site can then authenticate them with. By providing a timestamp
+the site can ensure that an older signed message cannot be used again
+in the future.
+
+The format that is signed uses [[link-eip-191]] with the
+**personal sign** version code (``0x45``, or ``"E"``).
+
+For those interested in the choice of this prefix, signed messages
+began as a Bitcoin feature, which used ``"\\x18Bitcoin Signed Message:\\n"``,
+which was a Bitcoin var-int length-prefixed string (as ``0x18`` is 24,
+the length of ``"Bitcoin Signed Message:\\n"``.). When Ethereum adopted
+the similar feature, the relevant string was ``"\\x19Ethereum Signed Message:\\n"``.
+
+In one of the most brilliant instances of technical retcon-ing,
+since 0x19 is invalid as the first byte of a transaction (in [[link-rlp]] it
+indicates a single byte of value 25), the initial byte ``\\x19`` has
+now been adopted as a prefix for //some sort of signed data//,
+where the second byte determines how to interpret that data. If the
+second byte is 69 (the letter ``"E"``, as in
+``"Ethereum Signed Message:\\n"``), then the format is a
+the above prefixed message format.
+
+So, all existing messages, tools and instances using the signed
+message format were already EIP-191 compliant, long before the
+standard existed or was even conceived and allowed for an extensible
+format for future formats (of which there now a few).
+
+Anyways, the necessary JavaScript and Solidity are provided below.
+
+_code: JavaScript  @lang<javascript>
+
+// The contract below is deployed to Sepolia at this address
+contractAddress = "0xf554DA5e35b2e40C09DDB481545A395da1736513";
+contract = new Contract(contractAddress, [
+  "function recoverStringFromCompact(string message, (bytes32 r, bytes32 yParityAndS) sig) pure returns (address)",
+  "function recoverStringFromExpanded(string message, (uint8 v, bytes32 r, bytes32 s) sig) pure returns (address)",
+  "function recoverStringFromVRS(string message, uint8 v, bytes32 r, bytes32 s) pure returns (address)",
+  "function recoverStringFromRaw(string message, bytes sig) pure returns (address)",
+  "function recoverHashFromCompact(bytes32 hash, (bytes32 r, bytes32 yParityAndS) sig) pure returns (address)"
+], new ethers.InfuraProvider("sepolia"));
+
+// The Signer; it does not need to be connected to a Provider to sign
+signer = new Wallet(id("foobar"));
+signer.address
+//_result:
+
+// Our message
+message = "Hello World";
+
+// The raw signature; 65 bytes
+rawSig = await signer.signMessage(message);
+//_result:
+
+// Converting it to a Signature object provides more
+// flexibility, such as using it as a struct
+sig = Signature.from(rawSig);
+//_result:
+
+
+// If the signature matches the EIP-2098 format, a Signature
+// can be passed as the struct value directly, since the
+// parser will pull out the matching struct keys from sig.
+await contract.recoverStringFromCompact(message, sig);
+//_result:
+
+// Likewise, if the struct keys match an expanded signature
+// struct, it can also be passed as the struct value directly.
+await contract.recoverStringFromExpanded(message, sig);
+//_result:
+
+// If using an older API which requires the v, r and s be passed
+// separately, those members are present on the Signature.
+await contract.recoverStringFromVRS(message, sig.v, sig.r, sig.s);
+//_result:
+
+// Or if using an API that expects a raw signature.
+await contract.recoverStringFromRaw(message, rawSig);
+//_result:
+
+// Note: The above recovered addresses matches the signer address
+
+_null:
+
+The Solidity Contract has been deployed and verified on
+the Sepolia testnet at the address
+[0xf554DA5e35b2e40C09DDB481545A395da1736513](link-sol-recovermessage).
+
+It provides a variety of examples using various Signature
+encodings and formats, to recover the address for an [[link-eip-191]]
+signed message.
+
+_code: Solidity @lang<solidity>
+
+// SPDX-License-Identifier: MIT
+
+// For more info, see: https://docs.ethers.org
+
+
+pragma solidity ^0.8.21;
+
+// Returns the decimal string representation of value
+function itoa(uint value) pure returns (string memory) {
+
+  // Count the length of the decimal string representation
+  uint length = 1;
+  uint v = value;
+  while ((v /= 10) != 0) { length++; }
+
+  // Allocated enough bytes
+  bytes memory result = new bytes(length);
+
+  // Place each ASCII string character in the string,
+  // right to left
+  while (true) {
+    length--;
+
+    // The ASCII value of the modulo 10 value
+    result[length] = bytes1(uint8(0x30 + (value % 10)));
+
+    value /= 10;
+
+    if (length == 0) { break; }
+  }
+
+  return string(result);
+}
+
+contract RecoverMessage {
+
+  // This is the EIP-2098 compact representation, which reduces gas costs
+  struct SignatureCompact {
+    bytes32 r;
+    bytes32 yParityAndS;
+  }
+
+  // This is an expanded Signature representation
+  struct SignatureExpanded {
+      uint8 v;
+      bytes32 r;
+      bytes32 s;
+  }
+
+  // Helper function
+  function _ecrecover(string memory message, uint8 v, bytes32 r, bytes32 s) internal pure returns (address) {
+    // Compute the EIP-191 prefixed message
+    bytes memory prefixedMessage = abi.encodePacked(
+      "\x19Ethereum Signed Message:\n",
+      itoa(bytes(message).length),
+      message
+    );
+
+    // Compute the message digest
+    bytes32 digest = keccak256(prefixedMessage);
+
+    // Use the native ecrecover provided by the EVM
+    return ecrecover(digest, v, r, s);
+  }
+
+  // Recover the address from an EIP-2098 compact Signature, which packs the bit for
+  // v into an unused bit within s, which saves gas overall, costing a little extra
+  // in computation, but saves far more in calldata length.
+  //
+  // This Signature format is 64 bytes in length.
+  function recoverStringFromCompact(string calldata message, SignatureCompact calldata sig) public pure returns (address) {
+
+      // Decompose the EIP-2098 signature (the struct is 64 bytes in length)
+      uint8 v = 27 + uint8(uint256(sig.yParityAndS) >> 255);
+      bytes32 s = bytes32((uint256(sig.yParityAndS) << 1) >> 1);
+
+      return _ecrecover(message, v, sig.r, s);
+  }
+
+  // Recover the address from the expanded Signature struct.
+  //
+  // This Signature format is 96 bytes in length.
+  function recoverStringFromExpanded(string calldata message, SignatureExpanded calldata sig) public pure returns (address) {
+
+      // The v, r and s are included directly within the struct, which is 96 bytes in length
+      return _ecrecover(message, sig.v, sig.r, sig.s);
+  }
+
+  // Recover the address from a v, r and s passed directly into the method.
+  //
+  // This Signature format is 96 bytes in length.
+  function recoverStringFromVRS(string calldata message, uint8 v, bytes32 r, bytes32 s) public pure returns (address) {
+
+      // The v, r and s are included directly within the struct, which is 96 bytes in length
+      return _ecrecover(message, v, r, s);
+  }
+
+  // Recover the address from a raw signature. The signature is 65 bytes, which when
+  // ABI encoded is 160 bytes long (a pointer, a length and the padded 3 words of data).
+  //
+  // When using raw signatures, some tools return the v as 0 or 1. In this case you must
+  // add 27 to that value as v must be either 27 or 28.
+  //
+  // This Signature format is 65 bytes of data, but when ABI encoded is 160 bytes in length; 
+  // a pointer (32 bytes), a length (32 bytes) and the padded 3 words of data (96 bytes).
+  function recoverStringFromRaw(string calldata message, bytes calldata sig) public pure returns (address) {
+
+    // Sanity check before using assembly
+    require(sig.length == 65, "invalid signature");
+
+    // Decompose the raw signature into r, s and v (note the order)
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+    assembly {
+      r := calldataload(sig.offset)
+      s := calldataload(add(sig.offset, 0x20))
+      v := calldataload(add(sig.offset, 0x21))
+    }
+
+    return _ecrecover(message, v, r, s);
+  }
+
+  // This is provided as a quick example for those that only need to recover a signature
+  // for a signed hash (highly discouraged; but common), which means we can hardcode the
+  // length in the prefix. This means we can drop the itoa and _ecrecover functions above.
+  function recoverHashFromCompact(bytes32 hash, SignatureCompact calldata sig) public pure returns (address) {
+    bytes memory prefixedMessage = abi.encodePacked(
+      // Notice the length of the message is hard-coded to 32
+      // here -----------------------v
+      "\x19Ethereum Signed Message:\n32",
+      hash
+    );
+
+    bytes32 digest = keccak256(prefixedMessage);
+
+    // Decompose the EIP-2098 signature
+    uint8 v = 27 + uint8(uint256(sig.yParityAndS) >> 255);
+    bytes32 s = bytes32((uint256(sig.yParityAndS) << 1) >> 1);
+
+    return ecrecover(digest, v, sig.r, s);
+  }
+}
+
+
+_subsection: EIP-712 Typed Data  @<cookbook-signing-eip712>
+
+//Coming soon...//
+</file>
+
+<file path="docs.wrm/links/javascript.txt">
+link-js-array [link-js-array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)
+link-js-bigint [link-js-bigint](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
+link-js-date [Date](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date)
+link-js-fetch [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
+link-js-normalize [String.normalize](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize)
+link-js-maxsafe [link-js-maxsafe](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER#Description)
+link-js-proxy [link-js-proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
+link-js-typedarray [link-js-typedarray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray)
+</file>
+
+<file path="docs.wrm/links/npm.txt">
+link-npm-ethers [link-ethers-npm](https://www.npmjs.com/search?q=%40ethersproject%2F)
+link-npm-events [EventEmitter](https://nodejs.org/dist/latest-v13.x/docs/api/events.html#events_class_eventemitter)
+link-npm-query-bignumber [link-npm-query-bignumber](https://www.npmjs.com/search?q=bignumber)
+link-npm-react-native-get-random-values [React Native get-random-values](https://www.npmjs.com/package/react-native-get-random-values)
+link-npm-react-native-quick-crypto [Quick Crypto](https://www.npmjs.com/package/react-native-quick-crypto)
+</file>
+
+<file path="docs.wrm/links/projects.txt">
+link-alchemy [Alchemy](https://alchemy.com/?a=ethers)
+link-ankr [Ankr](https://www.ankr.com)
+link-chainstack [Chainstack](https://chainstack.com)
+link-cloudflare [Cloudflare](https://developers.cloudflare.com/distributed-web/ethereum-gateway/)
+link-ens [ENS](https://ens.domains/)
+link-ethereum [Ethereum](https://ethereumorg)
+link-etherscan [Etherscan](https://etherscan.io)
+link-expo [Expo](https://expo.io)
+link-etherscan-api [Etherscan API](https://etherscan.io/apis)
+link-flatworm [Flatworm](https://github.com/ricmoo/flatworm)
+link-geth [Geth](https://geth.ethereum.org)
+link-infura [INFURA](https://infura.io)
+link-javascriptcore [JavaScriptCore](https://developer.apple.com/documentation/javascriptcore?language=objc)
+link-ledger [Ledger](https://www.ledger.com)
+link-metamask [MetaMask](https://metamask.io/)
+link-node [Node.js](https://nodejs.org/)
+link-otto [Otto](https://github.com/robertkrimen/otto)
+link-parity [Parity](https://www.parity.io)
+link-pocket [Pocket Network](https://pokt.network)
+link-quicknode [QuickNode](https://www.quicknode.com/ethers)
+link-react-native [React Native](https://reactnative.dev)
+link-semver [semver](https://semver.org)
+link-solidity [Solidity](https://solidity.readthedocs.io/)
+link-tally [Tally](https://tallyho.org)
+
+# Project-specific
+link-alchemy-signup [Alchemy Signup](https://dashboard.alchemyapi.io/signup?referral=55a35117-028e-4b7c-9e47-e275ad0acc6d)
+link-ankr-public [link-ankr-public](https://www.ankr.com/protocol/public/)
+link-ankr-signup [link-ankr-premium](https://www.ankr.com/protocol/plan/)
+link-etherscan-signup [Etherscan Signup](https://etherscan.io/apis)
+link-etherscan-ratelimit [link-etherscan-ratelimit](https://info.etherscan.com/api-return-errors/)
+link-infura-signup [INFURA Signup](https://infura.io/register)
+link-geth-debug [link-geth-debug](https://github.com/ethereum/go-ethereum/wiki/Management-APIs#debug)
+link-geth-rpc [link-geth-rpc](https://github.com/ethereum/go-ethereum/wiki/Management-APIs)
+link-infura-secret [link-infura-secret](https://infura.io/docs/gettingStarted/authentication)
+link-parity-trace [link-parity-trace](https://openethereum.github.io/JSONRPC-trace-module)
+link-parity-rpc [link-parity-rpc](https://openethereum.github.io/JSONRPC)
+link-pocket-signup [link-pocket-signup](https://pokt.network/pocket-gateway-ethereum-mainnet/)
+link-web3js [link-web3](https://github.com/ethereum/web3.js)
+link-web3-http [link-web3-http](https://github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-http)
+link-web3-ipc [link-web3-ipc](https://github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-ipc)
+link-web3-send [link-web3-send](https://github.com/ethereum/web3.js/blob/1.x/packages/web3-providers-http/types/index.d.ts#L57)
+link-web3-ws [link-web3-ws](https://github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-ws)
+
+link-solidity-errors [link-solidity-errors](https://docs.soliditylang.org/en/v0.8.4/abi-spec.html#errors)
+link-solidity-events [link-solidity-events](https://docs.soliditylang.org/en/v0.8.4/abi-spec.html#events)
+
+link-other-ethereum-dev-docs [link-other-ethereum-dev-docs](https://ethereum.org/en/developers/docs/)
+
+link-sol-recovermessage [RecoverMessage.sol](https://sepolia.etherscan.io/address/0xf554da5e35b2e40c09ddb481545a395da1736513#code)
+</file>
+
+<file path="docs.wrm/links/ricmoo.txt">
+link-mail [me@ricmoo](mailto:me@ricmoo.com)
+link-website [ethers.org](https://ethers.org)
+
+# Ethers links
+link-ci [Ethers CI](https://github.com/ethers-io/ethers.js/actions/runs/158006903)
+link-discussion [Ethers Discussion](https://github.com/ethers-io/ethers.js/discussions)
+link-issue [Open Ethers Issue](https://github.com/ethers-io/ethers.js/issues/new/choose)
+link-issues [Ethers Issues](https://github.com/ethers-io/ethers.js/issues)
+link-docs-v3 [V3 Documentation](https://docs.ethers.org/v3/)
+link-docs-v4 [V4 Documentation](https://docs.ethers.org/v4/)
+link-docs-v5 [V5 Documentation](https://docs.ethers.org/v5/)
+
+# Social profiles
+link-repo [GitHub Repo](https://github.com/ethers-io/ethers.js)
+link-mastodon [@ethers on Mastodon](http://mochi.social/@ethers)
+link-twitter [@ethersproject on Twitter](https://twitter.com/ethersproject)
+
+# Blog
+link-ricmoo-humanreadableabi [Human-Readable Contract ABIs](https://blog.ricmoo.com/human-readable-contract-abis-in-ethers-js-141902f4d917)
+link-ricmoo-wisps [Wisps: The Magical World of Create2](https://blog.ricmoo.com/wisps-the-magical-world-of-create2-5c2177027604);
+</file>
+
+<file path="docs.wrm/links/specs.txt">
+# BIPs
+link-bip-39 [BIP-39](https://en.bitcoin.it/wiki/BIP_0039)
+link-bip-32 [BIP-32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
+link-bip-44 [BIP-44](https://en.bitcoin.it/wiki/BIP_0044)
+
+# BIP 39 lists
+link-bip39-wordlists [BIP-39 Wordlists](https://github.com/bitcoin/bips/blob/master/bip-0039/bip-0039-wordlists.md)
+link-bip39-cz [Czech wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/czech.txt)
+link-bip39-es [Spanish wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/spanish.txt)
+link-bip39-en [English wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt)
+link-bip39-fr [French wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/french.txt)
+link-bip39-it [Italian wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/italian.txt)
+link-bip39-ja [Japanese wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/japanese.txt)
+link-bip39-ko [Korean wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/korean.txt)
+link-bip39-pt [Portuguese wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/portuguese.txt)
+link-bip39-zh_tw [Tradional Chinese wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/chinese_traditional.txt)
+link-bip39-zh_cn [Simplified Chinese wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/chinese_simplified.txt)
+
+# EIPs; see https://eips.ethereum.org/all
+link-eip-155 [EIP-155](https://eips.ethereum.org/EIPS/eip-155)
+link-eip-191 [EIP-191](https://eips.ethereum.org/EIPS/eip-191)
+link-eip-609 [EIP-609](https://eips.ethereum.org/EIPS/eip-609)
+link-eip-634 [EIP-634](https://eips.ethereum.org/EIPS/eip-634)
+link-eip-712 [EIP-712](https://eips.ethereum.org/EIPS/eip-712)
+link-eip-1014 [EIP-1014](https://eips.ethereum.org/EIPS/eip-1014)
+link-eip-1193 [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193)
+link-eip-1559 [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
+link-eip-1577 [EIP-1577](https://eips.ethereum.org/EIPS/eip-1577)
+link-eip-2070 [EIP-2930](https://eips.ethereum.org/EIPS/eip-2070)
+link-eip-2098 [EIP-2098](https://eips.ethereum.org/EIPS/eip-2098)
+link-eip-2304 [EIP-2304](https://eips.ethereum.org/EIPS/eip-2304)
+link-eip-2718 [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)
+link-eip-2930 [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
+link-eip-4788 [EIP-4844](https://eips.ethereum.org/EIPS/eip-4788)
+link-eip-4844 [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
+
+# Open Standards
+link-base58 [Base58](https://en.bitcoinwiki.org/wiki/Base58)
+link-cors [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+link-crowdsale [Crowdsale Wallet](https://github.com/ethereum/pyethsaletool)
+link-icap [ICAP Address](https://github.com/ethereum/wiki/wiki/Inter-exchange-Client-Address-Protocol-%28ICAP%29)
+link-jsonrpc [link-jsonrpc](https://github.com/ethereum/wiki/wiki/JSON-RPC)
+link-mit [MIT License](https://en.m.wikipedia.org/wiki/MIT_License)
+link-namehash [namehash](https://docs.ens.domains/contract-api-reference/name-processing#hashing-names)
+link-rlp [Recursive-Length Prefix](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/)
+link-pbkdf2 [PBKDF2](https://en.wikipedia.org/wiki/PBKDF2)
+link-solc-abi [ABI Specification](https://docs.soliditylang.org/en/v0.8.19/abi-spec.html#formal-specification-of-the-encoding)
+link-solc-jsonabi [ABI JSON Specification](https://docs.soliditylang.org/en/v0.8.19/abi-spec.html#json)
+link-solc-errors [Solidity Custom Errors](https://docs.soliditylang.org/en/v0.8.4/abi-spec.html#errors)
+link-solc-events [Solidity Events](https://docs.soliditylang.org/en/v0.8.4/abi-spec.html#events)
+link-solc-output [solc standard output](https://solidity.readthedocs.io/en/v0.6.0/using-the-compiler.html#output-description)
+link-solc-packed [Non-Standard Packed Mode](https://docs.soliditylang.org/en/v0.8.14/abi-spec.html#non-standard-packed-mode)
+link-uuid [UUID](https://www.ietf.org/rfc/rfc4122.txt)
+</file>
+
+<file path="docs.wrm/links/wiki.txt">
+link-wiki-base64 [Base64](https://en.wikipedia.org/wiki/Base64)
+link-wiki-basicauth [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication)
+link-wiki-backoff [Exponential Backoff](https://en.wikipedia.org/wiki/Exponential_backoff)
+link-wiki-bloomfilter [Bloom Filter](https://en.wikipedia.org/wiki/Bloom_filter)
+link-wiki-bruteforce [link-wiki-bruteforce](https://en.wikipedia.org/wiki/Brute-force_attack)
+link-wiki-cryptographichash [link-wiki-cryptographichash](https://en.wikipedia.org/wiki/Cryptographic_hash_function)
+link-wiki-csrf [link-wiki-csrf](https://en.wikipedia.org/wiki/Cross-site_request_forgery)
+link-wiki-ecdh [ECDH](https://en.wikipedia.org/wiki/Elliptic-curve_Diffie-Hellman)
+link-wiki-ecrecover [ECDSA Public Key Recovery](https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm#Public_key_recovery)
+link-wiki-homoglyph [link-wiki-homoglyph](https://en.wikipedia.org/wiki/IDN_homograph_attack)
+link-wiki-hmac [link-wiki-hmac](https://en.wikipedia.org/wiki/HMAC)
+link-wiki-iban [link-wiki-iban](https://en.wikipedia.org/wiki/International_Bank_Account_Number)
+link-wiki-ieee754 [link-wiki-ieee754](https://en.wikipedia.org/wiki/Double-precision_floating-point_format)
+link-wiki-iso639 [ISO 639-1 Codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)
+link-wiki-observer-pattern [Observer Pattern](https://en.wikipedia.org/wiki/Observer_pattern)
+link-wiki-phishing [link-wiki-phishing](https://en.wikipedia.org/wiki/Phishing)
+link-wiki-ripemd [link-wiki-ripemd](https://en.m.wikipedia.org/wiki/RIPEMD)
+link-wiki-sha2 [link-wiki-sha2](https://en.wikipedia.org/wiki/SHA-2)
+link-wiki-twoscomplement [link-wiki-twoscomplement](https://en.wikipedia.org/wiki/Two%27s_complement)
+link-wiki-unicode-equivalence [link-wiki-unicode-equivalence](https://en.wikipedia.org/wiki/Unicode_equivalence)
+link-wiki-utf8-overlong [link-wiki-utf8-overlong](https://en.wikipedia.org/wiki/UTF-8#Overlong_encodings)
+link-wiki-utf8-replacement [link-wiki-utf8-replacement](https://en.wikipedia.org/wiki/Specials_%28Unicode_block%29#Replacement_character)
+link-wiki-scrypt [scrypt PBKDF](https://en.wikipedia.org/wiki/Scrypt)
+link-wiki-side-channel-attack [link-wiki-side-channel-attack](https://en.wikipedia.org/wiki/Side-channel_attack)
+link-wiki-sha3 [link-wiki-sha3](https://en.wikipedia.org/wiki/SHA-3)
+link-wiki-shuffle [Fisher-Yates Shuffle](https://en.wikipedia.org/wiki/Fisher-Yates_shuffle)
+link-wiki-overflow [overflow](https://en.wikipedia.org/wiki/Integer_overflow)
+link-wiki-underflow [arithmetic underflow](https://en.wikipedia.org/wiki/Arithmetic_underflow)
+link-wiki-xss [link-wiki-xss](https://en.wikipedia.org/wiki/Cross-site_scripting)
+</file>
+
+<file path="docs.wrm/config.mjs">
+import { inspect } from "util";
+
+import * as ethers from "../lib.esm/index.js";
+import { version } from "../lib.esm/_version.js";
+
+import { getModifiedTime } from "../lib.esm/_admin/utils/git.js";
+
+const title = "ethers";
+
+const subtitle = (function(version) {
+    const dash = version.indexOf("-");
+    if (dash === -1) { return version; }
+    return version.substring(dash + 1);
+})(version);
+
+const extraLinks = function() {
+    return [
+      `link-cdnjs [ethers.min.js](https:/\/cdnjs.cloudflare.com/ajax/libs/ethers/${ version }/ethers.min.js)`,
+      `link-cdnjs-wordlists [wordlists-extra.min.js](https:/\/cdnjs.cloudflare.com/ajax/libs/ethers/${ version }/wordlists-extra.min.js)`,
+    ];
+}
+
+export default {
+  title, subtitle,
+
+  // Where all the basic documentation is
+  docRoot: ".",
+
+  // Where all the code is for the jsdocs API crawler
+  codeRoot: "../src.ts/index.ts",
+
+  // Place all files in the /v6/ folder
+  prefix: "v6",
+
+  // Prepare the context for running the examples
+  contextify: function(context) {
+    Object.assign(context, ethers);
+    context.provider = new ethers.InfuraProvider("mainnet", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+    context.Uint8Array = Uint8Array;
+
+    ethers.InfuraProvider.prototype[inspect.custom] = function(depth, options, inspect) {
+      if (depth > 0) { return `InfuraProvider { ... }`; }
+      // Does this cause infinite recursion??
+      return this;
+    };
+
+    ethers.Interface.prototype[inspect.custom] = function(depth, options, inspect) {
+      if (depth > 0) { return `Interface { ... }`; }
+      // Does this cause infinite recursion??
+      return this;
+    };
+
+    ethers.Fragment.prototype[inspect.custom] = function(depth, options, inspect) {
+      if (depth > 0) { return `${ this.constructor.name } { ... }`; }
+      // Does this cause infinite recursion??
+      return this;
+    };
+  },
+
+  // The base URL to use for the <src> links
+  srcBaseUrl: "https:/\/github.com/ethers-io/ethers.js/blob/main/src.ts/{FILENAME}#L{LINENO}",
+
+  // Used at the bottom of each page to indicate the last-modified-time.
+  // This uses the most recent time in the repo that the file was
+  // updated.
+  getTimestamp: function(path) {
+      return getModifiedTime(path);
+  },
+
+  // All the links to pull in
+  links: [
+    "./links/javascript.txt",
+    "./links/npm.txt",
+    "./links/projects.txt",
+    "./links/ricmoo.txt",
+    "./links/specs.txt",
+    "./links/wiki.txt",
+    extraLinks
+  ],
+
+  // Extra files to copy over to the /static folder
+  staticFiles: [
+    "logo.svg",
+    "social.jpg"
+  ]
+};
+</file>
+
+<file path="docs.wrm/contributing.wrm">
+_section: Contributions and Hacking @<about-contrib> @priority<-90>
+
+Pull requests are welcome, but please keep the following in mind:
+
+- Backwards-compatibility-breaking changes will not be accepted;
+  they may be considered for the next major version
+- Security is important; adding dependencies require fairly
+  convincing arguments as to why
+- The library aims to be lean, so keep an eye on the
+  ``dist/ethers.min.js`` file size before and after your
+  changes (the ``build-clean`` target includes these stats)
+- Keep the PR simple, readable and confined to the relevant
+  files; see below for which files to change
+- Add test cases for both expected and unexpected input
+- Any new features need to be supported by me (future issues,
+  documentation, testing, migration), so anything that is
+  overly complicated or specific may not be accepted
+- Everyone is working hard; **be kind and respectful**
+
+It is always //highly recommended// that you open a [[link-discussion]]
+**before** beginning a PR.
+
+
+_subsection: Documentation  @<about-contrib-docs>
+
+The documentation is an area which can always benefit from extra
+eyes, extra knowledge and extra examples.
+
+Contributing to the documentation is welcome, but when making
+changes to documentation, please ensure that all changes are
+made **only** to:
+
+- Updating ``/docs.wrm/*\*.wrm``
+- Adding links: ``/docs.wrm/links/*.txt``
+- Updating API jsdocs: ``/*\* ... */`` comment blocks within ``/src.ts/``
+
+Generally changes to ``/docs.wrm/config.wrm`` should not be
+made, and if you feel it is necessary, please consider opening
+a [[link-discussion]] first.
+
+Similarly, when adding a new sections, a [[link-discussion]] is
+preferred.
+
+All changes should be in the Flatworm Markdown Dialect.
+
+_heading: Building the Documentation
+
+Currently, the documentation is built using an experimental v2 of the
+Flatworm documentation system, a system originally specifically made
+to maintain the Ethers documentation.
+
+The new ``tsdocs`` branch has the ability to parse ``jsdocs`` from
+from TypeScript source files to create an API reference.
+
+_code: Building with the v2 Flatworm @lang<shell>
+
+  # Clone the repo
+  /home/ricmoo> git clone https://github.com/ricmoo/flatworm.git
+  /home/ricmoo> cd flatworm
+
+  # Check out the tsdocs branch
+  /home/ricmoo/flatworm> git checkout tsdocs
+
+  # Install the necessary dependencies
+  /home/ricmoo/flatworm> npm install
+
+  # Ready to build the docs; output to a folder ./output/
+  /home/ricmoo/flatworm> node lib/cli-test PATH_TO_WRM_ROOT
+
+Eventually the code for the v2 branch will be cleaned up, and it
+will be much easier to include as a ``devDependency`` for Ethers.
+
+In the meantime, expect new changes to be made frequently to the
+``tsdocs`` branch, so for stability you may wish to checkout a
+specific hash.
+
+
+_subsection: Fixing Bugs  @<about-contrib-bugs>
+
+In general the **only** files you should ever include in a PR are:
+
+- TypeScript source: ``/src.ts/*\*.ts``
+
+Do not include a ``package.json`` with the updated ``tarballHash``
+or ``version``, and do not include any generated files in your PR.
+
+A bug fix **must not** modify anything requiring a minor version
+bump (see [[about-contrib-feature]]), such as changing a method
+signature or altering the exports.
+
+
+_subsection: Adding Features  @<about-contrib-feature>
+
+Contributing new features usually require a deeper understanding
+of the internal interactions with Ethers and its components, and
+generally requires a minor version bump.
+
+When making any of the following changes, you must first open a
+[[link-discussion]] as the minor version will need to be bumped.
+
+- any signature change (such as adding a parameter, changing a
+  parameter type, changing the return type)
+- adding any new export; such as a class, function or constants
+- adding any method to any class
+- changing any ``exports`` property within the ``package.json``
+
+Changes of this sort should not be made without serious consideration
+and discussion.
+
+
+_subsection: Building  @<building>
+
+_code: @lang<shell>
+  /home/ricmoo> git clone @TODO
+  /home/ricmoo> cd ethers
+  /home/ricmoo/ethers> npm install
+  /home/ricmoo/ethers> npm run auto-build
+
+_null:
+
+
+_subsection: Previewing Documentation
+</file>
+
+<file path="docs.wrm/getting-started.wrm">
+_section: Getting Started @<getting-started> @priority<100>
+
+This is a very short introduction to Ethers, but covers many of the
+most common operations that developers require and provides a
+starting point for those newer to Ethereum.
+
+
+_heading: Getting Ethers
+
+If using NPM, you must first install Ethers.
+
+_code: installing via NPM @lang<shell>
+  # Install ethers
+  /home/ricmoo/test-ethers> npm install ethers
+
+_null:
+
+Everything in Ethers is exported from its root as well as on the ``ethers``
+object. There are also ``exports`` in the ``package.json`` to facilitate
+more fine-grained importing.
+
+Generally this documentation will presume all exports from ethers
+have been imported in the code examples, but you may import the
+necessary objects in any way you wish.
+
+_code: importing in Node.js  @lang<script>
+  // Import everything
+  import { ethers } from "ethers";
+
+  // Import just a few select items
+  import { BrowserProvider, parseUnits } from "ethers";
+
+  // Import from a specific export
+  import { HDNodeWallet } from "ethers/wallet";
+
+_code: importing ESM in a browser  @lang<script>
+  <script type="module">
+    import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
+    // Your code here...
+  </script>
+
+
+_subsection: Some Common Terminology  @<starting-glossary>
+
+To begin, it is useful to have a basic understanding of the types of
+objects available and what they are responsible for, at a high level.
+
+_heading: Provider
+
+A [[Provider]] is a read-only connection to the blockchain, which allows
+querying the blockchain state, such as account, block or transaction details,
+querying event logs or evaluating read-only code using call.
+
+If you are coming from Web3.js, you are used to a **Provider** offering
+both read and write access. In Ethers, all write operations are further
+abstracted into another Object, the **Signer**.
+
+_heading: Signer
+
+A [[Signer]] wraps all operations that interact with an account. An
+account generally has a private key located //somewhere//, which can be
+used to sign a variety of types of payloads.
+
+The private key may be located in memory (using a [[Wallet]]) or
+protected via some IPC layer, such as MetaMask which proxies interaction
+from a website to a browser plug-in, which keeps the private key out of
+the reach of the website and only permits interaction after requesting
+permission from the user and receiving authorization.
+
+_heading: Transaction
+
+To make any state changes to the blockchain, a transaction is required,
+which requires a fee to be paid, where the fee covers the associated costs
+with executing the transaction (such as reading the disk and performing
+maths) and storing the updated information.
+
+If a transaction reverts, a fee must still be paid, since the validator
+still had to expend resources to try running the transaction to determine
+that it reverted and the details of its failure are still be recorded.
+
+Transactions include sending ether from one user to another, deploying
+a **Contract** or executing a state-changing operation against a
+**Contract**.
+
+_heading: Contract
+
+A [[Contract]] is a program that has been deployed to the blockchain,
+which includes some code and has allocated storage which it can read
+from and write to.
+
+It may be read from when it is connected to a [[Provider]] or
+state-changing operations can be called when connected to a [[Signer]].
+
+_heading: Receipt
+
+Once a **Transaction** has been submitted to the blockchain, it is placed
+in the memory pool (mempool) until a validator decides to include it.
+
+A transaction's changes are only made once it has been included in the
+blockchain, at which time a receipt is available, which includes details
+about the transaction, such as which block it was included in, the actual
+fee paid, gas used, all the events that it emitted and whether it was
+successful or reverted.
+
+
+_subsection: Connecting to Ethereum  @<starting-connecting>
+
+This very first thing needed to begin interacting with the blockchain is
+connecting to it using a [[Provider]].
+
+_heading: MetaMask (and other injected providers)
+
+The quickest and easiest way to experiment and begin developing
+on Ethereum is to use [[link-metamask]], which is a browser
+extension that injects objects into the ``window``, providing:
+
+- read-only access to the Ethereum network (a [[Provider]])
+- authenticated write access backed by a private key (a [[Signer]])
+
+When requesting access to the authenticated methods, such as
+sending a transaction or even requesting the private key address,
+MetaMask will show a pop-up to the user asking for permission.
+
+_code:  @lang<script>
+  let signer = null;
+
+  let provider;
+  if (window.ethereum == null) {
+
+      // If MetaMask is not installed, we use the default provider,
+      // which is backed by a variety of third-party services (such
+      // as INFURA). They do not have private keys installed,
+      // so they only have read-only access
+      console.log("MetaMask not installed; using read-only defaults")
+      provider = ethers.getDefaultProvider()
+
+  } else {
+
+      // Connect to the MetaMask EIP-1193 object. This is a standard
+      // protocol that allows Ethers access to make all read-only
+      // requests through MetaMask.
+      provider = new ethers.BrowserProvider(window.ethereum)
+
+      // It also provides an opportunity to request access to write
+      // operations, which will be performed by the private key
+      // that MetaMask manages for the user.
+      signer = await provider.getSigner();
+  }
+
+
+_heading: Custom RPC Backend
+
+If you are running your own Ethereum node (e.g. [[link-geth]])
+or using a custom third-party service (e.g. [[link-infura]]),
+you can use the [[JsonRpcProvider]] directly, which communicates
+using the [[link-jsonrpc]] protocol.
+
+When using your own Ethereum node or a developer-base blockchain,
+such as Hardhat or Ganache, you can get access to the accounts with
+[[JsonRpcProvider-getSigner]].
+
+_code: connecting to a JSON-RPC URL  @lang<script>
+
+  // If no %%url%% is provided, it connects to the default
+  // http://localhost:8545, which most nodes use.
+  provider = new ethers.JsonRpcProvider(url)
+
+  // Get write access as an account by getting the signer
+  signer = await provider.getSigner()
+
+
+_subsection: User Interaction  @<starting-display>
+
+All units in Ethereum tend to be integer values, since dealing with
+decimals and floating points can lead to imprecise and non-obvious
+results when performing mathematic operations.
+
+As a result, the internal units used (e.g. wei) which are suited for
+machine-readable purposes and maths are often very large and not
+easily human-readable.
+
+For example, imagine dealing with dollars and cents; you would show
+values like ``"$2.56"``. In the blockchain world, we would keep all
+values as cents, so that would be ``256`` cents, internally.
+
+So, when accepting data that a user types, it must be converted from
+its decimal string representation (e.g. ``"2.56"``) to its lowest-unit
+integer representation (e.g. ``256``). And when displaying a value to
+a user the opposite operation is necessary.
+
+In Ethereum, //one ether// is equal to ``10 *\* 18`` wei and //one gwei//
+is equal to ``10 *\* 9`` wei, so the values get very large very quickly,
+so some convenience functions are provided to help convert between
+representations.
+
+_code:  @lang<javascript>
+  // Convert user-provided strings in ether to wei for a value
+  eth = parseEther("1.0")
+  //_result:
+
+  // Convert user-provided strings in gwei to wei for max base fee
+  feePerGas = parseUnits("4.5", "gwei")
+  //_result:
+
+  // Convert a value in wei to a string in ether to display in a UI
+  formatEther(eth)
+  //_result:
+
+  // Convert a value in wei to a string in gwei to display in a UI
+  formatUnits(feePerGas, "gwei")
+  //_result:
+
+
+_subsection: Interacting with the Blockchain  @<starting-blockchain>
+
+_heading: Querying State
+
+Once you have a [[Provider]], you have a read-only connection to
+the data on the blockchain. This can be used to query the current
+account state, fetch historic logs, look up contract code and so on.
+
+_code:  @lang<javascript>
+  //_hide: provider = new InfuraProvider();
+
+  // Look up the current block number (i.e. height)
+  await provider.getBlockNumber()
+  //_result:
+
+  // Get the current balance of an account (by address or ENS name)
+  balance = await provider.getBalance("ethers.eth")
+  //_result:
+
+  // Since the balance is in wei, you may wish to display it
+  // in ether instead.
+  formatEther(balance)
+  //_result:
+
+  // Get the next nonce required to send a transaction
+  await provider.getTransactionCount("ethers.eth")
+  //_result:
+
+_heading: Sending Transactions
+
+To write to the blockchain you require access to a private key
+which controls some account. In most cases, those private keys
+are not accessible directly to your code, and instead you make
+requests via a [[Signer]], which dispatches the request to a
+service (such as [[link-metamask]]) which provides strictly
+gated access and requires feedback to the user to approve or
+reject operations.
+
+_code:  @lang<script>
+
+  //_hide: provider = new JsonRpcProvider("http:/\/localhost:8545")
+  //_hide: provider.resolveName = () => "0x643aA0A61eADCC9Cc202D1915D942d35D005400C";
+  //_hide: signer = new Wallet(id("test"), provider);
+
+  // When sending a transaction, the value is in wei, so parseEther
+  // converts ether to wei.
+  tx = await signer.sendTransaction({
+    to: "ethers.eth",
+    value: parseEther("1.0")
+  });
+  //_result:
+
+  // Often you may wish to wait until the transaction is mined
+  receipt = await tx.wait();
+  //_result:
+
+
+_subsection: Contracts  @<starting-contracts>
+
+A **Contract** is a meta-class, which means that its definition
+is derived at run-time, based on the ABI it is passed, which then
+determined what methods and properties are available on it.
+
+_heading: Application Binary Interface (ABI)
+
+Since all operations that occur on the blockchain must be encoded
+as binary data, we need a concise way to define how to convert
+between common objects (like strings and numbers) and its binary
+representation, as well as encode the ways to call and interpret
+the Contract.
+
+For any method, event or error you wish to use, you must include a
+[[Fragment]] to inform Ethers how it should encode the request and
+decode the result.
+
+Any methods or events that are not needed can be safely excluded.
+
+There are several common formats available to describe an ABI. The
+Solidity compiler usually dumps a JSON representation but when typing
+an ABI by hand it is often easier (and more readable) to use the
+human-readable ABI, which is just the Solidity signature.
+
+_code: simplified ERC-20 ABI @lang<script>
+  abi = [
+    "function decimals() view returns (string)",
+    "function symbol() view returns (string)",
+    "function balanceOf(address addr) view returns (uint)"
+  ]
+
+  // Create a contract
+  contract = new Contract("dai.tokens.ethers.eth", abi, provider)
+
+_heading: Read-only methods (i.e. ``view`` and ``pure``)
+
+A read-only method is one which cannot change the state of the
+blockchain, but often provide a simple interface to get important
+data about a Contract.
+
+_code: reading the DAI ERC-20 contract @lang<javascript>
+  // The contract ABI (fragments we care about)
+  abi = [
+    "function decimals() view returns (uint8)",
+    "function symbol() view returns (string)",
+    "function balanceOf(address a) view returns (uint)"
+  ]
+
+  // Create a contract; connected to a Provider, so it may
+  // only access read-only methods (like view and pure)
+  contract = new Contract("dai.tokens.ethers.eth", abi, provider)
+
+  // The symbol name for the token
+  sym = await contract.symbol()
+  //_result:
+
+  // The number of decimals the token uses
+  decimals = await contract.decimals()
+  //_result:
+
+  // Read the token balance for an account
+  balance = await contract.balanceOf("ethers.eth")
+  //_result:
+
+  // Format the balance for humans, such as in a UI
+  formatUnits(balance, decimals)
+  //_result:
+
+_heading: State-changing Methods
+
+_code: change state on an ERC-20 contract  @lang<script>
+
+  abi = [
+    "function transfer(address to, uint amount)"
+  ]
+
+  // Connected to a Signer; can make state changing transactions,
+  // which will cost the account ether
+  contract = new Contract("dai.tokens.ethers.eth", abi, signer)
+
+  // Send 1 DAI
+  amount = parseUnits("1.0", 18);
+
+  // Send the transaction
+  tx = await contract.transfer("ethers.eth", amount)
+  //_result: @TODO
+
+  // Currently the transaction has been sent to the mempool,
+  // but has not yet been included. So, we...
+
+  // ...wait for the transaction to be included.
+  await tx.wait()
+  //_result: @TODO
+
+_code: forcing a call (simulation) of a state-changing method @lang<javascript>
+
+  abi = [
+    "function transfer(address to, uint amount) returns (bool)"
+  ]
+
+  // Connected to a Provider since we only require read access
+  contract = new Contract("dai.tokens.ethers.eth", abi, provider)
+
+  amount = parseUnits("1.0", 18)
+
+  // There are many limitations to using a static call, but can
+  // often be useful to preflight a transaction.
+  await contract.transfer.staticCall("ethers.eth", amount)
+  //_result:
+
+  // We can also simulate the transaction as another account
+  other = new VoidSigner("0x643aA0A61eADCC9Cc202D1915D942d35D005400C")
+  contractAsOther = contract.connect(other.connect(provider))
+  await contractAsOther.transfer.staticCall("ethers.eth", amount)
+  //_result:
+
+_heading: Listening to Events
+
+When adding event listeners for a named event, the event parameters
+are destructed for the listener.
+
+There is always one additional parameter passed to a listener, which
+is an [[EventPayload]], which includes more information about the event
+including the filter and a method to remove that listener.
+
+_code: listen for ERC-20 events  @lang<script>
+  abi = [
+    "event Transfer(address indexed from, address indexed to, uint amount)"
+  ]
+
+  // Create a contract; connected to a Provider, so it may
+  // only access read-only methods (like view and pure)
+  contract = new Contract("dai.tokens.ethers.eth", abi, provider)
+
+  // Begin listening for any Transfer event
+  contract.on("Transfer", (from, to, _amount, event) => {
+    const amount = formatEther(_amount, 18)
+    console.log(`${ from } => ${ to }: ${ amount }`);
+
+    // The `event.log` has the entire EventLog
+
+    // Optionally, stop listening
+    event.removeListener();
+  });
+
+  // Same as above
+  contract.on(contract.filters.Transfer, (from, to, amount, event) => {
+    // See above
+  })
+
+  // Listen for any Transfer to "ethers.eth"
+  filter = contract.filters.Transfer("ethers.eth")
+  contract.on(filter, (from, to, amount, event) => {
+    // `to` will always be equal to the address of "ethers.eth"
+  });
+
+  // Listen for any event, whether it is present in the ABI
+  // or not. Since unknown events can be picked up, the
+  // parameters are not destructed.
+  contract.on("*", (event) => {
+    // The `event.log` has the entire EventLog
+  });
+
+
+
+_heading: Query Historic Events
+
+When querying within a large range of blocks, some backends may
+be prohibitively slow, may return an error or may truncate the
+results without any indication. This is at the discretion of each
+backend.
+
+_code: query historic ERC-20 events  @lang<javascript>
+  abi = [
+    "event Transfer(address indexed from, address indexed to, uint amount)"
+  ]
+
+  // Create a contract; connected to a Provider, so it may
+  // only access read-only methods (like view and pure)
+  contract = new Contract("dai.tokens.ethers.eth", abi, provider)
+
+  // Query the last 100 blocks for any transfer
+  filter = contract.filters.Transfer
+  events = await contract.queryFilter(filter, -100)
+
+  // The events are a normal Array
+  events.length
+  //_result:
+
+  // The first matching event
+  events[0]
+  //_result:
+
+  // Query all time for any transfer to ethers.eth
+  filter = contract.filters.Transfer("ethers.eth")
+  events = await contract.queryFilter(filter)
+
+  // The first matching event
+  events[0]
+  //_result:
+
+
+_subsection: Signing Messages  @<starting-signing>
+
+A private key can do a lot more than just sign a transaction to authorize
+it. It can also be used to sign other forms of data, which are then able
+to be validated for other purposes.
+
+For example, signing **a message** can be used to prove ownership of an
+account which a website could use to authenticate a user and log them in.
+
+_code:  @lang<javascript>
+
+  // Our signer; Signing messages does not require a Provider
+  signer = new Wallet(id("test"))
+  //_result:
+
+  message = "sign into ethers.org?"
+
+  // Signing the message
+  sig = await signer.signMessage(message);
+  //_result:
+
+  // Validating a message; notice the address matches the signer
+  verifyMessage(message, sig)
+  //_result:
+
+_null:
+
+Many other more advanced protocols built on top of signed messages are
+used to allow a private key to authorize other users to transfer their
+tokens, allowing the transaction fees of the transfer to be paid by
+someone else.
+</file>
+
+<file path="docs.wrm/index.wrm">
+_section: Documentation  @<about-home> @nav<Documentation>
+
+The ethers.js library aims to be a complete and compact library
+for interacting with the Ethereum Blockchain and its ecosystem.
+
+It is often used to create decentralized applications (dapps),
+wallets (such as [[link-metamask]] and [[link-tally]]) and
+other tools and simple scripts that require reading and writing
+to the blockchain.
+
+
+_subsection: About this documentation?
+
+These docs are still under construction, and are being expanded
+every day.
+
+Developers new to Ethers should be sure to read through the
+[[getting-started]] section.
+
+And the [[about-api]] is available for drilling down into more details
+about the entire Application Programming Interface.
+
+
+_subsection: Older Documentation
+
+- [v5 documentation](link-docs-v5)
+- [v4 documentation](link-docs-v4)
+- [v3 documentation](link-docs-v3)
+</file>
+
+<file path="docs.wrm/license.wrm">
+_section: License and Copyright  @priority<-100>
+
+The ethers library (including all dependencies) are available under the
+[[link-mit]], which permits a wide variety of uses.
+
+_subsection: MIT License
+
+Copyright &copy; [Richard Moore](link-mail).
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+</file>
+
+<file path="docs.wrm/logo.svg">
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 23.0.4, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 100 58" style="enable-background:new 0 0 100 58;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
+</style>
+<path class="st0" d="M94.45,47.18c-42.62,5.57-73.04,12.26-73.49-15.2c0,0,0.93-10.64,13.98-11.31c0,0,0.44-9.45,10.41-10.52
+	c5.36-0.58,11.45,4.94,12.11,10.75c0,0,13.19-2.44,13.76,10.42c0.2,4.48-0.81,12.1-13.53,11.77c0,0-7.36-1-8.36-12.38
+	c-2.07,22.03,29.78,20.75,30.24,0.74c0.2-8.65-5.34-17.55-17.82-15.88C54.91-1.64,36.7-0.65,29.92,15.31
+	c-9.69,0-17.1,7.46-16.99,17.2C13.3,63.86,56.93,54.41,94.45,47.18z"/>
+</svg>
+</file>
+
+<file path="docs.wrm/migrating.wrm">
+_section: Migrating from v5 @<migrating> @priority<-10>
+
+This guide aims to capture some of the high-level differences
+between v5 and v6 to help those migrating an existing app and
+those already familiar with v5 that just need a quick primer.
+
+The biggest difference in v6 is the use of modern ES6 features,
+so a lot of changes are largely internal.
+
+- [BigNumbers](migrate-bigint)
+- [Contracts](migrate-contracts)
+- [Importing](migrate-importing)
+- [Providers](migrate-providers)
+- [Signatures](migrate-signatures)
+- [Transactions](migrate-transactions)
+- [Utilities](migrate-utils)
+- [Removed Items](migrate-missing)
+
+
+_subsection: Big Numbers  @<migrate-bigint>
+
+One of the biggest changes in v6 is that the //BigNumber// class has
+been replaced with the built-in ES2020 BigInt offered by modern
+JavaScript environments.
+
+There is plenty of [online documentation](link-js-bigint) to get
+you started with JavaScript ES2020 BigInt. Keep in mind, just like
+//BigNumber//, a ES2020 BigInt can **only** operate on integers.
+
+The [[FixedNumber]] class still exists for performing fixed-point
+maths.
+
+
+_code: creating large numbers  @lang<script>
+
+  // Using BigNumber in v5
+  value = BigNumber.from("1000")
+
+  // Using BigInt in v6 (using literal notation).
+  // Notice the suffix n
+  value = 1000n
+
+  // Using the BigInt function for strings
+  value = BigInt("1000")
+
+
+_code: simple maths on large numbers  @lang<script>
+
+  // Adding two values in v5
+  sum = value1.add(value2)
+
+  // Using BigInt in v6; keep in mind, both values
+  // must be a BigInt
+  sum = value1 + value2
+
+
+_code: simple comparison on large numbers  @lang<script>
+
+  // Checking equality in v5
+  isEqual = value1.eq(value2)
+
+  // Using BigInt in v6
+  isEqual = (value1 == value2)
+
+
+_subsection: Contracts @<migrate-contracts>
+
+The [[Contract]] is an ES6 Proxy, which means it can resolve
+method names at run-time.
+
+_heading: Ambiguous Methods
+
+In v5, in the case of an ambiguous method, it was necessary to
+look up a method by its canonical normalized signature. In v6
+the signature does not need to be normalized and the Typed API
+provides a cleaner way to access the desired method.
+
+In v5, duplicate definitions also injected warnings into the
+console, since there was no way to detect them at run-time.
+
+_code: contracts in v5 @lang<script>
+  abi = [
+    "function foo(address bar)",
+    "function foo(uint160 bar)",
+  ]
+  contract = new Contract(address, abi, provider)
+
+  // In v5 it was necessary to specify the fully-qualified normalized
+  // signature to access the desired method. For example:
+  contract["foo(address)"](addr)
+
+  // These would fail, since there signature is not normalized:
+  contract["foo(address )"](addr)
+  contract["foo(address addr)"](addr)
+
+  // This would fail, since the method is ambiguous:
+  contract.foo(addr)
+
+_code: contracts in v6  @lang<script>
+  abi = [
+    "function foo(address bar)",
+    "function foo(uint160 bar)",
+  ]
+  contract = new Contract(address, abi, provider)
+
+  // Any of these work fine:
+  contract["foo(address)"](addr)
+  contract["foo(address )"](addr)
+  contract["foo(address addr)"](addr)
+
+  // This still fails, since there is no way to know which
+  // method was intended
+  contract.foo(addr)
+
+  // However, the Typed API makes things a bit easier, since it
+  // allows providing typing information to the Contract:
+  contract.foo(Typed.address(addr))
+
+_heading: Other Method Operations
+
+In v5, contracts contained a series of method buckets, which
+then in turn had all signatures and non-ambiguous names
+attached to them to perform less-common operations.
+
+In v6, the methods each have their own less-common operations
+attached directly to them.
+
+_code: other operations in v5  @lang<script>
+
+  // The default action chooses send or call base on method
+  // type (pure, view, constant, non-payable or payable)
+  contract.foo(addr)
+
+  // This would perform the default action, but return a Result
+  // object, instead of destructing the value
+  contract.functions.foo(addr)
+
+  // Forces using call
+  contract.callStatic.foo(addr)
+
+  // Estimate the gas
+  contract.estimateGas.foo(addr)
+
+  // Populate a transaction
+  contract.populateTransaction.foo(addr)
+
+_code: other operations in v6  @lang<script>
+
+  // Still behaves the same
+  contract.foo(addr)
+
+  // Perform a call, returning a Result object directly
+  contract.foo.staticCallResult(addr)
+
+  // Forces using call (even for payable and non-payable)
+  contract.foo.staticCall(addr)
+
+  // Forces sending a transaction (even for pure and view)
+  contract.foo.send(addr)
+
+  // Estimate the gas
+  contract.foo.estimateGas(addr)
+
+  // Populate a transaction
+  contract.foo.populateTransaction(addr)
+
+
+_subsection: Importing  @<migrate-importing>
+
+In v5, the project was maintained as a large set of sub-packages
+managed as a monorepo.
+
+In v6 all imports are available in the root package, and for those
+who wish to have finer-grained control, the ``pkg.exports`` makes
+certain folders available directly.
+
+_code: importing in v5  @lang<script>
+
+  // Many things (but not all) we available on the root package
+  import { ethers } from "ethers"
+
+  // But some packages were grouped behind an additional property
+  import { providers } from "ethers"
+  const { InfuraProvider } = providers
+
+  // For granular control, importing from the sub-package
+  // was necessary
+  import { InfuraProvider } from "@ethersproject/providers"
+
+_code: importing in v6  @lang<script>
+
+  // Everything is available on the root package
+  import { ethers } from "ethers"
+  import { InfuraProvider } from "ethers"
+
+  // The pkg.exports provides granular access
+  import { InfuraProvider } from "ethers/providers"
+
+
+_subsection: Providers  @<migrate-providers>
+
+In addition to all the ``ethers.providers.*`` being moved to
+``ethers.*``, the biggest change developers need to keep in
+mind is that ``Web3Provider`` (which historically was used
+to wrap [[link-web3js]] providers) is now called
+[[BrowserProvider]] which is designed to wrap EIP-1193
+providers, which is the standard that both modern Web3.js and
+injected providers offer.
+
+_code: wrapping EIP-1193 providers  @lang<script>
+  // v5
+  provider = new ethers.providers.Web3Provider(window.ethereum)
+
+  // v6:
+  provider = new ethers.BrowserProvider(window.ethereum)
+
+_null:
+
+Also, the method for broadcasting transactions to the network has
+changed:
+
+_code: broadcasting transactions  @lang<script>
+  // v5
+  provider.sendTransaction(signedTx)
+
+  // v6
+  provider.broadcastTransaction(signedTx)
+
+_null:
+
+The ``StaticJsonRpcProvider`` in v5 is now integrated into the v6
+``JsonRpcProvider`` directly. When connecting to a network which
+cannot change its network, it is much more efficient to disable
+the automatic safety check ethers performs.
+
+_code: Create a Provider on a static network  @lang<script>
+  // v5
+  provider = new StaticJsonRpcProvider(url, network);
+
+  // v6: If you know the network ahead of time and wish
+  // to avoid even a single eth_chainId call
+  provider = new JsonRpcProvider(url, network, {
+    staticNetwork: network
+  });
+
+  // v6: If you want the network automatically detected,
+  // this will query eth_chainId only once
+  provider = new JsonRpcProvider(url, undefined, {
+    staticNetwork: true
+  });
+
+_null:
+
+Since the fees for Ethereum chains has become more complicated,
+all Fee parameters in v6 were coalesced into a single `.getFeeData`
+method. While `gasPrice` is no longer widely used in modern networks,
+when using a legacy network, it is available using that method.
+
+_code: Getting legacy gas price  @lang<script>
+  // v5
+  await provider.getGasPrice()
+
+  // v6
+  (await provider.getFeeData()).gasPrice
+
+
+_subsection: Signatures  @<migrate-signatures>
+
+The Signature is now a class which facilitates all the parsing
+and serializing.
+
+_code: signature manipulation
+  // v5
+  splitSig = splitSignature(sigBytes)
+  sigBytes = joinSignature(splitSig)
+
+  // v6
+  splitSig = ethers.Signature.from(sigBytes)
+  sigBytes = ethers.Signature.from(splitSig).serialized
+
+
+_subsection: Transactions  @<migrate-transactions>
+
+The transaction helpers present in v5 were all wrapped into a
+[[Transaction]] class, which can handle any supported transaction
+format to be further processed
+
+_code: parsing transactions  @lang<script>
+
+  // v5
+  tx = parseTransaction(txBytes)
+  txBytes = serializeTransaction(tx)
+  txBytes = serializeTransaction(tx, sig)
+
+  // v6
+  tx = Transaction.from(txBytes)
+
+  // v6 (the tx can optionally include the signature)
+  txBytes = Transaction.from(tx).serialized
+
+
+_subsection: Utilities  @<migrate-utils>
+
+_code: Bytes32 string helpers  @lang<script>
+  // In v5:
+  bytes32 = ethers.utils.formatBytes32String(text)
+  text = ethers.utils.parseBytes32String(bytes32)
+
+  // In v6:
+  bytes32 = ethers.encodeBytes32String(text)
+  text = ethers.decodeBytes32String(bytes32)
+
+_code: constants  @lang<script>
+  // v5:
+  ethers.constants.AddressZero
+  ethers.constants.HashZero
+
+  // v6:
+  ethers.ZeroAddress
+  ethers.ZeroHash
+
+_code: data manipulation  @lang<script>
+  // v5
+  slice = ethers.utils.hexDataSlice(value, start, end)
+  padded = ethers.utils.hexZeroPad(value, length)
+
+  // v5; converting numbers to hexstrings
+  hex = hexlify(35)
+
+  // v6
+  slice = ethers.dataSlice(value, start, end)
+  padded = ethers.zeroPadValue(value, length)
+
+  // v6; converting numbers to hexstrings
+  hex = toBeHex(35)
+
+_code: defaultAbiCoder  @lang<script>
+  // In v5, it is a property of AbiCoder
+  coder = AbiCoder.defaultAbiCoder
+
+  // In v6, it is a static function on AbiCoder, which uses
+  // a singleton pattern; the first time it is called, the
+  // AbiCoder is created and on subsequent calls that initial
+  // instance is returned.
+  coder = AbiCoder.defaultAbiCoder()
+
+_code: fetching content  @lang<script>
+  // v5, with a body and no weird things
+  data = await ethers.utils.fetchJson(url, json, processFunc)
+
+  // v5 with Connection overrides
+  req = {
+      url, user: "username", password: "password"
+      // etc. properties have FetchRequest equivalents
+  };
+  data = await ethers.utils.fetchJson(req, json, processFunc)
+
+  // v6
+  req = new ethers.FetchRequest(url)
+
+  // set a body; optional
+  req.body = json
+
+  // set credentials; optional
+  req.setCredentials("username", "password")
+
+  // set a processFunc; optional
+  req.processFunc = processFunc
+
+  // send the request!
+  resp = await req.send()
+
+  // Get the response body; depending on desired format
+  data = resp.body        // Uint8Array
+  data = resp.bodyText    // Utf8String; throws if invalid
+  data = resp.bodyJson    // Object; throws if invalid
+
+_code: hex conversion  @lang<script>
+  // v5
+  hex = ethers.utils.hexValue(value)
+  array = ethers.utils.arrayify(value)
+
+  // v6
+  hex = ethers.toQuantity(value)
+  array = ethers.getBytes(value)
+
+_code: solidity non-standard packed  @lang<script>
+  // v5
+  ethers.utils.solidityPack(types, values)
+  ethers.utils.solidityKeccak256(types, values)
+  ethers.utils.soliditySha256(types, values)
+
+  // v6
+  ethers.solidityPacked(types, values)
+  ethers.solidityPackedKeccak256(types, values)
+  ethers.solidityPackedSha256(types, values)
+
+_code: property manipulation  @lang<script>
+  // v5
+  ethers.utils.defineReadOnly(obj, "name", value)
+
+  // v6
+  ethers.defineProperties(obj, { name: value });
+
+_code: commify  @lang<script>
+  // v5
+  ethers.utils.commify("1234.5")
+
+  // v6; we removed some of these locale-specific utilities,
+  // however the functionality can be easily replicated
+  // and adjusted depending on your desired output format,
+  // for which everyone wanted their own tweaks anyways.
+  //
+  // However, to mimic v5 functionality, this can be used:
+  function commify(value) {
+    const match = value.match(/^(-?)([0-9]*)(\.?)([0-9]*)$/);
+    if (!match || (!match[2] && !match[4])) {
+      throw new Error(`bad formatted number: ${ JSON.stringify(value) }`);
+    }
+
+    const neg = match[1];
+    const whole = BigInt(match[2] || 0).toLocaleString("en-us");
+    const frac = match[4] ? match[4].match(/^(.*?)0*$/)[1]: "0";
+
+    return `${ neg }${ whole }.${ frac }`;
+  }
+
+  commify("1234.5");
+
+_subsection: Removed Classes and functions  @<migrate-missing>
+
+The **Logger** class has been replaced by
+[several Error utility functions](about-errors).
+
+The ``checkProperties`` and ``shallowCopy`` have been
+removed in favor of using ``.map`` and ``Object.assign``.
+</file>
+
+<file path="docs.wrm/README.md">
+Documentation Source
+====================
+
+This folder contains all the Flatworm source for the documentation.
+</file>
+
+</files>
