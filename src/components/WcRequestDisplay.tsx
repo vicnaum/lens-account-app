@@ -5,11 +5,10 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useWalletConnect } from "@/contexts/WalletConnectProvider";
 import { useLensAccount } from "@/contexts/LensAccountContext";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { formatUnits, type TransactionReceipt, type Hash } from "viem";
+import { formatUnits, type Hash } from "viem";
 import { getSdkError } from "@walletconnect/utils";
 import { formatJsonRpcError, formatJsonRpcResult, JsonRpcResponse } from "@walletconnect/jsonrpc-utils";
 import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, lensChain } from "@/lib/constants";
-import Image from "next/image";
 
 // Basic Fallback Icon Component
 const FallbackIcon = ({ size = 30 }: { size?: number }) => (
@@ -20,48 +19,6 @@ const FallbackIcon = ({ size = 30 }: { size?: number }) => (
     ?
   </div>
 );
-
-// Helper function to resolve icon URL
-const resolveIconUrl = (iconPath: string | null | undefined, baseUrl: string | null | undefined): string | undefined => {
-  if (!iconPath) return undefined;
-  try {
-    if (iconPath.startsWith("http://") || iconPath.startsWith("https://")) {
-      return iconPath;
-    }
-    if (iconPath.startsWith("/") && baseUrl) {
-      const origin = new URL(baseUrl).origin;
-      return `${origin}${iconPath}`;
-    }
-    console.warn("Invalid icon URL format:", iconPath);
-    return undefined;
-  } catch (e) {
-    console.warn("Error resolving icon URL:", e);
-    return undefined;
-  }
-};
-
-// Icon component with error handling
-const DAppIcon = ({ iconUrl, name, size = 40 }: { iconUrl?: string; name: string; size?: number }) => {
-  const [hasError, setHasError] = useState(false);
-  useEffect(() => setHasError(false), [iconUrl]); // Reset error state if URL changes
-
-  if (!iconUrl || hasError) return <FallbackIcon size={size} />;
-
-  return (
-    <Image
-      src={iconUrl}
-      alt={`${name} icon`}
-      width={size}
-      height={size}
-      className="rounded-full"
-      unoptimized
-      onError={() => {
-        console.warn("Failed to load icon:", iconUrl);
-        setHasError(true);
-      }}
-    />
-  );
-};
 
 export function WcRequestDisplay() {
   const { pendingRequest, respondRequest, error: wcError, isLoading: isWcLoading } = useWalletConnect();
@@ -156,7 +113,6 @@ export function WcRequestDisplay() {
           "color: orange",
         );
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [respondRequest, resetWriteContract],
   ); // Add resetWriteContract

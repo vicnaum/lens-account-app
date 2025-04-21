@@ -9,7 +9,7 @@ import { IWalletKit, WalletKitTypes } from "@reown/walletkit";
 import { buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
 import { useLensAccount } from "./LensAccountContext";
 import { LENS_CHAIN_ID } from "@/lib/constants";
-import { ErrorResponse, JsonRpcResponse } from "@walletconnect/jsonrpc-utils";
+import { JsonRpcResponse } from "@walletconnect/jsonrpc-utils";
 
 // Keep the context state definition
 interface WalletConnectContextState {
@@ -150,7 +150,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
       console.log(`%cProvider Listener: ${ServiceEvents.SessionDelete} received (likely from PEER) for topic:`, "color: purple", topic);
       setActiveSessions((prev) => {
         if (!prev[topic]) return prev;
-        const { [topic]: _, ...rest } = prev;
+        const { [topic]: _removed, ...rest } = prev;
         console.log(`%cProvider State: Removing session ${topic} based on SDK/PEER event.`, "color: brown");
         return rest;
       });
@@ -218,7 +218,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
         currentService.off(ServiceEvents.SessionRequest, handleSessionRequest);
       }
     };
-  }, []); // Run listeners setup only once
+  }, []);
 
   // --- Context Methods ---
   const pair = useCallback(
@@ -308,7 +308,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
             console.warn(`%cWalletConnectProvider: Tried to remove non-existent session ${topic} from state.`, "color: orange");
             return prev;
           }
-          const { [topic]: _, ...rest } = prev;
+          const { [topic]: _removed, ...rest } = prev;
           console.log(`%cWalletConnectProvider: Manually removing session ${topic} from state.`, "color: brown");
           return rest;
         });
@@ -323,7 +323,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
         setError((e as Error)?.message || "Disconnect failed");
       }
     },
-    [isInitialized, pendingProposal], // Keep dependencies
+    [pendingProposal], // isInitialized was correctly removed previously
   );
   // >>>>>>>> ----------------------------- <<<<<<<<
 
@@ -347,7 +347,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
         setPendingRequest(null);
       }
     },
-    [isInitialized, pendingRequest],
+    [pendingRequest], // Remove isInitialized
   );
 
   // --- Context Value Memoization ---
@@ -387,6 +387,10 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
     ],
   );
 
+  if (!projectId) {
+    throw new Error("WalletConnect projectId is required. Please set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID in your environment variables.");
+  }
+
   return projectId ? (
     <WalletConnectContext.Provider value={contextValue}>{children}</WalletConnectContext.Provider>
   ) : (
@@ -402,3 +406,6 @@ export function useWalletConnect() {
   }
   return context;
 }
+
+// Export the context for direct usage if needed
+export { WalletConnectContext };
