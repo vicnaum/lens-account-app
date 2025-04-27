@@ -101,6 +101,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
         console.error("WalletConnectProvider Mount Effect: service.init() rejected.", initError);
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]); // Add projectId dependency
 
   // --- Effect to Attach/Detach Event Listeners ---
@@ -150,6 +151,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
       console.log(`%cProvider Listener: ${ServiceEvents.SessionDelete} received (likely from PEER) for topic:`, "color: purple", topic);
       setActiveSessions((prev) => {
         if (!prev[topic]) return prev;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [topic]: _removed, ...rest } = prev;
         console.log(`%cProvider State: Removing session ${topic} based on SDK/PEER event.`, "color: brown");
         return rest;
@@ -218,18 +220,15 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
         currentService.off(ServiceEvents.SessionRequest, handleSessionRequest);
       }
     };
-  }, []);
+  }, [error, pendingProposal]);
 
   // --- Context Methods ---
-  const pair = useCallback(
-    async (uri: string) => {
-      if (!serviceRef.current?.isInitialized()) return setError("Service not initialized");
-      console.log(`%cWalletConnectProvider: pair called`, "color: cyan");
-      setError(null);
-      await serviceRef.current.pair(uri);
-    },
-    [isInitialized],
-  );
+  const pair = useCallback(async (uri: string) => {
+    if (!serviceRef.current?.isInitialized()) return setError("Service not initialized");
+    console.log(`%cWalletConnectProvider: pair called`, "color: cyan");
+    setError(null);
+    await serviceRef.current.pair(uri);
+  }, []);
 
   const approveSession = useCallback(async () => {
     if (!serviceRef.current?.isInitialized() || !pendingProposal || !lensAccountAddress) {
@@ -308,6 +307,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
             console.warn(`%cWalletConnectProvider: Tried to remove non-existent session ${topic} from state.`, "color: orange");
             return prev;
           }
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [topic]: _removed, ...rest } = prev;
           console.log(`%cWalletConnectProvider: Manually removing session ${topic} from state.`, "color: brown");
           return rest;

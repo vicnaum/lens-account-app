@@ -75,8 +75,8 @@ src/
 .gitignore
 .prettierrc
 DEVELOPMENT_PLAN.md
+diff.txt
 eslint.config.mjs
-gho-wrapper-repomix.xml
 next.config.ts
 package.json
 postcss.config.mjs
@@ -89,290 +89,512 @@ tsconfig.json
 <files>
 This section contains the contents of the repository's files.
 
-<file path="gho-wrapper-repomix.xml">
-This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
-
-<file_summary>
-This section contains a summary of this file.
-
-<purpose>
-This file contains a packed representation of the entire repository's contents.
-It is designed to be easily consumable by AI systems for analysis, code review,
-or other automated processes.
-</purpose>
-
-<file_format>
-The content is organized as follows:
-1. This summary section
-2. Repository information
-3. Directory structure
-4. Repository files, each consisting of:
-  - File path as an attribute
-  - Full contents of the file
-</file_format>
-
-<usage_guidelines>
-- This file should be treated as read-only. Any changes should be made to the
-  original repository files, not this packed version.
-- When processing this file, use the file path to distinguish
-  between different files in the repository.
-- Be aware that this file may contain sensitive information. Handle it with
-  the same level of security as you would the original repository.
-</usage_guidelines>
-
-<notes>
-- Some files may have been excluded based on .gitignore rules and Repomix's configuration
-- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: *.*
-- Files matching patterns in .gitignore are excluded
-- Files matching default ignore patterns are excluded
-- Files are sorted by Git change count (files with more changes are at the bottom)
-</notes>
-
-<additional_info>
-
-</additional_info>
-
-</file_summary>
-
-<directory_structure>
-.env.example
-.gitignore
-eslint.config.mjs
-next.config.ts
-package.json
-postcss.config.mjs
-README.md
-tailwind.config.ts
-tsconfig.json
-</directory_structure>
-
-<files>
-This section contains the contents of the repository's files.
-
-<file path=".env.example">
-# Required environment variables for the application
-NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_wallet_connect_project_id
-
-# Optional: Configure the port (default: 3000)
-PORT=3000
-
-# Chain RPC URLs (if you want to override defaults)
-NEXT_PUBLIC_LENS_CHAIN_RPC_URL=https://rpc.lens.xyz
-</file>
-
-<file path="eslint.config.mjs">
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-];
-
-export default eslintConfig;
-</file>
-
-<file path="postcss.config.mjs">
-const config = {
-  plugins: ["@tailwindcss/postcss"],
-};
-
-export default config;
-</file>
-
-<file path="README.md">
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-</file>
-
-<file path="tailwind.config.ts">
-import type { Config } from "tailwindcss";
-
-const config: Config = {
-  darkMode: "class", // Ensure dark mode is enabled via class
-  content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
-  theme: {
-    extend: {
-      // Add custom dark theme colors or extensions if needed
-      // Example:
-      // colors: {
-      //   'brand-purple': '#8A2BE2',
-      // }
-    },
-  },
-  plugins: [],
-};
-export default config;
-</file>
-
-<file path="tsconfig.json">
-{
-  "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
-}
-</file>
-
-<file path=".gitignore">
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-!.env.example
-
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-</file>
-
-<file path="next.config.ts">
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  poweredByHeader: false, // Removes the X-Powered-By header
-  reactStrictMode: true,
-};
-
-export default nextConfig;
-</file>
-
-<file path="package.json">
-{
-  "name": "gho-wrapper",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@tanstack/react-query": "^5.74.4",
-    "connectkit": "^1.9.0",
-    "next": "15.3.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "viem": "^2.27.2",
-    "wagmi": "^2.14.16"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.1",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
-}
-</file>
-
-</files>
+<file path="diff.txt">
+diff --git a/src/components/WcConnect.tsx b/src/components/WcConnect.tsx
+index 7893d18..49ea3cc 100644
+--- a/src/components/WcConnect.tsx
++++ b/src/components/WcConnect.tsx
+@@ -1,9 +1,10 @@
+ // src/components/WcConnect.tsx
+ "use client";
+ 
+-import React, { useState, useEffect } from "react";
++import React, { useState, useEffect, useCallback, useMemo } from "react";
+ import { useWalletConnect } from "@/contexts/WalletConnectProvider"; // Ensure correct path
+ import Image from "next/image";
++import { isExpired } from "@walletconnect/utils"; // <-- Import isExpired utility
+ 
+ // Default/Fallback Icon
+ const FallbackIcon = () => <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">?</div>;
+@@ -65,52 +66,75 @@ export function WcConnect() {
+     pendingProposal, // Get the pending proposal
+     approveSession, // Get approve action
+     rejectSession, // Get reject action
+-    isInitializing, // <<<--- ADDED isInitializing HERE ---<<<
++    isInitializing,
+   } = useWalletConnect();
+   const [uri, setUri] = useState("");
++  const [isSubmitting, setIsSubmitting] = useState(false);
+ 
+   const activeSessionTopic = Object.keys(activeSessions)[0]; // Assuming only one session for MVP
+   const connectedSession = activeSessionTopic ? activeSessions[activeSessionTopic] : null;
+ 
+-  // --- Add this useEffect ---
++  // ---> Check if proposal is expired for UI state <--- //
++  const isProposalExpired = useMemo(() => {
++    if (!pendingProposal?.params?.expiryTimestamp) return false; // No timestamp means can't determine expiry this way
++    return isExpired(pendingProposal.params.expiryTimestamp);
++  }, [pendingProposal]); // Re-calculate only when proposal changes
++  // ---> End Expiry Check <--- //
++
+   useEffect(() => {
+-    // If there's no connected session (either initially or after disconnect),
+-    // clear the URI input field.
+     if (!connectedSession) {
+       setUri("");
+     }
+-  }, [connectedSession]); // Run this effect when connectedSession changes
+-  // -------------------------
+-
+-  const handleConnect = () => {
+-    if (!uri || !isInitialized || isLoading) return; // Check initialization and combined loading state
+-    pair(uri);
+-  };
+-
+-  const handleDisconnect = () => {
+-    if (connectedSession && isInitialized && !isLoading) {
+-      // Check initialization and combined loading state
+-      disconnect(connectedSession.topic);
++  }, [connectedSession]);
++
++  const handleConnect = useCallback(() => {
++    if (!uri || !isInitialized || isLoading || isSubmitting) return;
++    setIsSubmitting(true);
++    pair(uri).finally(() => setIsSubmitting(false));
++  }, [uri, isInitialized, isLoading, isSubmitting, pair]);
++
++  const handleDisconnect = useCallback(() => {
++    if (connectedSession && isInitialized && !isLoading && !isSubmitting) {
++      setIsSubmitting(true);
++      disconnect(connectedSession.topic).finally(() => setIsSubmitting(false));
+     }
+-  };
+-
+-  const handleApprove = () => {
+-    if (pendingProposal && !isLoading) {
+-      approveSession();
++  }, [connectedSession, isInitialized, isLoading, isSubmitting, disconnect]);
++
++  const handleApprove = useCallback(async () => {
++    if (pendingProposal && !isLoading && !isSubmitting) {
++      setIsSubmitting(true);
++      try {
++        await approveSession();
++      } catch (err) {
++        console.error("Approval failed:", err);
++      } finally {
++        setIsSubmitting(false);
++      }
+     }
+-  };
+-
+-  const handleReject = () => {
+-    if (pendingProposal && !isLoading) {
+-      rejectSession();
++  }, [pendingProposal, isLoading, isSubmitting, approveSession]);
++
++  const handleReject = useCallback(async () => {
++    if (pendingProposal && !isLoading && !isSubmitting) {
++      setIsSubmitting(true);
++      try {
++        await rejectSession();
++      } catch (err) {
++        console.error("Rejection failed:", err);
++      } finally {
++        setIsSubmitting(false);
++      }
+     }
+-  };
++  }, [pendingProposal, isLoading, isSubmitting, rejectSession]);
++
++  // Combined loading state (context is loading OR local component is submitting)
++  const isDisabled = isLoading || isSubmitting || !isInitialized;
++  const approveDisabled = isDisabled || isProposalExpired; // <-- Disable approve if expired
+ 
+   // Display loading states more granularly if needed, otherwise use `isLoading`
+-  const connectButtonText = isPairing ? "Pairing..." : isLoading ? "Working..." : "Connect";
+-  const disconnectButtonText = isLoading ? "Working..." : "Disconnect";
+-  const approveButtonText = isLoading ? "Working..." : "Approve Session";
+-  const rejectButtonText = isLoading ? "Working..." : "Reject Session";
++  const connectButtonText = isPairing ? "Pairing..." : isSubmitting ? "Connecting..." : isLoading ? "Working..." : "Connect";
++  const disconnectButtonText = isSubmitting ? "Working..." : isLoading ? "Working..." : "Disconnect";
++  const approveButtonText = isSubmitting ? "Approving..." : isLoading ? "Working..." : "Approve Session";
++  const rejectButtonText = isSubmitting ? "Rejecting..." : isLoading ? "Working..." : "Reject Session";
+ 
+   // Resolve icon URLs
+   const connectedDAppIconUrl = connectedSession
+@@ -134,17 +158,24 @@ export function WcConnect() {
+             <span className="text-sm text-gray-700">{pendingProposal.params.proposer.metadata.name}</span>
+           </div>
+           {/* TODO: Display requested permissions details if needed */}
++          {/* ---> Add Expiry Message <--- */}
++          {isProposalExpired && (
++            <p className="text-sm font-medium text-red-600 text-center">
++              This connection proposal has expired. Please generate a new one from the dApp.
++            </p>
++          )}
++          {/* ---> End Expiry Message <--- */}
+           <div className="flex space-x-2 pt-2">
+             <button
+               onClick={handleApprove}
+-              disabled={isLoading || !isInitialized}
++              disabled={approveDisabled} // <--- Use specific disabled state
+               className="flex-1 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50"
+             >
+               {approveButtonText}
+             </button>
+             <button
+               onClick={handleReject}
+-              disabled={isLoading || !isInitialized}
++              disabled={isDisabled} // Reject might still be possible even if expired, or disable too: `disabled={isDisabled || isProposalExpired}`
+               className="flex-1 px-3 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+             >
+               {rejectButtonText}
+@@ -170,7 +201,7 @@ export function WcConnect() {
+           </p>
+           <button
+             onClick={handleDisconnect}
+-            disabled={isLoading || !isInitialized} // Use combined loading state
++            disabled={isDisabled}
+             className="w-full px-4 py-2 mt-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+           >
+             {disconnectButtonText}
+@@ -193,11 +224,11 @@ export function WcConnect() {
+               onChange={(e) => setUri(e.target.value)}
+               placeholder="wc:..."
+               className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100"
+-              disabled={isLoading || !isInitialized} // Use combined loading state
++              disabled={isDisabled}
+             />
+             <button
+               onClick={handleConnect}
+-              disabled={!uri || isLoading || !isInitialized} // Use combined loading state
++              disabled={!uri || isDisabled}
+               className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+             >
+               {connectButtonText}
+@@ -207,11 +238,9 @@ export function WcConnect() {
+       )}
+ 
+       {/* --- Status/Error Messages --- */}
+-      {error && !isLoading && <p className="text-red-600 text-sm mt-2">Error: {error}</p>}
++      {error && !isLoading && !isSubmitting && <p className="text-red-600 text-sm mt-2">Error: {error}</p>}
+       {isPairing && <p className="text-indigo-600 text-sm mt-2">Pairing initiated, check dApp/wallet if needed...</p>}
+-      {/* Check both flags here now */}
+       {!isInitialized && !isInitializing && !error && <p className="text-orange-600 text-sm mt-2">WalletConnect service not ready.</p>}
+-      {/* And display initializing message correctly */}
+       {isInitializing && <p className="text-gray-500 text-sm mt-2">Initializing WalletConnect...</p>}
+     </div>
+   );
+diff --git a/src/contexts/WalletConnectProvider.tsx b/src/contexts/WalletConnectProvider.tsx
+index 0c1e8f6..7ac07c1 100644
+--- a/src/contexts/WalletConnectProvider.tsx
++++ b/src/contexts/WalletConnectProvider.tsx
+@@ -6,7 +6,7 @@ import React, { createContext, useState, useContext, ReactNode, useEffect, useCa
+ import { WalletConnectService, ServiceEvents, type WalletConnectServiceEvents } from "@/services/walletConnectService";
+ import { SessionTypes } from "@walletconnect/types";
+ import { IWalletKit, WalletKitTypes } from "@reown/walletkit";
+-import { buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
++import { buildApprovedNamespaces, getSdkError, isExpired } from "@walletconnect/utils";
+ import { useLensAccount } from "./LensAccountContext";
+ import { LENS_CHAIN_ID } from "@/lib/constants";
+ import { JsonRpcResponse } from "@walletconnect/jsonrpc-utils";
+@@ -101,94 +101,114 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
+         console.error("WalletConnectProvider Mount Effect: service.init() rejected.", initError);
+       });
+     }
+-  }, [projectId]); // Add projectId dependency
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [projectId]); // Keep only projectId as it's needed for creation
+ 
+-  // --- Effect to Attach/Detach Event Listeners ---
+-  useEffect(() => {
+-    const currentService = serviceRef.current; // Capture ref value for effect closure
+-    if (!currentService) {
+-      console.log(`%cWalletConnectProvider Listener Effect: Skipping setup, no service instance.`, "color: purple");
+-      return;
+-    }
+-
+-    console.log(`%cWalletConnectProvider Listener Effect: Attaching listeners to service instance.`, "color: purple");
+-
+-    // Define handlers
+-    const handleInitialized: WalletConnectServiceEvents[ServiceEvents.Initialized] = ({ success, instance }) => {
+-      console.log(`%cProvider Listener: ${ServiceEvents.Initialized} received (success=${success})`, "color: purple");
++  // --- Event Handlers (wrapped in useCallback) ---
++  const handleInitialized = useCallback<WalletConnectServiceEvents[ServiceEvents.Initialized]>(
++    ({ success, instance }) => {
++      console.log(`%cProvider Handler: ${ServiceEvents.Initialized} received (success=${success})`, "color: purple");
+       setIsInitialized(success);
+       setWalletKitInstance(success ? instance : null);
+-      if (currentService) setActiveSessions(currentService.getActiveSessions());
++      // Check serviceRef directly instead of captured value, as it might change over time if remount occurs
++      if (serviceRef.current) setActiveSessions(serviceRef.current.getActiveSessions());
+       setIsInitializing(false);
+       if (!success && !error) setError("Initialization failed via event");
+-    };
+-    const handlePairStatus: WalletConnectServiceEvents[ServiceEvents.PairStatus] = ({ status, message }) => {
+-      console.log(`%cProvider Listener: ${ServiceEvents.PairStatus} received: ${status}`, "color: purple", message);
+-      setIsPairing(status === "pairing");
+-      if (status === "error") {
+-        setError(message || "Pairing failed");
+-        setIsPairing(false);
+-      } else if (status !== "pairing") {
+-        setError(null);
+-      }
+-    };
+-    const handleSessionProposal: WalletConnectServiceEvents[ServiceEvents.SessionProposal] = ({ proposal }) => {
+-      console.log(`%cProvider Listener: ${ServiceEvents.SessionProposal} received:`, "color: purple", proposal.id);
+-      setPendingProposal(proposal);
+-      setIsPairing(false);
+-      setError(null);
+-    };
+-    const handleSessionConnect: WalletConnectServiceEvents[ServiceEvents.SessionConnect] = ({ session }) => {
+-      console.log(`%cProvider Listener: ${ServiceEvents.SessionConnect} received:`, "color: purple", session.topic);
+-      setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
++    },
++    [error],
++  ); // Dependency: error (to avoid setting error if one already exists)
++
++  const handlePairStatus = useCallback<WalletConnectServiceEvents[ServiceEvents.PairStatus]>(({ status, message }) => {
++    console.log(`%cProvider Handler: ${ServiceEvents.PairStatus} received: ${status}`, "color: purple", message);
++    setIsPairing(status === "pairing");
++    if (status === "error") {
++      setError(message || "Pairing failed");
+       setIsPairing(false);
++    } else if (status !== "pairing") {
+       setError(null);
+-      setPendingProposal(null);
+-    };
+-    // This now handles PEER disconnects or SDK internal cleanup events
+-    const handleSessionDelete: WalletConnectServiceEvents[ServiceEvents.SessionDelete] = ({ topic }) => {
+-      console.log(`%cProvider Listener: ${ServiceEvents.SessionDelete} received (likely from PEER) for topic:`, "color: purple", topic);
++    }
++  }, []); // No dependencies needed here as it only calls setters
++
++  const handleSessionProposal = useCallback<WalletConnectServiceEvents[ServiceEvents.SessionProposal]>(({ proposal }) => {
++    console.log(`%cProvider Handler: ${ServiceEvents.SessionProposal} received:`, "color: purple", proposal.id);
++    setPendingProposal(proposal);
++    setIsPairing(false);
++    setError(null);
++  }, []); // No dependencies needed here as it only calls setters
++
++  const handleSessionConnect = useCallback<WalletConnectServiceEvents[ServiceEvents.SessionConnect]>(({ session }) => {
++    console.log(`%cProvider Handler: ${ServiceEvents.SessionConnect} received:`, "color: purple", session.topic);
++    setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
++    setIsPairing(false);
++    setError(null);
++    setPendingProposal(null);
++  }, []); // No dependencies needed here as it only calls setters
++
++  const handleSessionDelete = useCallback<WalletConnectServiceEvents[ServiceEvents.SessionDelete]>(
++    ({ topic }) => {
++      console.log(`%cProvider Handler: ${ServiceEvents.SessionDelete} received (likely from PEER) for topic:`, "color: purple", topic);
+       setActiveSessions((prev) => {
+         if (!prev[topic]) return prev;
++        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+         const { [topic]: _removed, ...rest } = prev;
+         console.log(`%cProvider State: Removing session ${topic} based on SDK/PEER event.`, "color: brown");
+         return rest;
+       });
+       setIsPairing(false);
++      // Need pendingProposal to check pairingTopic
+       if (pendingProposal && pendingProposal.params.pairingTopic === topic) {
+         console.log("%cProvider: Clearing pending proposal due to SDK/peer session delete event.", "color: brown");
+         setPendingProposal(null);
+       }
+-    };
+-    const handleSessionsUpdated: WalletConnectServiceEvents[ServiceEvents.SessionsUpdated] = ({ sessions }) => {
+-      console.log(`%cProvider Listener: ${ServiceEvents.SessionsUpdated} received`, "color: purple", sessions);
+-      setActiveSessions(sessions);
+-    };
+-    const handleSessionRequest: WalletConnectServiceEvents[ServiceEvents.SessionRequest] = ({ request }) => {
+-      console.log(`%cProvider Listener: ${ServiceEvents.SessionRequest} received:`, "color: purple", request.id, request.params.request.method);
+-      if (request.params.request.method === "eth_sendTransaction") {
+-        setPendingRequest(request);
+-        setError(null);
+-      } else {
+-        console.warn(`%cProvider Listener: Received unhandled request method: ${request.params.request.method}`, "color: orange");
+-      }
+-    };
+-    const handleError: WalletConnectServiceEvents[ServiceEvents.Error] = ({ message }) => {
+-      console.error(`%cProvider Listener: ${ServiceEvents.Error} received:`, "color: red", message);
+-      setError(message);
+-      setIsPairing(false);
+-      setIsProcessingAction(false);
+-    };
+-    const handleIsLoading: WalletConnectServiceEvents[ServiceEvents.IS_LOADING] = ({ isLoading }) => {
+-      console.log(`%cProvider Listener: ${ServiceEvents.IS_LOADING} received: ${isLoading}`, "color: purple");
+-      setIsProcessingAction(isLoading);
+-    };
+-    const handleIsPairing: WalletConnectServiceEvents[ServiceEvents.IS_PAIRING] = ({ isPairing }) => {
+-      console.log(`%cProvider Listener: ${ServiceEvents.IS_PAIRING} received: ${isPairing}`, "color: purple");
+-      setIsPairing(isPairing);
+-    };
++    },
++    [pendingProposal],
++  ); // Dependency: pendingProposal
++
++  const handleSessionsUpdated = useCallback<WalletConnectServiceEvents[ServiceEvents.SessionsUpdated]>(({ sessions }) => {
++    console.log(`%cProvider Handler: ${ServiceEvents.SessionsUpdated} received`, "color: purple", sessions);
++    setActiveSessions(sessions);
++  }, []); // No dependencies needed here as it only calls setters
++
++  const handleSessionRequest = useCallback<WalletConnectServiceEvents[ServiceEvents.SessionRequest]>(({ request }) => {
++    console.log(`%cProvider Handler: ${ServiceEvents.SessionRequest} received:`, "color: purple", request.id, request.params.request.method);
++    if (request.params.request.method === "eth_sendTransaction") {
++      setPendingRequest(request);
++      setError(null);
++    } else {
++      console.warn(`%cProvider Handler: Received unhandled request method: ${request.params.request.method}`, "color: orange");
++      // Maybe respond with an error here automatically?
++      // respondRequest({ id: request.id, jsonrpc: '2.0', error: { code: -32601, message: 'Method not supported' } });
++    }
++  }, []); // Dependency: respondRequest (if adding automatic error response)
++
++  const handleError = useCallback<WalletConnectServiceEvents[ServiceEvents.Error]>(({ message }) => {
++    console.error(`%cProvider Handler: ${ServiceEvents.Error} received:`, "color: red", message);
++    setError(message);
++    setIsPairing(false);
++    setIsProcessingAction(false);
++  }, []); // No dependencies needed here as it only calls setters
+ 
+-    // Attach listeners
++  const handleIsLoading = useCallback<WalletConnectServiceEvents[ServiceEvents.IS_LOADING]>(({ isLoading }) => {
++    console.log(`%cProvider Handler: ${ServiceEvents.IS_LOADING} received: ${isLoading}`, "color: purple");
++    setIsProcessingAction(isLoading);
++  }, []); // No dependencies needed here as it only calls setters
++
++  const handleIsPairing = useCallback<WalletConnectServiceEvents[ServiceEvents.IS_PAIRING]>(({ isPairing }) => {
++    console.log(`%cProvider Handler: ${ServiceEvents.IS_PAIRING} received: ${isPairing}`, "color: purple");
++    setIsPairing(isPairing);
++  }, []); // No dependencies needed here as it only calls setters
++
++  // --- Effect to Attach/Detach Event Listeners ---
++  useEffect(() => {
++    const currentService = serviceRef.current; // Capture ref value
++    if (!currentService) {
++      console.log(`%cWalletConnectProvider Listener Effect: Skipping setup, no service instance.`, "color: purple");
++      return;
++    }
++
++    console.log(`%cWalletConnectProvider Listener Effect: Attaching listeners to service instance.`, "color: purple");
++
++    // Attach the useCallback handlers
+     currentService.on(ServiceEvents.Initialized, handleInitialized);
+     currentService.on(ServiceEvents.PairStatus, handlePairStatus);
+     currentService.on(ServiceEvents.SessionProposal, handleSessionProposal);
+@@ -200,11 +220,10 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
+     currentService.on(ServiceEvents.IS_PAIRING, handleIsPairing);
+     currentService.on(ServiceEvents.SessionRequest, handleSessionRequest);
+ 
+-    // Cleanup function
++    // Cleanup function using the same stable handlers
+     return () => {
+-      console.log("%cWalletConnectProvider Mount Effect: Cleaning up listeners.", "color: orange");
++      console.log("%cWalletConnectProvider Listener Effect: Cleaning up listeners.", "color: orange");
+       if (currentService) {
+-        // Use the captured variable
+         console.log("%cDetaching listeners from service instance in ref.", "color: orange");
+         currentService.off(ServiceEvents.Initialized, handleInitialized);
+         currentService.off(ServiceEvents.PairStatus, handlePairStatus);
+@@ -218,7 +237,21 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
+         currentService.off(ServiceEvents.SessionRequest, handleSessionRequest);
+       }
+     };
+-  }, []);
++  }, [
++    // Dependencies are the stable handler functions themselves
++    handleInitialized,
++    handlePairStatus,
++    handleSessionProposal,
++    handleSessionConnect,
++    handleSessionDelete,
++    handleSessionsUpdated,
++    handleError,
++    handleIsLoading,
++    handleIsPairing,
++    handleSessionRequest,
++    // Also include isInitialized or serviceRef.current? Let's try without first.
++    // If listeners aren't attached correctly after init, add isInitialized.
++  ]);
+ 
+   // --- Context Methods ---
+   const pair = useCallback(
+@@ -228,15 +261,29 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
+       setError(null);
+       await serviceRef.current.pair(uri);
+     },
+-    [isInitialized],
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++    [isInitialized], // Keep isInitialized here
+   );
+ 
+   const approveSession = useCallback(async () => {
+-    if (!serviceRef.current?.isInitialized() || !pendingProposal || !lensAccountAddress) {
+-      const reason = !isInitialized ? "Service not ready." : !pendingProposal ? "No proposal." : "No Lens address.";
++    if (!serviceRef.current?.isInitialized() || !pendingProposal) {
++      const reason = !isInitialized ? "Service not ready." : "No proposal.";
+       setError(`Cannot approve: ${reason}`);
+       return;
+     }
++
++    if (pendingProposal.params.expiryTimestamp && isExpired(pendingProposal.params.expiryTimestamp)) {
++      console.warn(`Attempted to approve expired proposal ${pendingProposal.id}.`);
++      setError("Connection proposal expired. Please try again.");
++      setPendingProposal(null);
++      return;
++    }
++
++    if (!lensAccountAddress) {
++      setError("Cannot approve: Lens Account address is missing.");
++      return;
++    }
++
+     console.log(`%cWalletConnectProvider: approveSession called for proposal ${pendingProposal.id}`, "color: cyan");
+     setError(null);
+ 
+@@ -261,8 +308,6 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
+ 
+       const session = await serviceRef.current.approveSession(pendingProposal, approvedNamespaces);
+       console.log(`%cWalletConnectProvider: approveSession successful, received session:`, "color: green", session);
+-      // Manually update state since event might not fire from SDK
+-      setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
+       setPendingProposal(null);
+       setIsPairing(false);
+       setError(null);
+@@ -287,7 +332,6 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
+     }
+   }, [isInitialized, pendingProposal]);
+ 
+-  // >>>>>>>> REVERTED disconnect callback <<<<<<<<
+   const disconnect = useCallback(
+     async (topic: string) => {
+       if (!serviceRef.current?.isInitialized()) {
+@@ -308,24 +352,27 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
+             console.warn(`%cWalletConnectProvider: Tried to remove non-existent session ${topic} from state.`, "color: orange");
+             return prev;
+           }
++          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+           const { [topic]: _removed, ...rest } = prev;
+           console.log(`%cWalletConnectProvider: Manually removing session ${topic} from state.`, "color: brown");
+           return rest;
+         });
+-        // Ensure other related states are cleared
++
++        // ---> KEEP This State Clearing Logic <---
++        setPendingProposal(null);
++        setPendingRequest(null); // Clear pending requests too
+         setIsPairing(false);
+-        if (pendingProposal?.params?.pairingTopic === topic) {
+-          console.log(`%cWalletConnectProvider: Clearing pending proposal during manual disconnect cleanup for topic ${topic}.`, "color: brown");
+-          setPendingProposal(null);
+-        }
++        setError(null);
++        // ---> End State Clearing Logic <---
+       } catch (e) {
+         console.error(`%cWalletConnectProvider: disconnect failed for topic ${topic}:`, "color: red", e);
+         setError((e as Error)?.message || "Disconnect failed");
+       }
+     },
+-    [pendingProposal], // isInitialized was correctly removed previously
++    // Add dependencies if they are used *inside* the logic before the service call,
++    // but since it primarily relies on the `topic` argument, `[]` is okay here.
++    [],
+   );
+-  // >>>>>>>> ----------------------------- <<<<<<<<
+ 
+   const respondRequest = useCallback(
+     async (response: JsonRpcResponse) => {
 </file>
 
 <file path="src/components/ConnectOwnerButton.tsx">
@@ -2361,6 +2583,80 @@ export function WcConnect() {
 }
 </file>
 
+<file path="src/app/dashboard/page.tsx">
+// src/app/dashboard/page.tsx
+"use client";
+
+import { useLensAccount } from "@/contexts/LensAccountContext";
+import { useAccount, useDisconnect } from "wagmi";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { AccountDisplay } from "@/components/AccountDisplay";
+import { WcConnect } from "@/components/WcConnect";
+import { WcRequestDisplay } from "@/components/WcRequestDisplay"; // <<<--- IMPORTED
+
+export default function Dashboard() {
+  const { lensAccountAddress, ownerAddress, clearAccount } = useLensAccount();
+  const { isConnected } = useAccount();
+  const { disconnect: disconnectOwnerWallet } = useDisconnect();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isConnected || !lensAccountAddress || !ownerAddress) {
+      console.log("Redirecting to home: not connected or missing context");
+      if (!lensAccountAddress || !ownerAddress) {
+        clearAccount();
+      }
+      router.replace("/");
+    }
+  }, [isConnected, lensAccountAddress, ownerAddress, router, clearAccount]);
+
+  const handleLogout = () => {
+    disconnectOwnerWallet();
+    clearAccount();
+    console.log("Logout initiated");
+  };
+
+  if (!isConnected || !lensAccountAddress || !ownerAddress) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>Loading or redirecting...</p>
+      </div>
+    );
+  }
+
+  return (
+    <main className="flex min-h-screen flex-col items-center p-6 md:p-24">
+      <div className="w-full max-w-4xl p-8 bg-white rounded-xl shadow-lg relative">
+        <button
+          onClick={handleLogout}
+          className="absolute top-4 right-4 px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+        >
+          {" "}
+          Logout Owner{" "}
+        </button>
+        <h1 className="text-2xl font-bold mb-4 text-center">Dashboard</h1>
+        <div className="space-y-6">
+          <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+            <p className="text-sm font-medium text-gray-700">Connected Owner Wallet:</p>
+            <p className="text-xs text-gray-600 break-words font-mono">{ownerAddress}</p>
+          </div>
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-sm font-medium text-blue-800">Managing Lens Account:</p>
+            <p className="text-xs text-blue-700 break-words font-mono">{lensAccountAddress}</p>
+          </div>
+          <AccountDisplay />
+          <WcConnect />
+          {/* --- Render the Request Display Component --- */}
+          <WcRequestDisplay /> {/* <<<--- ADDED */}
+          {/* ------------------------------------------- */}
+        </div>
+      </div>
+    </main>
+  );
+}
+</file>
+
 <file path="src/services/walletConnectService.ts">
 // src/services/walletConnectService.ts
 import { WalletKit, IWalletKit, WalletKitTypes } from "@reown/walletkit";
@@ -2642,80 +2938,6 @@ export class WalletConnectService extends EventEmitter {
   emit<E extends keyof WalletConnectServiceEvents>(event: E, ...args: Parameters<WalletConnectServiceEvents[E]>): boolean {
     return super.emit(event, ...args);
   }
-}
-</file>
-
-<file path="src/app/dashboard/page.tsx">
-// src/app/dashboard/page.tsx
-"use client";
-
-import { useLensAccount } from "@/contexts/LensAccountContext";
-import { useAccount, useDisconnect } from "wagmi";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { AccountDisplay } from "@/components/AccountDisplay";
-import { WcConnect } from "@/components/WcConnect";
-import { WcRequestDisplay } from "@/components/WcRequestDisplay"; // <<<--- IMPORTED
-
-export default function Dashboard() {
-  const { lensAccountAddress, ownerAddress, clearAccount } = useLensAccount();
-  const { isConnected } = useAccount();
-  const { disconnect: disconnectOwnerWallet } = useDisconnect();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isConnected || !lensAccountAddress || !ownerAddress) {
-      console.log("Redirecting to home: not connected or missing context");
-      if (!lensAccountAddress || !ownerAddress) {
-        clearAccount();
-      }
-      router.replace("/");
-    }
-  }, [isConnected, lensAccountAddress, ownerAddress, router, clearAccount]);
-
-  const handleLogout = () => {
-    disconnectOwnerWallet();
-    clearAccount();
-    console.log("Logout initiated");
-  };
-
-  if (!isConnected || !lensAccountAddress || !ownerAddress) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p>Loading or redirecting...</p>
-      </div>
-    );
-  }
-
-  return (
-    <main className="flex min-h-screen flex-col items-center p-6 md:p-24">
-      <div className="w-full max-w-4xl p-8 bg-white rounded-xl shadow-lg relative">
-        <button
-          onClick={handleLogout}
-          className="absolute top-4 right-4 px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-        >
-          {" "}
-          Logout Owner{" "}
-        </button>
-        <h1 className="text-2xl font-bold mb-4 text-center">Dashboard</h1>
-        <div className="space-y-6">
-          <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
-            <p className="text-sm font-medium text-gray-700">Connected Owner Wallet:</p>
-            <p className="text-xs text-gray-600 break-words font-mono">{ownerAddress}</p>
-          </div>
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-sm font-medium text-blue-800">Managing Lens Account:</p>
-            <p className="text-xs text-blue-700 break-words font-mono">{lensAccountAddress}</p>
-          </div>
-          <AccountDisplay />
-          <WcConnect />
-          {/* --- Render the Request Display Component --- */}
-          <WcRequestDisplay /> {/* <<<--- ADDED */}
-          {/* ------------------------------------------- */}
-        </div>
-      </div>
-    </main>
-  );
 }
 </file>
 
@@ -3054,6 +3276,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
         console.error("WalletConnectProvider Mount Effect: service.init() rejected.", initError);
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]); // Add projectId dependency
 
   // --- Effect to Attach/Detach Event Listeners ---
@@ -3103,6 +3326,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
       console.log(`%cProvider Listener: ${ServiceEvents.SessionDelete} received (likely from PEER) for topic:`, "color: purple", topic);
       setActiveSessions((prev) => {
         if (!prev[topic]) return prev;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [topic]: _removed, ...rest } = prev;
         console.log(`%cProvider State: Removing session ${topic} based on SDK/PEER event.`, "color: brown");
         return rest;
@@ -3171,18 +3395,15 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
         currentService.off(ServiceEvents.SessionRequest, handleSessionRequest);
       }
     };
-  }, []);
+  }, [error, pendingProposal]);
 
   // --- Context Methods ---
-  const pair = useCallback(
-    async (uri: string) => {
-      if (!serviceRef.current?.isInitialized()) return setError("Service not initialized");
-      console.log(`%cWalletConnectProvider: pair called`, "color: cyan");
-      setError(null);
-      await serviceRef.current.pair(uri);
-    },
-    [isInitialized],
-  );
+  const pair = useCallback(async (uri: string) => {
+    if (!serviceRef.current?.isInitialized()) return setError("Service not initialized");
+    console.log(`%cWalletConnectProvider: pair called`, "color: cyan");
+    setError(null);
+    await serviceRef.current.pair(uri);
+  }, []);
 
   const approveSession = useCallback(async () => {
     if (!serviceRef.current?.isInitialized() || !pendingProposal || !lensAccountAddress) {
@@ -3261,6 +3482,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
             console.warn(`%cWalletConnectProvider: Tried to remove non-existent session ${topic} from state.`, "color: orange");
             return prev;
           }
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [topic]: _removed, ...rest } = prev;
           console.log(`%cWalletConnectProvider: Manually removing session ${topic} from state.`, "color: brown");
           return rest;
