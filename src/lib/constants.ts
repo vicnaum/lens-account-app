@@ -35,6 +35,7 @@ export const LENS_ACCOUNT_ABI = parseAbi([
 ]);
 
 export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
+export const BONSAI_TOKEN_ADDRESS = "0xB0588f9A9cADe7CD5f194a5fe77AcD6A58250f82";
 export const ERC20_ABI = parseAbi(["function balanceOf(address owner) view returns (uint256)"]);
 
 // --- Local Storage Keys ---
