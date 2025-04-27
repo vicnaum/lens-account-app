@@ -99,6 +99,341 @@ tsconfig.json
 <files>
 This section contains the contents of the repository's files.
 
+<file path="diff.txt">
+diff --git a/src/components/AccountDisplay.tsx b/src/components/AccountDisplay.tsx
+index c81762a..a9d53a4 100644
+--- a/src/components/AccountDisplay.tsx
++++ b/src/components/AccountDisplay.tsx
+@@ -1,140 +1,172 @@
+ // components/AccountDisplay.tsx
+ "use client";
+ 
+-import React from "react";
++import React, { useState } from "react";
+ import { useReadContract, useBalance } from "wagmi";
+-import { formatUnits, type BaseError, type Address } from "viem";
++import { formatUnits, type Address } from "viem";
+ import { useLensAccount } from "@/contexts/LensAccountContext";
+ import { ERC20_ABI, WGHO_TOKEN_ADDRESS, BONSAI_TOKEN_ADDRESS, LENS_CHAIN_ID, lensChain } from "@/lib/constants";
++import { SendModal } from "@/components/modals/SendModal";
++import { ApproveModal } from "@/components/modals/ApproveModal";
++import { WrapModal } from "@/components/modals/WrapModal";
++import { UnwrapModal } from "@/components/modals/UnwrapModal";
+ 
+-// Placeholder button component
+-const ActionButton = ({ label, onClick }: { label: string; onClick: () => void }) => (
+-  <button
+-    onClick={onClick}
+-    className="ml-2 px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition-colors disabled:opacity-50"
+-  >
+-    {label}
+-  </button>
+-);
++interface ActionButtonProps {
++  label: string;
++  onClick: () => void;
++  disabled?: boolean;
++}
++
++function ActionButton({ label, onClick, disabled = false }: ActionButtonProps) {
++  return (
++    <button
++      onClick={onClick}
++      disabled={disabled}
++      className="px-3 py-1 text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
++    >
++      {label}
++    </button>
++  );
++}
++
++// Define Modal State Type
++type ModalType = "send" | "approve" | "wrap" | "unwrap";
++interface ModalState {
++  type: ModalType | null;
++  tokenSymbol: string;
++  tokenAddress?: Address;
++  decimals: number;
++  balance?: bigint;
++}
+ 
+ export function AccountDisplay() {
+   const { lensAccountAddress } = useLensAccount();
++  const [modalState, setModalState] = useState<ModalState>({
++    type: null,
++    tokenSymbol: "",
++    decimals: 18,
++  });
+ 
+-  // Native GHO Balance Fetching
+-  const {
+-    data: nativeBalanceData,
+-    error: nativeBalanceError,
+-    isLoading: isLoadingNativeBalance,
+-  } = useBalance({
++  // Native GHO Balance
++  const { data: nativeBalanceData, isLoading: isLoadingNative } = useBalance({
+     address: lensAccountAddress as Address | undefined,
+     chainId: LENS_CHAIN_ID,
+-    query: {
+-      enabled: !!lensAccountAddress,
+-      refetchInterval: 5000,
+-      refetchOnWindowFocus: true,
+-    },
+   });
+ 
+-  // WGHO (ERC20) Balance Fetching
+-  const {
+-    data: wghoBalanceData,
+-    error: wghoBalanceError,
+-    isLoading: isLoadingWghoBalance,
+-  } = useReadContract({
+-    address: WGHO_TOKEN_ADDRESS as Address,
++  // WGHO Balance
++  const { data: wghoBalanceData, isLoading: isLoadingWgho } = useReadContract({
++    address: WGHO_TOKEN_ADDRESS,
+     abi: ERC20_ABI,
+     functionName: "balanceOf",
+-    args: [lensAccountAddress!],
++    args: lensAccountAddress ? [lensAccountAddress] : undefined,
+     chainId: LENS_CHAIN_ID,
+-    query: {
+-      enabled: !!lensAccountAddress,
+-      refetchInterval: 5000,
+-      refetchOnWindowFocus: true,
+-    },
+   });
+ 
+-  // BONSAI Balance Fetching
+-  const {
+-    data: bonsaiBalanceData,
+-    error: bonsaiBalanceError,
+-    isLoading: isLoadingBonsaiBalance,
+-  } = useReadContract({
+-    address: BONSAI_TOKEN_ADDRESS as Address,
++  // BONSAI Balance
++  const { data: bonsaiBalanceData, isLoading: isLoadingBonsai } = useReadContract({
++    address: BONSAI_TOKEN_ADDRESS,
+     abi: ERC20_ABI,
+     functionName: "balanceOf",
+-    args: [lensAccountAddress!],
++    args: lensAccountAddress ? [lensAccountAddress] : undefined,
+     chainId: LENS_CHAIN_ID,
+-    query: {
+-      enabled: !!lensAccountAddress,
+-      refetchInterval: 5000,
+-      refetchOnWindowFocus: true,
+-    },
+   });
+ 
+-  // Format balances
+-  const formattedNativeBalance =
+-    nativeBalanceData?.value !== undefined
+-      ? parseFloat(formatUnits(nativeBalanceData.value, lensChain.nativeCurrency.decimals)).toFixed(4)
+-      : "0.0000";
+-  const formattedWghoBalance = typeof wghoBalanceData === "bigint" ? parseFloat(formatUnits(wghoBalanceData, 18)).toFixed(4) : "0.0000";
+-  const formattedBonsaiBalance = typeof bonsaiBalanceData === "bigint" ? parseFloat(formatUnits(bonsaiBalanceData, 18)).toFixed(4) : "0.0000";
++  const isLoadingBalances = isLoadingNative || isLoadingWgho || isLoadingBonsai;
+ 
+-  const isLoading = isLoadingNativeBalance || isLoadingWghoBalance || isLoadingBonsaiBalance;
++  // Format balances for display
++  const formattedNativeBalance = nativeBalanceData ? formatUnits(nativeBalanceData.value, nativeBalanceData.decimals) : "0";
++  const formattedWghoBalance = wghoBalanceData ? formatUnits(wghoBalanceData, 18) : "0";
++  const formattedBonsaiBalance = bonsaiBalanceData ? formatUnits(bonsaiBalanceData, 18) : "0";
+ 
+-  const handleActionClick = (action: string, token: string) => {
+-    console.log(`Placeholder: Clicked ${action} for ${token}`);
+-    alert(`${action} functionality for ${token} not yet implemented.`);
++  const handleActionClick = (actionType: ModalType, symbol: string, address?: Address, decimals = 18, balance?: bigint) => {
++    console.log(`Opening ${actionType} modal for ${symbol}`, { address, decimals, balance });
++    setModalState({ type: actionType, tokenSymbol: symbol, tokenAddress: address, decimals, balance });
+   };
+ 
++  const closeModal = () => {
++    setModalState({ type: null, tokenSymbol: "", decimals: 18 });
++  };
++
++  if (!lensAccountAddress) {
++    return <p className="text-gray-500">Connect your wallet to view account balances.</p>;
++  }
++
+   return (
+     <div className="space-y-4">
+-      {isLoading && <p className="text-gray-500 text-sm">Loading balances...</p>}
++      {isLoadingBalances && <p className="text-gray-500 text-sm">Loading balances...</p>}
+ 
+       {/* Native GHO Row */}
+       <div className="flex items-center justify-between border-b pb-2">
+         <div>
+-          <p className="text-gray-800">
+-            <span className="font-medium">Native GHO:</span> <span className="font-mono text-lg">{formattedNativeBalance}</span>{" "}
+-            {lensChain.nativeCurrency.symbol}
+-          </p>
+-          {nativeBalanceError && !isLoadingNativeBalance && <p className="text-red-600 text-xs mt-1">Error loading balance</p>}
++          <h3 className="text-lg font-medium text-gray-900">{lensChain.nativeCurrency.symbol}</h3>
++          <p className="text-gray-500">{formattedNativeBalance}</p>
+         </div>
+         <div className="flex gap-2">
+-          <ActionButton label="Wrap" onClick={() => handleActionClick("Wrap", "GHO")} />
+-          <ActionButton label="Send" onClick={() => handleActionClick("Send", "GHO")} />
++          <ActionButton
++            label="Wrap"
++            onClick={() =>
++              handleActionClick("wrap", lensChain.nativeCurrency.symbol, undefined, lensChain.nativeCurrency.decimals, nativeBalanceData?.value)
++            }
++          />
++          <ActionButton
++            label="Send"
++            onClick={() =>
++              handleActionClick("send", lensChain.nativeCurrency.symbol, undefined, lensChain.nativeCurrency.decimals, nativeBalanceData?.value)
++            }
++          />
+         </div>
+       </div>
+ 
+       {/* WGHO Row */}
+       <div className="flex items-center justify-between border-b pb-2">
+         <div>
+-          <p className="text-gray-800">
+-            <span className="font-medium">WGHO Token:</span> <span className="font-mono text-lg">{formattedWghoBalance}</span> GHO
+-          </p>
+-          {wghoBalanceError && !isLoadingWghoBalance && <p className="text-red-600 text-xs mt-1">Error loading balance</p>}
++          <h3 className="text-lg font-medium text-gray-900">WGHO</h3>
++          <p className="text-gray-500">{formattedWghoBalance}</p>
+         </div>
+         <div className="flex gap-2">
+-          <ActionButton label="Unwrap" onClick={() => handleActionClick("Unwrap", "WGHO")} />
+-          <ActionButton label="Approve" onClick={() => handleActionClick("Approve", "WGHO")} />
+-          <ActionButton label="Send" onClick={() => handleActionClick("Send", "WGHO")} />
++          <ActionButton label="Unwrap" onClick={() => handleActionClick("unwrap", "WGHO", WGHO_TOKEN_ADDRESS as Address, 18, wghoBalanceData)} />
++          <ActionButton label="Approve" onClick={() => handleActionClick("approve", "WGHO", WGHO_TOKEN_ADDRESS as Address, 18, wghoBalanceData)} />
++          <ActionButton label="Send" onClick={() => handleActionClick("send", "WGHO", WGHO_TOKEN_ADDRESS as Address, 18, wghoBalanceData)} />
+         </div>
+       </div>
+ 
+       {/* BONSAI Row */}
+       <div className="flex items-center justify-between">
+         <div>
+-          <p className="text-gray-800">
+-            <span className="font-medium">BONSAI Token:</span> <span className="font-mono text-lg">{formattedBonsaiBalance}</span> BONSAI
+-          </p>
+-          {bonsaiBalanceError && !isLoadingBonsaiBalance && <p className="text-red-600 text-xs mt-1">Error loading balance</p>}
++          <h3 className="text-lg font-medium text-gray-900">BONSAI</h3>
++          <p className="text-gray-500">{formattedBonsaiBalance}</p>
+         </div>
+         <div className="flex gap-2">
+-          <ActionButton label="Approve" onClick={() => handleActionClick("Approve", "BONSAI")} />
+-          <ActionButton label="Send" onClick={() => handleActionClick("Send", "BONSAI")} />
++          <ActionButton
++            label="Approve"
++            onClick={() => handleActionClick("approve", "BONSAI", BONSAI_TOKEN_ADDRESS as Address, 18, bonsaiBalanceData)}
++          />
++          <ActionButton label="Send" onClick={() => handleActionClick("send", "BONSAI", BONSAI_TOKEN_ADDRESS as Address, 18, bonsaiBalanceData)} />
+         </div>
+       </div>
+ 
+-      {!lensAccountAddress && !isLoading && <p className="text-gray-500 text-sm mt-2">Cannot fetch balances without Lens Account address.</p>}
++      {/* Render Modals */}
++      {modalState.type === "send" && (
++        <SendModal
++          isOpen={true}
++          onClose={closeModal}
++          tokenSymbol={modalState.tokenSymbol}
++          tokenAddress={modalState.tokenAddress}
++          decimals={modalState.decimals}
++          balance={modalState.balance}
++        />
++      )}
++      {modalState.type === "approve" && modalState.tokenAddress && (
++        <ApproveModal
++          isOpen={true}
++          onClose={closeModal}
++          tokenSymbol={modalState.tokenSymbol}
++          tokenAddress={modalState.tokenAddress}
++          decimals={modalState.decimals}
++        />
++      )}
++      {modalState.type === "wrap" && <WrapModal isOpen={true} onClose={closeModal} balance={modalState.balance} />}
++      {modalState.type === "unwrap" && <UnwrapModal isOpen={true} onClose={closeModal} balance={modalState.balance} />}
+     </div>
+   );
+ }
+</file>
+
+<file path="src/components/dashboard/AccountIdentityPanel.tsx">
+"use client";
+
+import { type Address } from "viem";
+import { DocumentDuplicateIcon, QrCodeIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { QrCodeModal } from "@/components/modals/QrCodeModal";
+
+interface AccountIdentityPanelProps {
+  username: string | null;
+  address: Address;
+}
+
+export function AccountIdentityPanel({ username, address }: AccountIdentityPanelProps) {
+  const [copied, setCopied] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      console.log("Address copied to clipboard:", address);
+      // Reset icon after a short delay
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy address: ", err);
+      alert("Failed to copy address."); // Simple error feedback
+    }
+  };
+
+  const handleShowQr = () => {
+    setIsQrModalOpen(true);
+    console.log("Showing QR code modal for:", address);
+  };
+
+  const handleCloseQr = () => {
+    setIsQrModalOpen(false);
+  };
+
+  return (
+    <div>
+      {username && (
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          Welcome, <span className="text-indigo-600">{username}</span>!
+        </h2>
+      )}
+      <p className="text-sm text-gray-500 mb-3">Managing Lens Account:</p>
+      <div className="flex items-center space-x-4 bg-gray-50 p-3 rounded-md border border-gray-200">
+        <p className="text-lg md:text-xl font-mono text-gray-700 break-all flex-1">{address}</p>
+        <button
+          onClick={handleCopy}
+          title={copied ? "Copied!" : "Copy Address"}
+          className={`p-2 rounded-md transition-colors duration-150 ${
+            copied ? "text-green-600 bg-green-100" : "text-gray-500 hover:text-indigo-600 hover:bg-gray-200"
+          }`}
+        >
+          {copied ? <CheckIcon className="w-5 h-5" /> : <DocumentDuplicateIcon className="w-5 h-5" />}
+        </button>
+        <button
+          onClick={handleShowQr}
+          title="Show QR Code"
+          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-200 rounded-md transition-colors duration-150"
+        >
+          <QrCodeIcon className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Render the QR modal */}
+      <QrCodeModal address={address} isOpen={isQrModalOpen} onClose={handleCloseQr} />
+    </div>
+  );
+}
+</file>
+
 <file path="src/components/modals/ApproveModal.tsx">
 "use client";
 
@@ -424,21 +759,15 @@ export function QrCodeModal({ address, isOpen, onClose }: QrCodeModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      onClick={onClose} // Close on backdrop click
-    >
-      <div
-        className="bg-white p-6 rounded-lg shadow-xl relative max-w-sm w-full text-center"
-        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
-      >
-        <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-gray-800" aria-label="Close modal">
+    <div className="fixed inset-0 backdrop-blur-sm bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white p-6 rounded-lg shadow-xl relative max-w-sm w-full mx-4 text-center" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600" aria-label="Close modal">
           <XMarkIcon className="w-6 h-6" />
         </button>
-        <h3 className="text-lg font-medium mb-4 text-gray-800">Receive Funds</h3>
+        <h3 className="text-xl font-semibold mb-4 text-gray-800 pr-8">Receive Funds</h3>
         <p className="text-sm text-gray-600 mb-4 break-all">Scan this QR code or copy the address below.</p>
-        <div className="flex justify-center mb-4">
-          <QRCodeSVG value={address} size={192} level="H" includeMargin={true} />
+        <div className="flex justify-center mb-6">
+          <QRCodeSVG value={address} size={250} level="H" includeMargin={true} />
         </div>
         <p className="text-xs font-mono bg-gray-100 p-2 rounded border break-all">{address}</p>
       </div>
@@ -946,494 +1275,6 @@ export function WrapModal({ isOpen, onClose, balance }: WrapModalProps) {
 }
 </file>
 
-<file path="diff.txt">
-diff --git a/src/components/AccountDisplay.tsx b/src/components/AccountDisplay.tsx
-index c81762a..a9d53a4 100644
---- a/src/components/AccountDisplay.tsx
-+++ b/src/components/AccountDisplay.tsx
-@@ -1,140 +1,172 @@
- // components/AccountDisplay.tsx
- "use client";
- 
--import React from "react";
-+import React, { useState } from "react";
- import { useReadContract, useBalance } from "wagmi";
--import { formatUnits, type BaseError, type Address } from "viem";
-+import { formatUnits, type Address } from "viem";
- import { useLensAccount } from "@/contexts/LensAccountContext";
- import { ERC20_ABI, WGHO_TOKEN_ADDRESS, BONSAI_TOKEN_ADDRESS, LENS_CHAIN_ID, lensChain } from "@/lib/constants";
-+import { SendModal } from "@/components/modals/SendModal";
-+import { ApproveModal } from "@/components/modals/ApproveModal";
-+import { WrapModal } from "@/components/modals/WrapModal";
-+import { UnwrapModal } from "@/components/modals/UnwrapModal";
- 
--// Placeholder button component
--const ActionButton = ({ label, onClick }: { label: string; onClick: () => void }) => (
--  <button
--    onClick={onClick}
--    className="ml-2 px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition-colors disabled:opacity-50"
--  >
--    {label}
--  </button>
--);
-+interface ActionButtonProps {
-+  label: string;
-+  onClick: () => void;
-+  disabled?: boolean;
-+}
-+
-+function ActionButton({ label, onClick, disabled = false }: ActionButtonProps) {
-+  return (
-+    <button
-+      onClick={onClick}
-+      disabled={disabled}
-+      className="px-3 py-1 text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-+    >
-+      {label}
-+    </button>
-+  );
-+}
-+
-+// Define Modal State Type
-+type ModalType = "send" | "approve" | "wrap" | "unwrap";
-+interface ModalState {
-+  type: ModalType | null;
-+  tokenSymbol: string;
-+  tokenAddress?: Address;
-+  decimals: number;
-+  balance?: bigint;
-+}
- 
- export function AccountDisplay() {
-   const { lensAccountAddress } = useLensAccount();
-+  const [modalState, setModalState] = useState<ModalState>({
-+    type: null,
-+    tokenSymbol: "",
-+    decimals: 18,
-+  });
- 
--  // Native GHO Balance Fetching
--  const {
--    data: nativeBalanceData,
--    error: nativeBalanceError,
--    isLoading: isLoadingNativeBalance,
--  } = useBalance({
-+  // Native GHO Balance
-+  const { data: nativeBalanceData, isLoading: isLoadingNative } = useBalance({
-     address: lensAccountAddress as Address | undefined,
-     chainId: LENS_CHAIN_ID,
--    query: {
--      enabled: !!lensAccountAddress,
--      refetchInterval: 5000,
--      refetchOnWindowFocus: true,
--    },
-   });
- 
--  // WGHO (ERC20) Balance Fetching
--  const {
--    data: wghoBalanceData,
--    error: wghoBalanceError,
--    isLoading: isLoadingWghoBalance,
--  } = useReadContract({
--    address: WGHO_TOKEN_ADDRESS as Address,
-+  // WGHO Balance
-+  const { data: wghoBalanceData, isLoading: isLoadingWgho } = useReadContract({
-+    address: WGHO_TOKEN_ADDRESS,
-     abi: ERC20_ABI,
-     functionName: "balanceOf",
--    args: [lensAccountAddress!],
-+    args: lensAccountAddress ? [lensAccountAddress] : undefined,
-     chainId: LENS_CHAIN_ID,
--    query: {
--      enabled: !!lensAccountAddress,
--      refetchInterval: 5000,
--      refetchOnWindowFocus: true,
--    },
-   });
- 
--  // BONSAI Balance Fetching
--  const {
--    data: bonsaiBalanceData,
--    error: bonsaiBalanceError,
--    isLoading: isLoadingBonsaiBalance,
--  } = useReadContract({
--    address: BONSAI_TOKEN_ADDRESS as Address,
-+  // BONSAI Balance
-+  const { data: bonsaiBalanceData, isLoading: isLoadingBonsai } = useReadContract({
-+    address: BONSAI_TOKEN_ADDRESS,
-     abi: ERC20_ABI,
-     functionName: "balanceOf",
--    args: [lensAccountAddress!],
-+    args: lensAccountAddress ? [lensAccountAddress] : undefined,
-     chainId: LENS_CHAIN_ID,
--    query: {
--      enabled: !!lensAccountAddress,
--      refetchInterval: 5000,
--      refetchOnWindowFocus: true,
--    },
-   });
- 
--  // Format balances
--  const formattedNativeBalance =
--    nativeBalanceData?.value !== undefined
--      ? parseFloat(formatUnits(nativeBalanceData.value, lensChain.nativeCurrency.decimals)).toFixed(4)
--      : "0.0000";
--  const formattedWghoBalance = typeof wghoBalanceData === "bigint" ? parseFloat(formatUnits(wghoBalanceData, 18)).toFixed(4) : "0.0000";
--  const formattedBonsaiBalance = typeof bonsaiBalanceData === "bigint" ? parseFloat(formatUnits(bonsaiBalanceData, 18)).toFixed(4) : "0.0000";
-+  const isLoadingBalances = isLoadingNative || isLoadingWgho || isLoadingBonsai;
- 
--  const isLoading = isLoadingNativeBalance || isLoadingWghoBalance || isLoadingBonsaiBalance;
-+  // Format balances for display
-+  const formattedNativeBalance = nativeBalanceData ? formatUnits(nativeBalanceData.value, nativeBalanceData.decimals) : "0";
-+  const formattedWghoBalance = wghoBalanceData ? formatUnits(wghoBalanceData, 18) : "0";
-+  const formattedBonsaiBalance = bonsaiBalanceData ? formatUnits(bonsaiBalanceData, 18) : "0";
- 
--  const handleActionClick = (action: string, token: string) => {
--    console.log(`Placeholder: Clicked ${action} for ${token}`);
--    alert(`${action} functionality for ${token} not yet implemented.`);
-+  const handleActionClick = (actionType: ModalType, symbol: string, address?: Address, decimals = 18, balance?: bigint) => {
-+    console.log(`Opening ${actionType} modal for ${symbol}`, { address, decimals, balance });
-+    setModalState({ type: actionType, tokenSymbol: symbol, tokenAddress: address, decimals, balance });
-   };
- 
-+  const closeModal = () => {
-+    setModalState({ type: null, tokenSymbol: "", decimals: 18 });
-+  };
-+
-+  if (!lensAccountAddress) {
-+    return <p className="text-gray-500">Connect your wallet to view account balances.</p>;
-+  }
-+
-   return (
-     <div className="space-y-4">
--      {isLoading && <p className="text-gray-500 text-sm">Loading balances...</p>}
-+      {isLoadingBalances && <p className="text-gray-500 text-sm">Loading balances...</p>}
- 
-       {/* Native GHO Row */}
-       <div className="flex items-center justify-between border-b pb-2">
-         <div>
--          <p className="text-gray-800">
--            <span className="font-medium">Native GHO:</span> <span className="font-mono text-lg">{formattedNativeBalance}</span>{" "}
--            {lensChain.nativeCurrency.symbol}
--          </p>
--          {nativeBalanceError && !isLoadingNativeBalance && <p className="text-red-600 text-xs mt-1">Error loading balance</p>}
-+          <h3 className="text-lg font-medium text-gray-900">{lensChain.nativeCurrency.symbol}</h3>
-+          <p className="text-gray-500">{formattedNativeBalance}</p>
-         </div>
-         <div className="flex gap-2">
--          <ActionButton label="Wrap" onClick={() => handleActionClick("Wrap", "GHO")} />
--          <ActionButton label="Send" onClick={() => handleActionClick("Send", "GHO")} />
-+          <ActionButton
-+            label="Wrap"
-+            onClick={() =>
-+              handleActionClick("wrap", lensChain.nativeCurrency.symbol, undefined, lensChain.nativeCurrency.decimals, nativeBalanceData?.value)
-+            }
-+          />
-+          <ActionButton
-+            label="Send"
-+            onClick={() =>
-+              handleActionClick("send", lensChain.nativeCurrency.symbol, undefined, lensChain.nativeCurrency.decimals, nativeBalanceData?.value)
-+            }
-+          />
-         </div>
-       </div>
- 
-       {/* WGHO Row */}
-       <div className="flex items-center justify-between border-b pb-2">
-         <div>
--          <p className="text-gray-800">
--            <span className="font-medium">WGHO Token:</span> <span className="font-mono text-lg">{formattedWghoBalance}</span> GHO
--          </p>
--          {wghoBalanceError && !isLoadingWghoBalance && <p className="text-red-600 text-xs mt-1">Error loading balance</p>}
-+          <h3 className="text-lg font-medium text-gray-900">WGHO</h3>
-+          <p className="text-gray-500">{formattedWghoBalance}</p>
-         </div>
-         <div className="flex gap-2">
--          <ActionButton label="Unwrap" onClick={() => handleActionClick("Unwrap", "WGHO")} />
--          <ActionButton label="Approve" onClick={() => handleActionClick("Approve", "WGHO")} />
--          <ActionButton label="Send" onClick={() => handleActionClick("Send", "WGHO")} />
-+          <ActionButton label="Unwrap" onClick={() => handleActionClick("unwrap", "WGHO", WGHO_TOKEN_ADDRESS as Address, 18, wghoBalanceData)} />
-+          <ActionButton label="Approve" onClick={() => handleActionClick("approve", "WGHO", WGHO_TOKEN_ADDRESS as Address, 18, wghoBalanceData)} />
-+          <ActionButton label="Send" onClick={() => handleActionClick("send", "WGHO", WGHO_TOKEN_ADDRESS as Address, 18, wghoBalanceData)} />
-         </div>
-       </div>
- 
-       {/* BONSAI Row */}
-       <div className="flex items-center justify-between">
-         <div>
--          <p className="text-gray-800">
--            <span className="font-medium">BONSAI Token:</span> <span className="font-mono text-lg">{formattedBonsaiBalance}</span> BONSAI
--          </p>
--          {bonsaiBalanceError && !isLoadingBonsaiBalance && <p className="text-red-600 text-xs mt-1">Error loading balance</p>}
-+          <h3 className="text-lg font-medium text-gray-900">BONSAI</h3>
-+          <p className="text-gray-500">{formattedBonsaiBalance}</p>
-         </div>
-         <div className="flex gap-2">
--          <ActionButton label="Approve" onClick={() => handleActionClick("Approve", "BONSAI")} />
--          <ActionButton label="Send" onClick={() => handleActionClick("Send", "BONSAI")} />
-+          <ActionButton
-+            label="Approve"
-+            onClick={() => handleActionClick("approve", "BONSAI", BONSAI_TOKEN_ADDRESS as Address, 18, bonsaiBalanceData)}
-+          />
-+          <ActionButton label="Send" onClick={() => handleActionClick("send", "BONSAI", BONSAI_TOKEN_ADDRESS as Address, 18, bonsaiBalanceData)} />
-         </div>
-       </div>
- 
--      {!lensAccountAddress && !isLoading && <p className="text-gray-500 text-sm mt-2">Cannot fetch balances without Lens Account address.</p>}
-+      {/* Render Modals */}
-+      {modalState.type === "send" && (
-+        <SendModal
-+          isOpen={true}
-+          onClose={closeModal}
-+          tokenSymbol={modalState.tokenSymbol}
-+          tokenAddress={modalState.tokenAddress}
-+          decimals={modalState.decimals}
-+          balance={modalState.balance}
-+        />
-+      )}
-+      {modalState.type === "approve" && modalState.tokenAddress && (
-+        <ApproveModal
-+          isOpen={true}
-+          onClose={closeModal}
-+          tokenSymbol={modalState.tokenSymbol}
-+          tokenAddress={modalState.tokenAddress}
-+          decimals={modalState.decimals}
-+        />
-+      )}
-+      {modalState.type === "wrap" && <WrapModal isOpen={true} onClose={closeModal} balance={modalState.balance} />}
-+      {modalState.type === "unwrap" && <UnwrapModal isOpen={true} onClose={closeModal} balance={modalState.balance} />}
-     </div>
-   );
- }
-</file>
-
-<file path="src/components/dashboard/AccountIdentityPanel.tsx">
-"use client";
-
-import { type Address } from "viem";
-import { DocumentDuplicateIcon, QrCodeIcon } from "@heroicons/react/24/outline";
-
-interface AccountIdentityPanelProps {
-  username: string | null;
-  address: Address;
-}
-
-export function AccountIdentityPanel({ username, address }: AccountIdentityPanelProps) {
-  const handleCopy = () => {
-    // Placeholder: Functionality to be added later
-    console.log("Placeholder: Copy address to clipboard");
-    alert("Copy functionality not yet implemented.");
-  };
-
-  const handleShowQr = () => {
-    // Placeholder: Functionality to be added later
-    console.log("Placeholder: Show QR code modal");
-    alert("QR Code functionality not yet implemented.");
-  };
-
-  return (
-    <div>
-      {username && (
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Welcome, <span className="text-indigo-600">{username}</span>!
-        </h2>
-      )}
-      <p className="text-sm text-gray-500 mb-3">Managing Lens Account:</p>
-      <div className="flex items-center space-x-4 bg-gray-50 p-3 rounded-md border border-gray-200">
-        <p className="text-lg md:text-xl font-mono text-gray-700 break-all flex-1">{address}</p>
-        <button
-          onClick={handleCopy}
-          title="Copy Address"
-          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-200 rounded-md transition-colors duration-150"
-        >
-          <DocumentDuplicateIcon className="w-5 h-5" />
-        </button>
-        <button
-          onClick={handleShowQr}
-          title="Show QR Code"
-          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-200 rounded-md transition-colors duration-150"
-        >
-          <QrCodeIcon className="w-5 h-5" />
-        </button>
-      </div>
-    </div>
-  );
-}
-</file>
-
-<file path="src/components/dashboard/OwnerPanel.tsx">
-"use client";
-
-import { type Address, isAddress } from "viem";
-import { useState } from "react";
-import { ExclamationTriangleIcon, CheckCircleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { useLensAccount } from "@/contexts/LensAccountContext";
-import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants";
-
-interface OwnerPanelProps {
-  ownerAddress: Address;
-}
-
-export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
-  const [isChangingOwner, setIsChangingOwner] = useState(false);
-  const [newOwner, setNewOwner] = useState("");
-  const [inputError, setInputError] = useState<string | null>(null);
-
-  // Wagmi hooks
-  const { address: connectedOwnerAddress, chainId } = useAccount();
-  const { lensAccountAddress } = useLensAccount();
-  const { data: hash, error: writeError, isPending: isWritePending, writeContract, reset } = useWriteContract();
-  const {
-    isLoading: isConfirming,
-    isSuccess: isConfirmed,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({
-    hash,
-    chainId: LENS_CHAIN_ID,
-  });
-
-  const isLoading = isWritePending || isConfirming;
-  const txError = writeError || receiptError;
-
-  const handleToggleChangeOwner = () => {
-    setIsChangingOwner(!isChangingOwner);
-    setNewOwner("");
-    setInputError(null);
-    reset(); // Reset wagmi state on toggle
-  };
-
-  const handleNewOwnerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.trim();
-    setNewOwner(value);
-    if (value && !isAddress(value)) {
-      setInputError("Invalid address format");
-    } else {
-      setInputError(null);
-    }
-  };
-
-  const handleConfirmChangeOwner = () => {
-    if (!isAddress(newOwner) || !lensAccountAddress || !connectedOwnerAddress) {
-      setInputError("A valid new owner address is required and wallet must be connected.");
-      return;
-    }
-    if (newOwner.toLowerCase() === ownerAddress.toLowerCase()) {
-      setInputError("New owner cannot be the same as the current owner.");
-      return;
-    }
-    // Ensure the connected wallet IS the current owner
-    if (connectedOwnerAddress.toLowerCase() !== ownerAddress.toLowerCase()) {
-      setInputError("Only the current owner can initiate this transfer.");
-      return;
-    }
-    // Ensure connected to the correct chain
-    if (chainId !== LENS_CHAIN_ID) {
-      setInputError(`Please switch your wallet to Lens Chain (ID: ${LENS_CHAIN_ID}) to proceed.`);
-      return;
-    }
-
-    console.log(`Initiating ownership transfer to ${newOwner} for account ${lensAccountAddress}`);
-    writeContract({
-      address: lensAccountAddress,
-      abi: LENS_ACCOUNT_ABI,
-      functionName: "transferOwnership",
-      args: [newOwner as Address],
-      account: connectedOwnerAddress,
-      chainId: LENS_CHAIN_ID,
-    });
-  };
-
-  // Display Success/Error messages after transaction attempt
-  let statusMessage = null;
-  if (isLoading) {
-    statusMessage = (
-      <div className="flex items-center text-indigo-600 text-sm mt-2">
-        <ArrowPathIcon className="w-4 h-4 mr-1 animate-spin" />
-        {isWritePending ? "Waiting for confirmation..." : "Processing transaction..."}
-      </div>
-    );
-  } else if (isConfirmed) {
-    statusMessage = (
-      <div className="flex items-center text-green-600 text-sm mt-2">
-        <CheckCircleIcon className="w-4 h-4 mr-1" />
-        Ownership transferred successfully! Please login with the new owner account.
-      </div>
-    );
-  } else if (txError) {
-    statusMessage = (
-      <div className="flex items-center text-red-600 text-sm mt-2">
-        <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
-        Error: {txError.message.split(":")[0]} {/* Show concise error */}
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4 text-gray-700">Account Owner</h2>
-      <div className="bg-gray-50 p-3 rounded-md border border-gray-200 mb-4">
-        <p className="text-sm font-mono text-gray-700 break-all">{ownerAddress}</p>
-      </div>
-
-      {!isChangingOwner && (
-        <button onClick={handleToggleChangeOwner} className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline">
-          Change Owner
-        </button>
-      )}
-
-      {isChangingOwner && (
-        <div className="mt-4 p-4 border border-red-200 rounded-md bg-red-50 space-y-4">
-          <div className="flex items-center text-red-700">
-            <ExclamationTriangleIcon className="w-6 h-6 mr-2" />
-            <p className="text-sm font-semibold">Danger Zone: Transfer Ownership</p>
-          </div>
-          <p className="text-xs text-red-600">
-            Warning: Transferring ownership is irreversible. Ensure the new address is correct and accessible. You will lose control of this Lens
-            Account if you proceed.
-          </p>
-          <div>
-            <label htmlFor="new-owner" className="block text-sm font-medium text-gray-700 mb-1">
-              New Owner Address
-            </label>
-            <input
-              id="new-owner"
-              name="new-owner"
-              type="text"
-              value={newOwner}
-              onChange={handleNewOwnerChange}
-              placeholder="0x..."
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm ${
-                inputError ? "border-red-500 ring-red-500" : "border-gray-300 focus:ring-red-500 focus:border-red-500"
-              }`}
-            />
-            {inputError && <p className="mt-1 text-xs text-red-600">{inputError}</p>}
-          </div>
-          <div className="flex space-x-3">
-            <button
-              onClick={handleConfirmChangeOwner}
-              disabled={!isAddress(newOwner) || newOwner.toLowerCase() === ownerAddress.toLowerCase() || isLoading || isConfirmed}
-              className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? "Processing..." : isConfirmed ? "Transferred" : "Confirm Change Owner"}
-            </button>
-            <button
-              onClick={handleToggleChangeOwner}
-              disabled={isLoading}
-              className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:opacity-50"
-            >
-              Cancel
-            </button>
-          </div>
-          {/* Display status message */}
-          <div className="min-h-[20px]">{statusMessage}</div>
-        </div>
-      )}
-    </div>
-  );
-}
-</file>
-
 <file path="src/components/ConnectOwnerButton.tsx">
 // components/ConnectOwnerButton.tsx
 "use client";
@@ -1878,6 +1719,203 @@ This specification is intended for developers, QA testers, and product managers 
 - **Chain ID:** 232
 - **Currency Symbol:** GHO
 - **Block Explorer URL:** https://explorer.lens.xyz
+</file>
+
+<file path="src/components/dashboard/OwnerPanel.tsx">
+"use client";
+
+import { type Address, isAddress } from "viem";
+import { useState } from "react";
+import { ExclamationTriangleIcon, CheckCircleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+import { DocumentDuplicateIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useLensAccount } from "@/contexts/LensAccountContext";
+import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants";
+
+interface OwnerPanelProps {
+  ownerAddress: Address;
+}
+
+export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
+  const [isChangingOwner, setIsChangingOwner] = useState(false);
+  const [newOwner, setNewOwner] = useState("");
+  const [inputError, setInputError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  // Wagmi hooks
+  const { address: connectedOwnerAddress, chainId } = useAccount();
+  const { lensAccountAddress } = useLensAccount();
+  const { data: hash, error: writeError, isPending: isWritePending, writeContract, reset } = useWriteContract();
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({
+    hash,
+    chainId: LENS_CHAIN_ID,
+  });
+
+  const isLoading = isWritePending || isConfirming;
+  const txError = writeError || receiptError;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(ownerAddress);
+      setCopied(true);
+      console.log("Address copied to clipboard:", ownerAddress);
+      // Reset icon after a short delay
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy address:", err);
+      alert("Failed to copy address."); // Simple error feedback
+    }
+  };
+
+  const handleToggleChangeOwner = () => {
+    setIsChangingOwner(!isChangingOwner);
+    setNewOwner("");
+    setInputError(null);
+    reset(); // Reset wagmi state on toggle
+  };
+
+  const handleNewOwnerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.trim();
+    setNewOwner(value);
+    if (value && !isAddress(value)) {
+      setInputError("Invalid address format");
+    } else {
+      setInputError(null);
+    }
+  };
+
+  const handleConfirmChangeOwner = () => {
+    if (!isAddress(newOwner) || !lensAccountAddress || !connectedOwnerAddress) {
+      setInputError("A valid new owner address is required and wallet must be connected.");
+      return;
+    }
+    if (newOwner.toLowerCase() === ownerAddress.toLowerCase()) {
+      setInputError("New owner cannot be the same as the current owner.");
+      return;
+    }
+    // Ensure the connected wallet IS the current owner
+    if (connectedOwnerAddress.toLowerCase() !== ownerAddress.toLowerCase()) {
+      setInputError("Only the current owner can initiate this transfer.");
+      return;
+    }
+    // Ensure connected to the correct chain
+    if (chainId !== LENS_CHAIN_ID) {
+      setInputError(`Please switch your wallet to Lens Chain (ID: ${LENS_CHAIN_ID}) to proceed.`);
+      return;
+    }
+
+    console.log(`Initiating ownership transfer to ${newOwner} for account ${lensAccountAddress}`);
+    writeContract({
+      address: lensAccountAddress,
+      abi: LENS_ACCOUNT_ABI,
+      functionName: "transferOwnership",
+      args: [newOwner as Address],
+      account: connectedOwnerAddress,
+      chainId: LENS_CHAIN_ID,
+    });
+  };
+
+  // Display Success/Error messages after transaction attempt
+  let statusMessage = null;
+  if (isLoading) {
+    statusMessage = (
+      <div className="flex items-center text-indigo-600 text-sm mt-2">
+        <ArrowPathIcon className="w-4 h-4 mr-1 animate-spin" />
+        {isWritePending ? "Waiting for confirmation..." : "Processing transaction..."}
+      </div>
+    );
+  } else if (isConfirmed) {
+    statusMessage = (
+      <div className="flex items-center text-green-600 text-sm mt-2">
+        <CheckCircleIcon className="w-4 h-4 mr-1" />
+        Ownership transferred successfully! Please login with the new owner account.
+      </div>
+    );
+  } else if (txError) {
+    statusMessage = (
+      <div className="flex items-center text-red-600 text-sm mt-2">
+        <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
+        Error: {txError.message.split(":")[0]} {/* Show concise error */}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold mb-4 text-gray-700">Account Owner</h2>
+      <div className="flex items-center bg-gray-50 p-3 rounded-md border border-gray-200 mb-4">
+        <p className="text-sm font-mono text-gray-700 break-all flex-1">{ownerAddress}</p>
+        <button
+          onClick={handleCopy}
+          title={copied ? "Copied!" : "Copy Address"}
+          className={`p-2 rounded-md transition-colors duration-150 ${
+            copied ? "text-green-600 bg-green-100" : "text-gray-500 hover:text-indigo-600 hover:bg-gray-200"
+          }`}
+        >
+          {copied ? <CheckIcon className="w-5 h-5" /> : <DocumentDuplicateIcon className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {!isChangingOwner && (
+        <button onClick={handleToggleChangeOwner} className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline">
+          Change Owner
+        </button>
+      )}
+
+      {isChangingOwner && (
+        <div className="mt-4 p-4 border border-red-200 rounded-md bg-red-50 space-y-4">
+          <div className="flex items-center text-red-700">
+            <ExclamationTriangleIcon className="w-6 h-6 mr-2" />
+            <p className="text-sm font-semibold">Danger Zone: Transfer Ownership</p>
+          </div>
+          <p className="text-xs text-red-600">
+            Warning: Transferring ownership is irreversible. Ensure the new address is correct and accessible. You will lose control of this Lens
+            Account if you proceed.
+          </p>
+          <div>
+            <label htmlFor="new-owner" className="block text-sm font-medium text-gray-700 mb-1">
+              New Owner Address
+            </label>
+            <input
+              id="new-owner"
+              name="new-owner"
+              type="text"
+              value={newOwner}
+              onChange={handleNewOwnerChange}
+              placeholder="0x..."
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm ${
+                inputError ? "border-red-500 ring-red-500" : "border-gray-300 focus:ring-red-500 focus:border-red-500"
+              }`}
+            />
+            {inputError && <p className="mt-1 text-xs text-red-600">{inputError}</p>}
+          </div>
+          <div className="flex space-x-3">
+            <button
+              onClick={handleConfirmChangeOwner}
+              disabled={!isAddress(newOwner) || newOwner.toLowerCase() === ownerAddress.toLowerCase() || isLoading || isConfirmed}
+              className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Processing..." : isConfirmed ? "Transferred" : "Confirm Change Owner"}
+            </button>
+            <button
+              onClick={handleToggleChangeOwner}
+              disabled={isLoading}
+              className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </div>
+          {/* Display status message */}
+          <div className="min-h-[20px]">{statusMessage}</div>
+        </div>
+      )}
+    </div>
+  );
+}
 </file>
 
 <file path="src/contexts/LensAccountContext.tsx">
@@ -3343,72 +3381,6 @@ export function DiscoveryForm({ onAccountDetailsFound, initialUsername = "", ini
 }
 </file>
 
-<file path="src/lib/constants.ts">
-// lib/constants.ts
-import { defineChain, parseAbi } from "viem";
-
-export const LENS_CHAIN_ID = 232;
-
-export const lensChain = defineChain({
-  id: LENS_CHAIN_ID,
-  name: "Lens Chain",
-  nativeCurrency: { name: "GHO", symbol: "GHO", decimals: 18 },
-  rpcUrls: {
-    default: {
-      http: ["https://rpc.lens.xyz"],
-    },
-  },
-  blockExplorers: {
-    default: { name: "Lens Explorer", url: "https://explorer.lens.xyz" },
-  },
-  testnet: false,
-});
-
-// --- Contract Addresses ---
-export const LENS_GLOBAL_NAMESPACE_ADDRESS = "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615";
-export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
-export const BONSAI_TOKEN_ADDRESS = "0xB0588f9A9cADe7CD5f194a5fe77AcD6A58250f82";
-
-// --- ABIs ---
-export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
-  "function accountOf(string calldata name) view returns (address)",
-  "function usernameOf(address user) view returns (string)",
-  "error DoesNotExist()",
-]);
-
-export const LENS_ACCOUNT_ABI = parseAbi([
-  "function owner() view returns (address)",
-  "function executeTransaction(address target, uint256 value, bytes calldata data)",
-  "function transferOwnership(address newOwner)",
-]);
-
-// Standard ERC20 ABI including transfer and approve
-export const ERC20_ABI = parseAbi([
-  "function balanceOf(address owner) view returns (uint256)",
-  "function transfer(address to, uint256 amount) returns (bool)", // Needed for Send
-  "function approve(address spender, uint256 amount) returns (bool)", // Needed for Approve
-  "function allowance(address owner, address spender) view returns (uint256)", // Optional: useful for display
-  "function decimals() view returns (uint8)", // Optional: useful for parsing amounts
-  "event Transfer(address indexed from, address indexed to, uint256 value)",
-  "event Approval(address indexed owner, address indexed spender, uint256 value)",
-]);
-
-// Specific ABI for WGHO Wrap/Unwrap
-export const WGHO_ABI = parseAbi([
-  "function deposit() payable", // payable is key
-  "function withdraw(uint256 amount)",
-  "event Deposit(address indexed dst, uint256 wad)",
-  "event Withdrawal(address indexed src, uint256 wad)",
-]);
-
-// --- Local Storage Keys ---
-export const LOCAL_STORAGE_KEYS = {
-  LENS_ACCOUNT_ADDRESS: "lensSession:lensAccountAddress",
-  EXPECTED_OWNER_ADDRESS: "lensSession:expectedOwner",
-  LENS_USERNAME: "lensSession:username",
-};
-</file>
-
 <file path="src/services/walletConnectService.ts">
 // src/services/walletConnectService.ts
 import { WalletKit, IWalletKit, WalletKitTypes } from "@reown/walletkit";
@@ -3943,6 +3915,72 @@ export default function Home() {
 }
 </file>
 
+<file path="src/lib/constants.ts">
+// lib/constants.ts
+import { defineChain, parseAbi } from "viem";
+
+export const LENS_CHAIN_ID = 232;
+
+export const lensChain = defineChain({
+  id: LENS_CHAIN_ID,
+  name: "Lens Chain",
+  nativeCurrency: { name: "GHO", symbol: "GHO", decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.lens.xyz"],
+    },
+  },
+  blockExplorers: {
+    default: { name: "Lens Explorer", url: "https://explorer.lens.xyz" },
+  },
+  testnet: false,
+});
+
+// --- Contract Addresses ---
+export const LENS_GLOBAL_NAMESPACE_ADDRESS = "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615";
+export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
+export const BONSAI_TOKEN_ADDRESS = "0xB0588f9A9cADe7CD5f194a5fe77AcD6A58250f82";
+
+// --- ABIs ---
+export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
+  "function accountOf(string calldata name) view returns (address)",
+  "function usernameOf(address user) view returns (string)",
+  "error DoesNotExist()",
+]);
+
+export const LENS_ACCOUNT_ABI = parseAbi([
+  "function owner() view returns (address)",
+  "function executeTransaction(address target, uint256 value, bytes calldata data)",
+  "function transferOwnership(address newOwner)",
+]);
+
+// Standard ERC20 ABI including transfer and approve
+export const ERC20_ABI = parseAbi([
+  "function balanceOf(address owner) view returns (uint256)",
+  "function transfer(address to, uint256 amount) returns (bool)", // Needed for Send
+  "function approve(address spender, uint256 amount) returns (bool)", // Needed for Approve
+  "function allowance(address owner, address spender) view returns (uint256)", // Optional: useful for display
+  "function decimals() view returns (uint8)", // Optional: useful for parsing amounts
+  "event Transfer(address indexed from, address indexed to, uint256 value)",
+  "event Approval(address indexed owner, address indexed spender, uint256 value)",
+]);
+
+// Specific ABI for WGHO Wrap/Unwrap
+export const WGHO_ABI = parseAbi([
+  "function deposit() payable", // payable is key
+  "function withdraw(uint256 amount)",
+  "event Deposit(address indexed dst, uint256 wad)",
+  "event Withdrawal(address indexed src, uint256 wad)",
+]);
+
+// --- Local Storage Keys ---
+export const LOCAL_STORAGE_KEYS = {
+  LENS_ACCOUNT_ADDRESS: "lensSession:lensAccountAddress",
+  EXPECTED_OWNER_ADDRESS: "lensSession:expectedOwner",
+  LENS_USERNAME: "lensSession:username",
+};
+</file>
+
 <file path="DEVELOPMENT_PLAN.md">
 **Version:** 1.0
 **Date:** 2025-04-19
@@ -4126,56 +4164,6 @@ We will follow an incremental development approach, building and verifying core 
 - Mobile responsiveness.
 </file>
 
-<file path="package.json">
-{
-  "name": "lens-account-interface4",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "prepare": "husky",
-    "generate-llms": "repomix --include \"*.*,src\" --ignore \"llms.txt\" -o llms.txt",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md,json}\"",
-    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
-  },
-  "dependencies": {
-    "@heroicons/react": "^2.2.0",
-    "@reown/walletkit": "^1.2.3",
-    "@tanstack/react-query": "^5.74.4",
-    "@walletconnect/core": "^2.20.0",
-    "@walletconnect/jsonrpc-utils": "^1.0.8",
-    "@walletconnect/utils": "^2.20.0",
-    "connectkit": "^1.9.0",
-    "next": "15.3.1",
-    "qrcode.react": "^4.2.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "viem": "^2.27.2",
-    "wagmi": "^2.14.16"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/webpack": "^5.28.5",
-    "@walletconnect/types": "^2.20.0",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.1",
-    "husky": "^9.1.7",
-    "pino-pretty": "^13.0.0",
-    "prettier": "^3.5.3",
-    "repomix": "^0.3.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
-}
-</file>
-
 <file path="src/app/dashboard/page.tsx">
 // src/app/dashboard/page.tsx
 "use client";
@@ -4271,6 +4259,56 @@ export default function Dashboard() {
       </div>
     </main>
   );
+}
+</file>
+
+<file path="package.json">
+{
+  "name": "lens-account-interface4",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prepare": "husky",
+    "generate-llms": "repomix --include \"*.*,src\" --ignore \"llms.txt\" -o llms.txt",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md,json}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@reown/walletkit": "^1.2.3",
+    "@tanstack/react-query": "^5.74.4",
+    "@walletconnect/core": "^2.20.0",
+    "@walletconnect/jsonrpc-utils": "^1.0.8",
+    "@walletconnect/utils": "^2.20.0",
+    "connectkit": "^1.9.0",
+    "next": "15.3.1",
+    "qrcode.react": "^4.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.27.2",
+    "wagmi": "^2.14.16"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/webpack": "^5.28.5",
+    "@walletconnect/types": "^2.20.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "husky": "^9.1.7",
+    "pino-pretty": "^13.0.0",
+    "prettier": "^3.5.3",
+    "repomix": "^0.3.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
 }
 </file>
 

@@ -3,6 +3,7 @@
 import { type Address, isAddress } from "viem";
 import { useState } from "react";
 import { ExclamationTriangleIcon, CheckCircleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+import { DocumentDuplicateIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { useLensAccount } from "@/contexts/LensAccountContext";
 import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants";
@@ -15,6 +16,7 @@ export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
   const [isChangingOwner, setIsChangingOwner] = useState(false);
   const [newOwner, setNewOwner] = useState("");
   const [inputError, setInputError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Wagmi hooks
   const { address: connectedOwnerAddress, chainId } = useAccount();
@@ -31,6 +33,19 @@ export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
 
   const isLoading = isWritePending || isConfirming;
   const txError = writeError || receiptError;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(ownerAddress);
+      setCopied(true);
+      console.log("Address copied to clipboard:", ownerAddress);
+      // Reset icon after a short delay
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy address:", err);
+      alert("Failed to copy address."); // Simple error feedback
+    }
+  };
 
   const handleToggleChangeOwner = () => {
     setIsChangingOwner(!isChangingOwner);
@@ -108,8 +123,17 @@ export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4 text-gray-700">Account Owner</h2>
-      <div className="bg-gray-50 p-3 rounded-md border border-gray-200 mb-4">
-        <p className="text-sm font-mono text-gray-700 break-all">{ownerAddress}</p>
+      <div className="flex items-center bg-gray-50 p-3 rounded-md border border-gray-200 mb-4">
+        <p className="text-sm font-mono text-gray-700 break-all flex-1">{ownerAddress}</p>
+        <button
+          onClick={handleCopy}
+          title={copied ? "Copied!" : "Copy Address"}
+          className={`p-2 rounded-md transition-colors duration-150 ${
+            copied ? "text-green-600 bg-green-100" : "text-gray-500 hover:text-indigo-600 hover:bg-gray-200"
+          }`}
+        >
+          {copied ? <CheckIcon className="w-5 h-5" /> : <DocumentDuplicateIcon className="w-5 h-5" />}
+        </button>
       </div>
 
       {!isChangingOwner && (
