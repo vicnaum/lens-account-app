@@ -22,7 +22,7 @@ function ActionButton({ label, onClick, disabled = false }: ActionButtonProps) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className="px-3 py-1 text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="ml-2 px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition-colors disabled:opacity-50"
     >
       {label}
     </button>
