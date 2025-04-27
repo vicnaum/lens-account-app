@@ -142,7 +142,8 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
   }, [usernameFromAddress, usernameError, lastEdited, debouncedAddress]);
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
+    const cleanValue = e.target.value.replace(/\s+/g, ""); // Remove all spaces
+    setUsername(cleanValue);
     setLastEdited("username");
     if (lastEdited !== "address") setAddress("");
     onAccountAddressFound(""); // Use empty string
@@ -150,17 +151,17 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setAddress(value);
+    const cleanValue = e.target.value.replace(/\s+/g, ""); // Remove all spaces
+    setAddress(cleanValue);
     setLastEdited("address");
     if (lastEdited !== "username") setUsername("");
-    if (!isAddress(value) && value !== "") {
+    if (!isAddress(cleanValue) && cleanValue !== "") {
       setLookupError("Invalid address format");
       onAccountAddressFound(""); // Use empty string
     } else {
       setLookupError(null);
-      if (isAddress(value)) {
-        onAccountAddressFound(value as `0x${string}`);
+      if (isAddress(cleanValue)) {
+        onAccountAddressFound(cleanValue as `0x${string}`);
       } else {
         onAccountAddressFound(""); // Use empty string
       }
