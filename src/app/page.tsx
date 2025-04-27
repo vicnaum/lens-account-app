@@ -111,39 +111,31 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      <div className="w-full max-w-lg p-8 space-y-6 bg-white rounded-xl shadow-lg">
-        <h1 className="text-2xl font-bold text-center text-gray-800">Lens Account Interface</h1>
-        <p className="text-center text-gray-600">Find your Lens Account by username or address.</p>
+      <h1 className="text-4xl font-bold text-gray-800 mb-12">Lens Account Dashboard</h1>
 
+      <div className="w-full max-w-lg p-8 space-y-8 bg-white rounded-xl shadow-lg">
         <DiscoveryForm onAccountAddressFound={handleAccountFound} />
 
-        <div className="mt-6 text-center space-y-3">
-          {isAddress(lensAccountAddress) && isLoadingOwner && <p className="text-gray-500">Fetching owner...</p>}
+        <div className="space-y-4">
+          {isAddress(lensAccountAddress) && isLoadingOwner && <p className="text-center text-indigo-600">Fetching owner...</p>}
 
-          {ownerFetchError && !isLoadingOwner && <p className="text-red-600">{ownerFetchError}</p>}
+          {ownerFetchError && !isLoadingOwner && <p className="text-center text-red-600">{ownerFetchError}</p>}
 
           {expectedOwner && !isLoadingOwner && !ownerFetchError && (
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-sm font-medium text-blue-800">Identified Account Owner:</p>
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm font-medium text-blue-800 mb-1">Identified Account Owner:</p>
               <p className="text-xs text-blue-700 break-words font-mono">{expectedOwner}</p>
-              {!isConnected && <p className="text-xs text-blue-600 mt-1">Connect this wallet to proceed.</p>}
+              {!isConnected && <p className="text-xs text-blue-600 mt-2">Connect this wallet to proceed.</p>}
             </div>
           )}
 
-          {/* Verification Error Display */}
-          {verificationError && <p className="text-sm text-red-600 mt-2">{verificationError}</p>}
+          {verificationError && <p className="text-sm text-center text-red-600">{verificationError}</p>}
 
-          {/* Only show Connect Button when expected owner is loaded and no fetch error */}
           {showConnectButton && (
-            <div className="pt-2">
-              {/* ConnectKit handles its own disabled state based on connection status */}
+            <div className="flex flex-col items-center gap-2">
               <ConnectOwnerButton />
-              {isConnected && connectedChainId !== LENS_CHAIN_ID && <p className="text-xs text-orange-600 mt-1">Waiting for network switch...</p>}
+              {isConnected && connectedChainId !== LENS_CHAIN_ID && <p className="text-xs text-orange-600">Waiting for network switch...</p>}
             </div>
-          )}
-
-          {!isAddress(lensAccountAddress) && !expectedOwner && !isLoadingOwner && (
-            <p className="text-sm text-gray-500">Enter a Lens username or account address above to find the owner.</p>
           )}
         </div>
       </div>

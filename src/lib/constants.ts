@@ -25,6 +25,7 @@ export const LENS_GLOBAL_NAMESPACE_ADDRESS = "0x1aA55B9042f08f45825dC4b651B64c9F
 export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
   "function accountOf(string calldata name) view returns (address)",
   "function usernameOf(address user) view returns (string)",
+  "error DoesNotExist()",
 ]);
 
 // Added owner() function

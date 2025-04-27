@@ -91,7 +91,12 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
       }
     } else if (addressError && lastEdited === "username") {
       console.error("Error fetching address:", addressError);
-      setLookupError("Error fetching address. Check console.");
+      // Check if it's a DoesNotExist error
+      if (addressError.message.includes("0xb0ce7591") || addressError.message.includes("DoesNotExist")) {
+        setLookupError(`Username "${debouncedUsername}" does not exist`);
+      } else {
+        setLookupError("Error fetching address. Please try again.");
+      }
       onAccountAddressFound(""); // Use empty string
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -146,49 +151,65 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
   const isLoading = isLoadingAddress || isLoadingUsername;
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-          Lens Username
-        </label>
-        <input
-          id="username"
-          name="username"
-          type="text"
-          value={username}
-          onChange={handleUsernameChange}
-          placeholder="e.g. stani"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          aria-describedby="username-status"
-          disabled={isLoading && lastEdited === "address"}
-        />
+    <div className="w-full max-w-md mx-auto space-y-8">
+      <div className="text-center space-y-2">
+        <p className="text-lg text-gray-600 font-light">To login, please enter your</p>
       </div>
 
-      <div>
-        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-          Account Address
-        </label>
-        <input
-          id="address"
-          name="address"
-          type="text"
-          value={address}
-          onChange={handleAddressChange}
-          placeholder="0x..."
-          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-            !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-300"
-          }`}
-          aria-describedby="address-status"
-          disabled={isLoading && lastEdited === "username"}
-        />
+      <div className="space-y-6">
+        <div>
+          <label htmlFor="username" className="block text-lg font-medium text-gray-700 mb-2">
+            Lens Username
+          </label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            value={username}
+            onChange={handleUsernameChange}
+            placeholder="e.g. stani"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200"
+            aria-describedby="username-status"
+            disabled={isLoading && lastEdited === "address"}
+          />
+        </div>
+
+        <div className="flex items-center justify-center space-x-4">
+          <div className="h-px bg-gray-200 w-20"></div>
+          <span className="text-xl font-semibold text-gray-400">OR</span>
+          <div className="h-px bg-gray-200 w-20"></div>
+        </div>
+
+        <div>
+          <label htmlFor="address" className="block text-lg font-medium text-gray-700 mb-2">
+            Lens Account Address
+          </label>
+          <input
+            id="address"
+            name="address"
+            type="text"
+            value={address}
+            onChange={handleAddressChange}
+            placeholder="0x..."
+            className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 ${
+              !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-200"
+            }`}
+            aria-describedby="address-status"
+            disabled={isLoading && lastEdited === "username"}
+          />
+        </div>
       </div>
-      <div id="username-status" aria-live="polite" className="text-sm h-5">
-        {isLoading && lastEdited === "username" && <span className="text-gray-500">Checking username...</span>}
-      </div>
-      <div id="address-status" aria-live="polite" className="text-sm h-5">
-        {isLoading && lastEdited === "address" && <span className="text-gray-500">Checking address...</span>}
-        {lookupError && <span className="text-red-600">{lookupError}</span>}
-        {!lookupError && isAddress(address) && lastEdited !== "username" && <span className="text-green-600">Valid Address</span>}
+
+      {/* Status messages with improved styling */}
+      <div className="space-y-2">
+        <div id="username-status" aria-live="polite" className="text-sm text-center min-h-[20px]">
+          {isLoading && lastEdited === "username" && <span className="text-indigo-600">Checking username...</span>}
+        </div>
+        <div id="address-status" aria-live="polite" className="text-sm text-center min-h-[20px]">
+          {isLoading && lastEdited === "address" && <span className="text-indigo-600">Checking address...</span>}
+          {lookupError && <span className="text-red-600">{lookupError}</span>}
+          {!lookupError && isAddress(address) && lastEdited !== "username" && <span className="text-green-600">Valid Address</span>}
+        </div>
       </div>
     </div>
   );

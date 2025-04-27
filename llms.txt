@@ -1137,7 +1137,12 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
       }
     } else if (addressError && lastEdited === "username") {
       console.error("Error fetching address:", addressError);
-      setLookupError("Error fetching address. Check console.");
+      // Check if it's a DoesNotExist error
+      if (addressError.message.includes("0xb0ce7591") || addressError.message.includes("DoesNotExist")) {
+        setLookupError(`Username "${debouncedUsername}" does not exist`);
+      } else {
+        setLookupError("Error fetching address. Please try again.");
+      }
       onAccountAddressFound(""); // Use empty string
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1192,49 +1197,65 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
   const isLoading = isLoadingAddress || isLoadingUsername;
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-          Lens Username
-        </label>
-        <input
-          id="username"
-          name="username"
-          type="text"
-          value={username}
-          onChange={handleUsernameChange}
-          placeholder="e.g. stani"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          aria-describedby="username-status"
-          disabled={isLoading && lastEdited === "address"}
-        />
+    <div className="w-full max-w-md mx-auto space-y-8">
+      <div className="text-center space-y-2">
+        <p className="text-lg text-gray-600 font-light">To login, please enter your</p>
       </div>
 
-      <div>
-        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-          Account Address
-        </label>
-        <input
-          id="address"
-          name="address"
-          type="text"
-          value={address}
-          onChange={handleAddressChange}
-          placeholder="0x..."
-          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-            !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-300"
-          }`}
-          aria-describedby="address-status"
-          disabled={isLoading && lastEdited === "username"}
-        />
+      <div className="space-y-6">
+        <div>
+          <label htmlFor="username" className="block text-lg font-medium text-gray-700 mb-2">
+            Lens Username
+          </label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            value={username}
+            onChange={handleUsernameChange}
+            placeholder="e.g. stani"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200"
+            aria-describedby="username-status"
+            disabled={isLoading && lastEdited === "address"}
+          />
+        </div>
+
+        <div className="flex items-center justify-center space-x-4">
+          <div className="h-px bg-gray-200 w-20"></div>
+          <span className="text-xl font-semibold text-gray-400">OR</span>
+          <div className="h-px bg-gray-200 w-20"></div>
+        </div>
+
+        <div>
+          <label htmlFor="address" className="block text-lg font-medium text-gray-700 mb-2">
+            Lens Account Address
+          </label>
+          <input
+            id="address"
+            name="address"
+            type="text"
+            value={address}
+            onChange={handleAddressChange}
+            placeholder="0x..."
+            className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 ${
+              !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-200"
+            }`}
+            aria-describedby="address-status"
+            disabled={isLoading && lastEdited === "username"}
+          />
+        </div>
       </div>
-      <div id="username-status" aria-live="polite" className="text-sm h-5">
-        {isLoading && lastEdited === "username" && <span className="text-gray-500">Checking username...</span>}
-      </div>
-      <div id="address-status" aria-live="polite" className="text-sm h-5">
-        {isLoading && lastEdited === "address" && <span className="text-gray-500">Checking address...</span>}
-        {lookupError && <span className="text-red-600">{lookupError}</span>}
-        {!lookupError && isAddress(address) && lastEdited !== "username" && <span className="text-green-600">Valid Address</span>}
+
+      {/* Status messages with improved styling */}
+      <div className="space-y-2">
+        <div id="username-status" aria-live="polite" className="text-sm text-center min-h-[20px]">
+          {isLoading && lastEdited === "username" && <span className="text-indigo-600">Checking username...</span>}
+        </div>
+        <div id="address-status" aria-live="polite" className="text-sm text-center min-h-[20px]">
+          {isLoading && lastEdited === "address" && <span className="text-indigo-600">Checking address...</span>}
+          {lookupError && <span className="text-red-600">{lookupError}</span>}
+          {!lookupError && isAddress(address) && lastEdited !== "username" && <span className="text-green-600">Valid Address</span>}
+        </div>
       </div>
     </div>
   );
@@ -2161,6 +2182,7 @@ export const LENS_GLOBAL_NAMESPACE_ADDRESS = "0x1aA55B9042f08f45825dC4b651B64c9F
 export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
   "function accountOf(string calldata name) view returns (address)",
   "function usernameOf(address user) view returns (string)",
+  "error DoesNotExist()",
 ]);
 
 // Added owner() function
@@ -2321,39 +2343,31 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      <div className="w-full max-w-lg p-8 space-y-6 bg-white rounded-xl shadow-lg">
-        <h1 className="text-2xl font-bold text-center text-gray-800">Lens Account Interface</h1>
-        <p className="text-center text-gray-600">Find your Lens Account by username or address.</p>
+      <h1 className="text-4xl font-bold text-gray-800 mb-12">Lens Account Dashboard</h1>
 
+      <div className="w-full max-w-lg p-8 space-y-8 bg-white rounded-xl shadow-lg">
         <DiscoveryForm onAccountAddressFound={handleAccountFound} />
 
-        <div className="mt-6 text-center space-y-3">
-          {isAddress(lensAccountAddress) && isLoadingOwner && <p className="text-gray-500">Fetching owner...</p>}
+        <div className="space-y-4">
+          {isAddress(lensAccountAddress) && isLoadingOwner && <p className="text-center text-indigo-600">Fetching owner...</p>}
 
-          {ownerFetchError && !isLoadingOwner && <p className="text-red-600">{ownerFetchError}</p>}
+          {ownerFetchError && !isLoadingOwner && <p className="text-center text-red-600">{ownerFetchError}</p>}
 
           {expectedOwner && !isLoadingOwner && !ownerFetchError && (
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-sm font-medium text-blue-800">Identified Account Owner:</p>
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm font-medium text-blue-800 mb-1">Identified Account Owner:</p>
               <p className="text-xs text-blue-700 break-words font-mono">{expectedOwner}</p>
-              {!isConnected && <p className="text-xs text-blue-600 mt-1">Connect this wallet to proceed.</p>}
+              {!isConnected && <p className="text-xs text-blue-600 mt-2">Connect this wallet to proceed.</p>}
             </div>
           )}
 
-          {/* Verification Error Display */}
-          {verificationError && <p className="text-sm text-red-600 mt-2">{verificationError}</p>}
+          {verificationError && <p className="text-sm text-center text-red-600">{verificationError}</p>}
 
-          {/* Only show Connect Button when expected owner is loaded and no fetch error */}
           {showConnectButton && (
-            <div className="pt-2">
-              {/* ConnectKit handles its own disabled state based on connection status */}
+            <div className="flex flex-col items-center gap-2">
               <ConnectOwnerButton />
-              {isConnected && connectedChainId !== LENS_CHAIN_ID && <p className="text-xs text-orange-600 mt-1">Waiting for network switch...</p>}
+              {isConnected && connectedChainId !== LENS_CHAIN_ID && <p className="text-xs text-orange-600">Waiting for network switch...</p>}
             </div>
-          )}
-
-          {!isAddress(lensAccountAddress) && !expectedOwner && !isLoadingOwner && (
-            <p className="text-sm text-gray-500">Enter a Lens username or account address above to find the owner.</p>
           )}
         </div>
       </div>
