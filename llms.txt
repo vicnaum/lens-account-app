@@ -1043,225 +1043,6 @@ This specification is intended for developers, QA testers, and product managers 
 - **Block Explorer URL:** https://explorer.lens.xyz
 </file>
 
-<file path="src/components/DiscoveryForm.tsx">
-// components/DiscoveryForm.tsx
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { useReadContract } from "wagmi";
-import { isAddress } from "viem";
-import { useDebounce } from "@/hooks/useDebounce";
-import { LENS_CHAIN_ID, LENS_GLOBAL_NAMESPACE_ADDRESS, LENS_GLOBAL_NAMESPACE_ABI } from "@/lib/constants";
-
-interface DiscoveryFormProps {
-  // Allow empty string or null when no valid address is found
-  onAccountAddressFound: (address: `0x${string}` | "") => void; // Changed type
-  initialUsername?: string;
-  initialAddress?: string;
-}
-
-export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", initialAddress = "" }: DiscoveryFormProps) {
-  const [username, setUsername] = useState(initialUsername);
-  const [address, setAddress] = useState(initialAddress);
-  const [lookupError, setLookupError] = useState<string | null>(null);
-
-  const [lastEdited, setLastEdited] = useState<"username" | "address" | null>(initialUsername ? "username" : initialAddress ? "address" : null);
-
-  const debouncedUsername = useDebounce(username, 500);
-  const debouncedAddress = useDebounce(address, 500);
-
-  const {
-    data: addressFromUsername,
-    isLoading: isLoadingAddress,
-    error: addressError,
-    refetch: refetchAddress,
-  } = useReadContract({
-    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
-    abi: LENS_GLOBAL_NAMESPACE_ABI,
-    functionName: "accountOf",
-    args: [debouncedUsername || ""],
-    chainId: LENS_CHAIN_ID,
-    query: {
-      enabled: false,
-    },
-  });
-
-  const {
-    data: usernameFromAddress,
-    isLoading: isLoadingUsername,
-    error: usernameError,
-    refetch: refetchUsername,
-  } = useReadContract({
-    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
-    abi: LENS_GLOBAL_NAMESPACE_ABI,
-    functionName: "usernameOf",
-    args: [debouncedAddress as `0x${string}`],
-    chainId: LENS_CHAIN_ID,
-    query: {
-      enabled: false,
-    },
-  });
-
-  useEffect(() => {
-    if (debouncedUsername && lastEdited === "username") {
-      setLookupError(null);
-      console.log(`Looking up address for username: ${debouncedUsername}`);
-      refetchAddress();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedUsername, lastEdited]);
-
-  useEffect(() => {
-    if (debouncedAddress && isAddress(debouncedAddress) && lastEdited === "address") {
-      setLookupError(null);
-      console.log(`Looking up username for address: ${debouncedAddress}`);
-      refetchUsername();
-    } else if (debouncedAddress && !isAddress(debouncedAddress) && lastEdited === "address") {
-      setLookupError("Invalid address format");
-      onAccountAddressFound(""); // Use empty string
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedAddress, lastEdited]);
-
-  useEffect(() => {
-    if (addressFromUsername && isAddress(addressFromUsername) && lastEdited === "username") {
-      if (addressFromUsername === "0x0000000000000000000000000000000000000000") {
-        setLookupError(`No account found for username "${debouncedUsername}"`);
-        setAddress("");
-        onAccountAddressFound(""); // Use empty string
-      } else {
-        console.log(`Found address: ${addressFromUsername}`);
-        setAddress(addressFromUsername);
-        onAccountAddressFound(addressFromUsername);
-        setLookupError(null);
-      }
-    } else if (addressError && lastEdited === "username") {
-      console.error("Error fetching address:", addressError);
-      // Check if it's a DoesNotExist error
-      if (addressError.message.includes("0xb0ce7591") || addressError.message.includes("DoesNotExist")) {
-        setLookupError(`Username "${debouncedUsername}" does not exist`);
-      } else {
-        setLookupError("Error fetching address. Please try again.");
-      }
-      onAccountAddressFound(""); // Use empty string
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addressFromUsername, addressError, lastEdited]);
-
-  useEffect(() => {
-    if (usernameFromAddress && lastEdited === "address") {
-      console.log(`Found username: ${usernameFromAddress}`);
-      setUsername(usernameFromAddress);
-      if (isAddress(debouncedAddress)) {
-        // Ensure address is still valid
-        onAccountAddressFound(debouncedAddress as `0x${string}`);
-      }
-      setLookupError(null);
-    } else if (usernameError && lastEdited === "address") {
-      console.log("No primary username found for address or error:", usernameError.message);
-      setUsername("");
-      if (isAddress(debouncedAddress)) {
-        onAccountAddressFound(debouncedAddress as `0x${string}`);
-      }
-      setLookupError(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [usernameFromAddress, usernameError, lastEdited, debouncedAddress]);
-
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-    setLastEdited("username");
-    if (lastEdited !== "address") setAddress("");
-    onAccountAddressFound(""); // Use empty string
-    setLookupError(null);
-  };
-
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setAddress(value);
-    setLastEdited("address");
-    if (lastEdited !== "username") setUsername("");
-    if (!isAddress(value) && value !== "") {
-      setLookupError("Invalid address format");
-      onAccountAddressFound(""); // Use empty string
-    } else {
-      setLookupError(null);
-      if (isAddress(value)) {
-        onAccountAddressFound(value as `0x${string}`);
-      } else {
-        onAccountAddressFound(""); // Use empty string
-      }
-    }
-  };
-
-  const isLoading = isLoadingAddress || isLoadingUsername;
-
-  return (
-    <div className="w-full max-w-md mx-auto space-y-8">
-      <div className="text-center space-y-2">
-        <p className="text-lg text-gray-600 font-light">To login, please enter your</p>
-      </div>
-
-      <div className="space-y-6">
-        <div>
-          <label htmlFor="username" className="block text-lg font-medium text-gray-700 mb-2">
-            Lens Username
-          </label>
-          <input
-            id="username"
-            name="username"
-            type="text"
-            value={username}
-            onChange={handleUsernameChange}
-            placeholder="e.g. stani"
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200"
-            aria-describedby="username-status"
-            disabled={isLoading && lastEdited === "address"}
-          />
-        </div>
-
-        <div className="flex items-center justify-center space-x-4">
-          <div className="h-px bg-gray-200 w-20"></div>
-          <span className="text-xl font-semibold text-gray-400">OR</span>
-          <div className="h-px bg-gray-200 w-20"></div>
-        </div>
-
-        <div>
-          <label htmlFor="address" className="block text-lg font-medium text-gray-700 mb-2">
-            Lens Account Address
-          </label>
-          <input
-            id="address"
-            name="address"
-            type="text"
-            value={address}
-            onChange={handleAddressChange}
-            placeholder="0x..."
-            className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 ${
-              !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-200"
-            }`}
-            aria-describedby="address-status"
-            disabled={isLoading && lastEdited === "username"}
-          />
-        </div>
-      </div>
-
-      {/* Status messages with improved styling */}
-      <div className="space-y-2">
-        <div id="username-status" aria-live="polite" className="text-sm text-center min-h-[20px]">
-          {isLoading && lastEdited === "username" && <span className="text-indigo-600">Checking username...</span>}
-        </div>
-        <div id="address-status" aria-live="polite" className="text-sm text-center min-h-[20px]">
-          {isLoading && lastEdited === "address" && <span className="text-indigo-600">Checking address...</span>}
-          {lookupError && <span className="text-red-600">{lookupError}</span>}
-          {!lookupError && isAddress(address) && lastEdited !== "username" && <span className="text-green-600">Valid Address</span>}
-        </div>
-      </div>
-    </div>
-  );
-}
-</file>
-
 <file path="src/contexts/LensAccountContext.tsx">
 // contexts/LensAccountContext.tsx
 "use client";
@@ -1816,6 +1597,240 @@ export function AccountDisplay() {
 }
 </file>
 
+<file path="src/components/DiscoveryForm.tsx">
+// components/DiscoveryForm.tsx
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useReadContract } from "wagmi";
+import { isAddress } from "viem";
+import { useDebounce } from "@/hooks/useDebounce";
+import { LENS_CHAIN_ID, LENS_GLOBAL_NAMESPACE_ADDRESS, LENS_GLOBAL_NAMESPACE_ABI } from "@/lib/constants";
+
+// Import icons from Heroicons
+import { CheckCircleIcon, ExclamationTriangleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+
+interface DiscoveryFormProps {
+  // Allow empty string or null when no valid address is found
+  onAccountAddressFound: (address: `0x${string}` | "") => void; // Changed type
+  initialUsername?: string;
+  initialAddress?: string;
+}
+
+// Add a StatusMessage component for consistent styling
+function StatusMessage({ type, message }: { type: "loading" | "error" | "success"; message: string }) {
+  return (
+    <div
+      className={`flex items-center justify-center gap-2 text-sm font-medium ${
+        type === "loading" ? "text-indigo-600" : type === "error" ? "text-red-600" : "text-green-600"
+      }`}
+    >
+      {type === "loading" && <ArrowPathIcon className="w-4 h-4 animate-spin" />}
+      {type === "error" && <ExclamationTriangleIcon className="w-4 h-4" />}
+      {type === "success" && <CheckCircleIcon className="w-4 h-4" />}
+      <span>{message}</span>
+    </div>
+  );
+}
+
+export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", initialAddress = "" }: DiscoveryFormProps) {
+  const [username, setUsername] = useState(initialUsername);
+  const [address, setAddress] = useState(initialAddress);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+
+  const [lastEdited, setLastEdited] = useState<"username" | "address" | null>(initialUsername ? "username" : initialAddress ? "address" : null);
+
+  const debouncedUsername = useDebounce(username, 500);
+  const debouncedAddress = useDebounce(address, 500);
+
+  const {
+    data: addressFromUsername,
+    isLoading: isLoadingAddress,
+    error: addressError,
+    refetch: refetchAddress,
+  } = useReadContract({
+    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
+    abi: LENS_GLOBAL_NAMESPACE_ABI,
+    functionName: "accountOf",
+    args: [debouncedUsername || ""],
+    chainId: LENS_CHAIN_ID,
+    query: {
+      enabled: false,
+    },
+  });
+
+  const {
+    data: usernameFromAddress,
+    isLoading: isLoadingUsername,
+    error: usernameError,
+    refetch: refetchUsername,
+  } = useReadContract({
+    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
+    abi: LENS_GLOBAL_NAMESPACE_ABI,
+    functionName: "usernameOf",
+    args: [debouncedAddress as `0x${string}`],
+    chainId: LENS_CHAIN_ID,
+    query: {
+      enabled: false,
+    },
+  });
+
+  useEffect(() => {
+    if (debouncedUsername && lastEdited === "username") {
+      setLookupError(null);
+      console.log(`Looking up address for username: ${debouncedUsername}`);
+      refetchAddress();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedUsername, lastEdited]);
+
+  useEffect(() => {
+    if (debouncedAddress && isAddress(debouncedAddress) && lastEdited === "address") {
+      setLookupError(null);
+      console.log(`Looking up username for address: ${debouncedAddress}`);
+      refetchUsername();
+    } else if (debouncedAddress && !isAddress(debouncedAddress) && lastEdited === "address") {
+      setLookupError("Invalid address format");
+      onAccountAddressFound(""); // Use empty string
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedAddress, lastEdited]);
+
+  useEffect(() => {
+    if (addressFromUsername && isAddress(addressFromUsername) && lastEdited === "username") {
+      if (addressFromUsername === "0x0000000000000000000000000000000000000000") {
+        setLookupError(`No account found for username "${debouncedUsername}"`);
+        setAddress("");
+        onAccountAddressFound(""); // Use empty string
+      } else {
+        console.log(`Found address: ${addressFromUsername}`);
+        setAddress(addressFromUsername);
+        onAccountAddressFound(addressFromUsername);
+        setLookupError(null);
+      }
+    } else if (addressError && lastEdited === "username") {
+      console.error("Error fetching address:", addressError);
+      // Check if it's a DoesNotExist error
+      if (addressError.message.includes("0xb0ce7591") || addressError.message.includes("DoesNotExist")) {
+        setLookupError(`Username "${debouncedUsername}" does not exist`);
+      } else {
+        setLookupError("Error fetching address. Please try again.");
+      }
+      onAccountAddressFound(""); // Use empty string
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addressFromUsername, addressError, lastEdited]);
+
+  useEffect(() => {
+    if (usernameFromAddress && lastEdited === "address") {
+      console.log(`Found username: ${usernameFromAddress}`);
+      setUsername(usernameFromAddress);
+      if (isAddress(debouncedAddress)) {
+        // Ensure address is still valid
+        onAccountAddressFound(debouncedAddress as `0x${string}`);
+      }
+      setLookupError(null);
+    } else if (usernameError && lastEdited === "address") {
+      console.log("No primary username found for address or error:", usernameError.message);
+      setUsername("");
+      if (isAddress(debouncedAddress)) {
+        onAccountAddressFound(debouncedAddress as `0x${string}`);
+      }
+      setLookupError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usernameFromAddress, usernameError, lastEdited, debouncedAddress]);
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value);
+    setLastEdited("username");
+    if (lastEdited !== "address") setAddress("");
+    onAccountAddressFound(""); // Use empty string
+    setLookupError(null);
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAddress(value);
+    setLastEdited("address");
+    if (lastEdited !== "username") setUsername("");
+    if (!isAddress(value) && value !== "") {
+      setLookupError("Invalid address format");
+      onAccountAddressFound(""); // Use empty string
+    } else {
+      setLookupError(null);
+      if (isAddress(value)) {
+        onAccountAddressFound(value as `0x${string}`);
+      } else {
+        onAccountAddressFound(""); // Use empty string
+      }
+    }
+  };
+
+  const isLoading = isLoadingAddress || isLoadingUsername;
+
+  return (
+    <div className="w-full max-w-md mx-auto space-y-8">
+      <div className="text-center space-y-2">
+        <p className="text-lg text-gray-600 font-light">To login, please enter your</p>
+      </div>
+
+      <div className="space-y-6">
+        <div>
+          <label htmlFor="username" className="block text-lg font-medium text-gray-700 mb-2">
+            Lens Username
+          </label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            value={username}
+            onChange={handleUsernameChange}
+            placeholder="e.g. stani"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200"
+            aria-describedby="username-status"
+            disabled={isLoading && lastEdited === "address"}
+          />
+        </div>
+
+        <div className="flex items-center justify-center space-x-4">
+          <div className="h-px bg-gray-200 w-20"></div>
+          <span className="text-xl font-semibold text-gray-400">OR</span>
+          <div className="h-px bg-gray-200 w-20"></div>
+        </div>
+
+        <div>
+          <label htmlFor="address" className="block text-lg font-medium text-gray-700 mb-2">
+            Lens Account Address
+          </label>
+          <input
+            id="address"
+            name="address"
+            type="text"
+            value={address}
+            onChange={handleAddressChange}
+            placeholder="0x..."
+            className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 ${
+              !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-200"
+            }`}
+            aria-describedby="address-status"
+            disabled={isLoading && lastEdited === "username"}
+          />
+        </div>
+      </div>
+
+      {/* Status messages with improved styling */}
+      <div className="min-h-[28px] flex justify-center">
+        {isLoading && lastEdited === "username" && <StatusMessage type="loading" message="Checking username..." />}
+        {isLoading && lastEdited === "address" && <StatusMessage type="loading" message="Checking address..." />}
+        {lookupError && <StatusMessage type="error" message={lookupError} />}
+        {!lookupError && isAddress(address) && lastEdited !== "username" && <StatusMessage type="success" message="Valid Address" />}
+      </div>
+    </div>
+  );
+}
+</file>
+
 <file path="src/components/WcRequestDisplay.tsx">
 // src/components/WcRequestDisplay.tsx
 "use client";
@@ -2154,6 +2169,40 @@ export function WcRequestDisplay() {
 }
 </file>
 
+<file path="src/app/providers.tsx">
+// src/app/providers.tsx
+"use client";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider } from "wagmi";
+import { ConnectKitProvider } from "connectkit";
+import { config } from "@/lib/wagmi";
+import React, { useState } from "react";
+import { LensAccountProvider } from "@/contexts/LensAccountContext";
+
+type Props = {
+  children: React.ReactNode;
+};
+
+export function Providers({ children }: Props) {
+  const [queryClient] = useState(() => new QueryClient());
+
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <ConnectKitProvider>
+          {/* Wrap with LensAccountProvider */}
+          <LensAccountProvider>
+            {/* Wrap with WalletConnectProvider */}
+            {children}
+          </LensAccountProvider>
+        </ConnectKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
+}
+</file>
+
 <file path="src/lib/constants.ts">
 // lib/constants.ts
 import { defineChain, parseAbi } from "viem";
@@ -2193,187 +2242,6 @@ export const LENS_ACCOUNT_ABI = parseAbi([
 
 export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
 export const ERC20_ABI = parseAbi(["function balanceOf(address owner) view returns (uint256)"]);
-</file>
-
-<file path="src/app/providers.tsx">
-// src/app/providers.tsx
-"use client";
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider } from "wagmi";
-import { ConnectKitProvider } from "connectkit";
-import { config } from "@/lib/wagmi";
-import React, { useState } from "react";
-import { LensAccountProvider } from "@/contexts/LensAccountContext";
-
-type Props = {
-  children: React.ReactNode;
-};
-
-export function Providers({ children }: Props) {
-  const [queryClient] = useState(() => new QueryClient());
-
-  return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <ConnectKitProvider>
-          {/* Wrap with LensAccountProvider */}
-          <LensAccountProvider>
-            {/* Wrap with WalletConnectProvider */}
-            {children}
-          </LensAccountProvider>
-        </ConnectKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
-  );
-}
-</file>
-
-<file path="src/app/page.tsx">
-// src/app/page.tsx
-"use client";
-
-import { DiscoveryForm } from "@/components/DiscoveryForm";
-import { ConnectOwnerButton } from "@/components/ConnectOwnerButton";
-import { useState, useEffect } from "react";
-import { useAccount, useReadContract } from "wagmi"; // Import useAccount
-import { useRouter } from "next/navigation"; // Import useRouter
-import { type Address, isAddress } from "viem";
-import { useLensAccount } from "@/contexts/LensAccountContext"; // Import the context hook
-import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants";
-
-export default function Home() {
-  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">("");
-  const [expectedOwner, setExpectedOwner] = useState<Address | null>(null);
-  const [ownerFetchError, setOwnerFetchError] = useState<string | null>(null);
-  const [verificationError, setVerificationError] = useState<string | null>(null); // State for verification errors
-
-  const {
-    address: connectedAddress,
-    chainId: connectedChainId,
-    isConnected,
-    // isConnecting, // REMOVED - Unused
-    // isReconnecting, // REMOVED - Unused
-  } = useAccount(); // Get connected account info
-  const router = useRouter(); // Initialize router
-  const { setVerifiedAccount, clearAccount: clearContext } = useLensAccount(); // Get context actions
-
-  const handleAccountFound = (address: Address | "") => {
-    console.log("Account Address Updated in Parent:", address);
-    setLensAccountAddress(address);
-    setExpectedOwner(null); // Reset owner when lens account changes
-    setOwnerFetchError(null);
-    setVerificationError(null); // Reset verification error
-    clearContext(); // Clear context if lens account changes
-  };
-
-  const {
-    data: ownerData,
-    error: ownerError,
-    isLoading: isLoadingOwner,
-  } = useReadContract({
-    address: lensAccountAddress || undefined,
-    abi: LENS_ACCOUNT_ABI,
-    functionName: "owner",
-    chainId: LENS_CHAIN_ID,
-    query: {
-      enabled: isAddress(lensAccountAddress),
-    },
-  });
-
-  // Effect to update expectedOwner state
-  useEffect(() => {
-    if (ownerData) {
-      setExpectedOwner(ownerData);
-      setOwnerFetchError(null);
-      console.log("Fetched Expected Owner:", ownerData);
-    }
-  }, [ownerData]);
-
-  // Effect to handle owner fetch errors
-  useEffect(() => {
-    if (ownerError) {
-      console.error("Error fetching owner:", ownerError);
-      setOwnerFetchError("Could not fetch account owner. Ensure the address is correct and on Lens Chain.");
-      setExpectedOwner(null);
-    } else if (isAddress(lensAccountAddress)) {
-      setOwnerFetchError(null);
-    }
-  }, [ownerError, lensAccountAddress]);
-
-  // Effect for Owner Verification and Navigation
-  useEffect(() => {
-    // Clear verification error on disconnect
-    if (!isConnected) {
-      setVerificationError(null);
-      clearContext(); // Also clear context on disconnect
-      return;
-    }
-
-    if (connectedAddress && expectedOwner && isAddress(lensAccountAddress)) {
-      // Check if on the correct chain first
-      if (connectedChainId !== LENS_CHAIN_ID) {
-        // Wagmi/ConnectKit handles the switch prompt, maybe show a generic message here
-        setVerificationError("Please switch to the Lens Chain in your wallet.");
-        clearContext();
-        return; // Don't proceed further if chain is wrong
-      }
-
-      // Now check if the address matches
-      if (connectedAddress.toLowerCase() === expectedOwner.toLowerCase()) {
-        console.log("Owner verified! Navigating to dashboard...");
-        setVerificationError(null); // Clear error on success
-        // Set the verified account details in context before navigating
-        setVerifiedAccount(lensAccountAddress, connectedAddress);
-        router.push("/dashboard");
-      } else {
-        console.log("Owner mismatch:", {
-          connected: connectedAddress,
-          expected: expectedOwner,
-        });
-        setVerificationError(`Incorrect owner connected. Please connect with wallet: ${expectedOwner}`);
-        clearContext();
-      }
-    }
-  }, [connectedAddress, connectedChainId, expectedOwner, lensAccountAddress, isConnected, router, setVerifiedAccount, clearContext]);
-
-  const showConnectButton = expectedOwner && !isLoadingOwner && !ownerFetchError;
-  // const connectButtonDisabled = // REMOVED - Unused
-  //   !!verificationError || connectedChainId !== LENS_CHAIN_ID;
-
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      <h1 className="text-4xl font-bold text-gray-800 mb-12">Lens Account Dashboard</h1>
-
-      <div className="w-full max-w-lg p-8 space-y-8 bg-white rounded-xl shadow-lg">
-        <DiscoveryForm onAccountAddressFound={handleAccountFound} />
-
-        <div className="space-y-4">
-          {isAddress(lensAccountAddress) && isLoadingOwner && <p className="text-center text-indigo-600">Fetching owner...</p>}
-
-          {ownerFetchError && !isLoadingOwner && <p className="text-center text-red-600">{ownerFetchError}</p>}
-
-          {expectedOwner && !isLoadingOwner && !ownerFetchError && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm font-medium text-blue-800 mb-1">Identified Account Owner:</p>
-              <p className="text-xs text-blue-700 break-words font-mono">{expectedOwner}</p>
-              {!isConnected && <p className="text-xs text-blue-600 mt-2">Connect this wallet to proceed.</p>}
-            </div>
-          )}
-
-          {verificationError && <p className="text-sm text-center text-red-600">{verificationError}</p>}
-
-          {showConnectButton && (
-            <div className="flex flex-col items-center gap-2">
-              <ConnectOwnerButton />
-              {isConnected && connectedChainId !== LENS_CHAIN_ID && <p className="text-xs text-orange-600">Waiting for network switch...</p>}
-            </div>
-          )}
-        </div>
-      </div>
-    </main>
-  );
-}
 </file>
 
 <file path="src/components/WcConnect.tsx">
@@ -2664,6 +2532,153 @@ export default function Dashboard() {
           {/* --- Render the Request Display Component --- */}
           <WcRequestDisplay /> {/* <<<--- ADDED */}
           {/* ------------------------------------------- */}
+        </div>
+      </div>
+    </main>
+  );
+}
+</file>
+
+<file path="src/app/page.tsx">
+// src/app/page.tsx
+"use client";
+
+import { DiscoveryForm } from "@/components/DiscoveryForm";
+import { ConnectOwnerButton } from "@/components/ConnectOwnerButton";
+import { useState, useEffect } from "react";
+import { useAccount, useReadContract } from "wagmi"; // Import useAccount
+import { useRouter } from "next/navigation"; // Import useRouter
+import { type Address, isAddress } from "viem";
+import { useLensAccount } from "@/contexts/LensAccountContext"; // Import the context hook
+import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants";
+
+export default function Home() {
+  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">("");
+  const [expectedOwner, setExpectedOwner] = useState<Address | null>(null);
+  const [ownerFetchError, setOwnerFetchError] = useState<string | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(null); // State for verification errors
+
+  const {
+    address: connectedAddress,
+    chainId: connectedChainId,
+    isConnected,
+    // isConnecting, // REMOVED - Unused
+    // isReconnecting, // REMOVED - Unused
+  } = useAccount(); // Get connected account info
+  const router = useRouter(); // Initialize router
+  const { setVerifiedAccount, clearAccount: clearContext } = useLensAccount(); // Get context actions
+
+  const handleAccountFound = (address: Address | "") => {
+    console.log("Account Address Updated in Parent:", address);
+    setLensAccountAddress(address);
+    setExpectedOwner(null); // Reset owner when lens account changes
+    setOwnerFetchError(null);
+    setVerificationError(null); // Reset verification error
+    clearContext(); // Clear context if lens account changes
+  };
+
+  const {
+    data: ownerData,
+    error: ownerError,
+    isLoading: isLoadingOwner,
+  } = useReadContract({
+    address: lensAccountAddress || undefined,
+    abi: LENS_ACCOUNT_ABI,
+    functionName: "owner",
+    chainId: LENS_CHAIN_ID,
+    query: {
+      enabled: isAddress(lensAccountAddress),
+    },
+  });
+
+  // Effect to update expectedOwner state
+  useEffect(() => {
+    if (ownerData) {
+      setExpectedOwner(ownerData);
+      setOwnerFetchError(null);
+      console.log("Fetched Expected Owner:", ownerData);
+    }
+  }, [ownerData]);
+
+  // Effect to handle owner fetch errors
+  useEffect(() => {
+    if (ownerError) {
+      console.error("Error fetching owner:", ownerError);
+      setOwnerFetchError("Could not fetch account owner. Ensure the address is correct and on Lens Chain.");
+      setExpectedOwner(null);
+    } else if (isAddress(lensAccountAddress)) {
+      setOwnerFetchError(null);
+    }
+  }, [ownerError, lensAccountAddress]);
+
+  // Effect for Owner Verification and Navigation
+  useEffect(() => {
+    // Clear verification error on disconnect
+    if (!isConnected) {
+      setVerificationError(null);
+      clearContext(); // Also clear context on disconnect
+      return;
+    }
+
+    if (connectedAddress && expectedOwner && isAddress(lensAccountAddress)) {
+      // Check if on the correct chain first
+      if (connectedChainId !== LENS_CHAIN_ID) {
+        // Wagmi/ConnectKit handles the switch prompt, maybe show a generic message here
+        setVerificationError("Please switch to the Lens Chain in your wallet.");
+        clearContext();
+        return; // Don't proceed further if chain is wrong
+      }
+
+      // Now check if the address matches
+      if (connectedAddress.toLowerCase() === expectedOwner.toLowerCase()) {
+        console.log("Owner verified! Navigating to dashboard...");
+        setVerificationError(null); // Clear error on success
+        // Set the verified account details in context before navigating
+        setVerifiedAccount(lensAccountAddress, connectedAddress);
+        router.push("/dashboard");
+      } else {
+        console.log("Owner mismatch:", {
+          connected: connectedAddress,
+          expected: expectedOwner,
+        });
+        setVerificationError(`Incorrect owner connected. Please connect with wallet: ${expectedOwner}`);
+        clearContext();
+      }
+    }
+  }, [connectedAddress, connectedChainId, expectedOwner, lensAccountAddress, isConnected, router, setVerifiedAccount, clearContext]);
+
+  const showConnectButton = expectedOwner && !isLoadingOwner && !ownerFetchError;
+  // const connectButtonDisabled = // REMOVED - Unused
+  //   !!verificationError || connectedChainId !== LENS_CHAIN_ID;
+
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+      <h1 className="text-4xl font-bold text-gray-800 mb-12">Lens Account Dashboard</h1>
+
+      <div className="w-full max-w-lg p-8 space-y-8 bg-white rounded-xl shadow-lg">
+        <DiscoveryForm onAccountAddressFound={handleAccountFound} />
+
+        <div className="space-y-4">
+          {isAddress(lensAccountAddress) && isLoadingOwner && <p className="text-center text-indigo-600">Fetching owner...</p>}
+
+          {ownerFetchError && !isLoadingOwner && <p className="text-center text-red-600">{ownerFetchError}</p>}
+
+          {expectedOwner && !isLoadingOwner && !ownerFetchError && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm font-medium text-blue-800 mb-1">Identified Account Owner:</p>
+              <p className="text-xs text-blue-700 break-words font-mono">{expectedOwner}</p>
+              {!isConnected && <p className="text-xs text-blue-600 mt-2">Connect this wallet to proceed.</p>}
+            </div>
+          )}
+
+          {verificationError && <p className="text-sm text-center text-red-600">{verificationError}</p>}
+
+          {showConnectButton && (
+            <div className="flex flex-col items-center gap-2">
+              <ConnectOwnerButton />
+              {isConnected && connectedChainId !== LENS_CHAIN_ID && <p className="text-xs text-orange-600">Waiting for network switch...</p>}
+            </div>
+          )}
         </div>
       </div>
     </main>
@@ -2971,6 +2986,7 @@ export class WalletConnectService extends EventEmitter {
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@reown/walletkit": "^1.2.3",
     "@tanstack/react-query": "^5.74.4",
     "@walletconnect/core": "^2.20.0",

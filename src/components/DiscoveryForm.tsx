@@ -7,11 +7,30 @@ import { isAddress } from "viem";
 import { useDebounce } from "@/hooks/useDebounce";
 import { LENS_CHAIN_ID, LENS_GLOBAL_NAMESPACE_ADDRESS, LENS_GLOBAL_NAMESPACE_ABI } from "@/lib/constants";
 
+// Import icons from Heroicons
+import { CheckCircleIcon, ExclamationTriangleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+
 interface DiscoveryFormProps {
   // Allow empty string or null when no valid address is found
   onAccountAddressFound: (address: `0x${string}` | "") => void; // Changed type
   initialUsername?: string;
   initialAddress?: string;
+}
+
+// Add a StatusMessage component for consistent styling
+function StatusMessage({ type, message }: { type: "loading" | "error" | "success"; message: string }) {
+  return (
+    <div
+      className={`flex items-center justify-center gap-2 text-sm font-medium ${
+        type === "loading" ? "text-indigo-600" : type === "error" ? "text-red-600" : "text-green-600"
+      }`}
+    >
+      {type === "loading" && <ArrowPathIcon className="w-4 h-4 animate-spin" />}
+      {type === "error" && <ExclamationTriangleIcon className="w-4 h-4" />}
+      {type === "success" && <CheckCircleIcon className="w-4 h-4" />}
+      <span>{message}</span>
+    </div>
+  );
 }
 
 export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", initialAddress = "" }: DiscoveryFormProps) {
@@ -201,15 +220,11 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
       </div>
 
       {/* Status messages with improved styling */}
-      <div className="space-y-2">
-        <div id="username-status" aria-live="polite" className="text-sm text-center min-h-[20px]">
-          {isLoading && lastEdited === "username" && <span className="text-indigo-600">Checking username...</span>}
-        </div>
-        <div id="address-status" aria-live="polite" className="text-sm text-center min-h-[20px]">
-          {isLoading && lastEdited === "address" && <span className="text-indigo-600">Checking address...</span>}
-          {lookupError && <span className="text-red-600">{lookupError}</span>}
-          {!lookupError && isAddress(address) && lastEdited !== "username" && <span className="text-green-600">Valid Address</span>}
-        </div>
+      <div className="min-h-[28px] flex justify-center">
+        {isLoading && lastEdited === "username" && <StatusMessage type="loading" message="Checking username..." />}
+        {isLoading && lastEdited === "address" && <StatusMessage type="loading" message="Checking address..." />}
+        {lookupError && <StatusMessage type="error" message={lookupError} />}
+        {!lookupError && isAddress(address) && lastEdited !== "username" && <StatusMessage type="success" message="Valid Address" />}
       </div>
     </div>
   );
