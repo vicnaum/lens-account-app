@@ -17,8 +17,6 @@ interface BaseTxModalProps {
 }
 
 export function BaseTxModal({ isOpen, onClose, title, children, isLoading, isSuccess, error, txHash, disableClose = false }: BaseTxModalProps) {
-  if (!isOpen) return null;
-
   const [countdown, setCountdown] = useState(5);
 
   // Auto-close after success
@@ -45,6 +43,8 @@ export function BaseTxModal({ isOpen, onClose, title, children, isLoading, isSuc
   useEffect(() => {
     setCountdown(5);
   }, [isOpen]);
+
+  if (!isOpen) return null;
 
   const handleClose = () => {
     if (!disableClose && !isLoading) {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { isAddress, parseUnits, encodeFunctionData, type Address, type Hash, maxUint256 } from "viem";
+import { isAddress, parseUnits, encodeFunctionData, type Address, maxUint256 } from "viem";
 import { BaseTxModal } from "./BaseTxModal";
 import { useLensAccount } from "@/contexts/LensAccountContext";
 import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, ERC20_ABI } from "@/lib/constants";
