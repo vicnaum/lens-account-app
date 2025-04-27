@@ -254,19 +254,27 @@ export class WalletConnectService extends EventEmitter {
   }
   // -------------------------------------------
 
-  // Typed EventEmitter methods (keep as before)
+  // Typed EventEmitter methods (Apply this pattern to on, once, off, removeListener)
   on<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return super.on(event, listener as (...args: any[]) => void);
   }
+
   once<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return super.once(event, listener as (...args: any[]) => void);
   }
+
   off<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return super.off(event, listener as (...args: any[]) => void);
   }
+
   removeListener<E extends keyof WalletConnectServiceEvents>(event: E, listener: WalletConnectServiceEvents[E]): this {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return super.removeListener(event, listener as (...args: any[]) => void);
   }
+
   emit<E extends keyof WalletConnectServiceEvents>(event: E, ...args: Parameters<WalletConnectServiceEvents[E]>): boolean {
     return super.emit(event, ...args);
   }
