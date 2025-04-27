@@ -13,6 +13,7 @@
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@reown/walletkit": "^1.2.3",
     "@tanstack/react-query": "^5.74.4",
     "@walletconnect/core": "^2.20.0",
