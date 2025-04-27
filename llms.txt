@@ -75,7 +75,6 @@ src/
 .gitignore
 .prettierrc
 DEVELOPMENT_PLAN.md
-diff.txt
 eslint.config.mjs
 next.config.ts
 package.json
@@ -88,514 +87,6 @@ tsconfig.json
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="diff.txt">
-diff --git a/src/components/WcConnect.tsx b/src/components/WcConnect.tsx
-index 7893d18..49ea3cc 100644
---- a/src/components/WcConnect.tsx
-+++ b/src/components/WcConnect.tsx
-@@ -1,9 +1,10 @@
- // src/components/WcConnect.tsx
- "use client";
- 
--import React, { useState, useEffect } from "react";
-+import React, { useState, useEffect, useCallback, useMemo } from "react";
- import { useWalletConnect } from "@/contexts/WalletConnectProvider"; // Ensure correct path
- import Image from "next/image";
-+import { isExpired } from "@walletconnect/utils"; // <-- Import isExpired utility
- 
- // Default/Fallback Icon
- const FallbackIcon = () => <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">?</div>;
-@@ -65,52 +66,75 @@ export function WcConnect() {
-     pendingProposal, // Get the pending proposal
-     approveSession, // Get approve action
-     rejectSession, // Get reject action
--    isInitializing, // <<<--- ADDED isInitializing HERE ---<<<
-+    isInitializing,
-   } = useWalletConnect();
-   const [uri, setUri] = useState("");
-+  const [isSubmitting, setIsSubmitting] = useState(false);
- 
-   const activeSessionTopic = Object.keys(activeSessions)[0]; // Assuming only one session for MVP
-   const connectedSession = activeSessionTopic ? activeSessions[activeSessionTopic] : null;
- 
--  // --- Add this useEffect ---
-+  // ---> Check if proposal is expired for UI state <--- //
-+  const isProposalExpired = useMemo(() => {
-+    if (!pendingProposal?.params?.expiryTimestamp) return false; // No timestamp means can't determine expiry this way
-+    return isExpired(pendingProposal.params.expiryTimestamp);
-+  }, [pendingProposal]); // Re-calculate only when proposal changes
-+  // ---> End Expiry Check <--- //
-+
-   useEffect(() => {
--    // If there's no connected session (either initially or after disconnect),
--    // clear the URI input field.
-     if (!connectedSession) {
-       setUri("");
-     }
--  }, [connectedSession]); // Run this effect when connectedSession changes
--  // -------------------------
--
--  const handleConnect = () => {
--    if (!uri || !isInitialized || isLoading) return; // Check initialization and combined loading state
--    pair(uri);
--  };
--
--  const handleDisconnect = () => {
--    if (connectedSession && isInitialized && !isLoading) {
--      // Check initialization and combined loading state
--      disconnect(connectedSession.topic);
-+  }, [connectedSession]);
-+
-+  const handleConnect = useCallback(() => {
-+    if (!uri || !isInitialized || isLoading || isSubmitting) return;
-+    setIsSubmitting(true);
-+    pair(uri).finally(() => setIsSubmitting(false));
-+  }, [uri, isInitialized, isLoading, isSubmitting, pair]);
-+
-+  const handleDisconnect = useCallback(() => {
-+    if (connectedSession && isInitialized && !isLoading && !isSubmitting) {
-+      setIsSubmitting(true);
-+      disconnect(connectedSession.topic).finally(() => setIsSubmitting(false));
-     }
--  };
--
--  const handleApprove = () => {
--    if (pendingProposal && !isLoading) {
--      approveSession();
-+  }, [connectedSession, isInitialized, isLoading, isSubmitting, disconnect]);
-+
-+  const handleApprove = useCallback(async () => {
-+    if (pendingProposal && !isLoading && !isSubmitting) {
-+      setIsSubmitting(true);
-+      try {
-+        await approveSession();
-+      } catch (err) {
-+        console.error("Approval failed:", err);
-+      } finally {
-+        setIsSubmitting(false);
-+      }
-     }
--  };
--
--  const handleReject = () => {
--    if (pendingProposal && !isLoading) {
--      rejectSession();
-+  }, [pendingProposal, isLoading, isSubmitting, approveSession]);
-+
-+  const handleReject = useCallback(async () => {
-+    if (pendingProposal && !isLoading && !isSubmitting) {
-+      setIsSubmitting(true);
-+      try {
-+        await rejectSession();
-+      } catch (err) {
-+        console.error("Rejection failed:", err);
-+      } finally {
-+        setIsSubmitting(false);
-+      }
-     }
--  };
-+  }, [pendingProposal, isLoading, isSubmitting, rejectSession]);
-+
-+  // Combined loading state (context is loading OR local component is submitting)
-+  const isDisabled = isLoading || isSubmitting || !isInitialized;
-+  const approveDisabled = isDisabled || isProposalExpired; // <-- Disable approve if expired
- 
-   // Display loading states more granularly if needed, otherwise use `isLoading`
--  const connectButtonText = isPairing ? "Pairing..." : isLoading ? "Working..." : "Connect";
--  const disconnectButtonText = isLoading ? "Working..." : "Disconnect";
--  const approveButtonText = isLoading ? "Working..." : "Approve Session";
--  const rejectButtonText = isLoading ? "Working..." : "Reject Session";
-+  const connectButtonText = isPairing ? "Pairing..." : isSubmitting ? "Connecting..." : isLoading ? "Working..." : "Connect";
-+  const disconnectButtonText = isSubmitting ? "Working..." : isLoading ? "Working..." : "Disconnect";
-+  const approveButtonText = isSubmitting ? "Approving..." : isLoading ? "Working..." : "Approve Session";
-+  const rejectButtonText = isSubmitting ? "Rejecting..." : isLoading ? "Working..." : "Reject Session";
- 
-   // Resolve icon URLs
-   const connectedDAppIconUrl = connectedSession
-@@ -134,17 +158,24 @@ export function WcConnect() {
-             <span className="text-sm text-gray-700">{pendingProposal.params.proposer.metadata.name}</span>
-           </div>
-           {/* TODO: Display requested permissions details if needed */}
-+          {/* ---> Add Expiry Message <--- */}
-+          {isProposalExpired && (
-+            <p className="text-sm font-medium text-red-600 text-center">
-+              This connection proposal has expired. Please generate a new one from the dApp.
-+            </p>
-+          )}
-+          {/* ---> End Expiry Message <--- */}
-           <div className="flex space-x-2 pt-2">
-             <button
-               onClick={handleApprove}
--              disabled={isLoading || !isInitialized}
-+              disabled={approveDisabled} // <--- Use specific disabled state
-               className="flex-1 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50"
-             >
-               {approveButtonText}
-             </button>
-             <button
-               onClick={handleReject}
--              disabled={isLoading || !isInitialized}
-+              disabled={isDisabled} // Reject might still be possible even if expired, or disable too: `disabled={isDisabled || isProposalExpired}`
-               className="flex-1 px-3 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
-             >
-               {rejectButtonText}
-@@ -170,7 +201,7 @@ export function WcConnect() {
-           </p>
-           <button
-             onClick={handleDisconnect}
--            disabled={isLoading || !isInitialized} // Use combined loading state
-+            disabled={isDisabled}
-             className="w-full px-4 py-2 mt-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
-           >
-             {disconnectButtonText}
-@@ -193,11 +224,11 @@ export function WcConnect() {
-               onChange={(e) => setUri(e.target.value)}
-               placeholder="wc:..."
-               className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100"
--              disabled={isLoading || !isInitialized} // Use combined loading state
-+              disabled={isDisabled}
-             />
-             <button
-               onClick={handleConnect}
--              disabled={!uri || isLoading || !isInitialized} // Use combined loading state
-+              disabled={!uri || isDisabled}
-               className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-             >
-               {connectButtonText}
-@@ -207,11 +238,9 @@ export function WcConnect() {
-       )}
- 
-       {/* --- Status/Error Messages --- */}
--      {error && !isLoading && <p className="text-red-600 text-sm mt-2">Error: {error}</p>}
-+      {error && !isLoading && !isSubmitting && <p className="text-red-600 text-sm mt-2">Error: {error}</p>}
-       {isPairing && <p className="text-indigo-600 text-sm mt-2">Pairing initiated, check dApp/wallet if needed...</p>}
--      {/* Check both flags here now */}
-       {!isInitialized && !isInitializing && !error && <p className="text-orange-600 text-sm mt-2">WalletConnect service not ready.</p>}
--      {/* And display initializing message correctly */}
-       {isInitializing && <p className="text-gray-500 text-sm mt-2">Initializing WalletConnect...</p>}
-     </div>
-   );
-diff --git a/src/contexts/WalletConnectProvider.tsx b/src/contexts/WalletConnectProvider.tsx
-index 0c1e8f6..7ac07c1 100644
---- a/src/contexts/WalletConnectProvider.tsx
-+++ b/src/contexts/WalletConnectProvider.tsx
-@@ -6,7 +6,7 @@ import React, { createContext, useState, useContext, ReactNode, useEffect, useCa
- import { WalletConnectService, ServiceEvents, type WalletConnectServiceEvents } from "@/services/walletConnectService";
- import { SessionTypes } from "@walletconnect/types";
- import { IWalletKit, WalletKitTypes } from "@reown/walletkit";
--import { buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
-+import { buildApprovedNamespaces, getSdkError, isExpired } from "@walletconnect/utils";
- import { useLensAccount } from "./LensAccountContext";
- import { LENS_CHAIN_ID } from "@/lib/constants";
- import { JsonRpcResponse } from "@walletconnect/jsonrpc-utils";
-@@ -101,94 +101,114 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
-         console.error("WalletConnectProvider Mount Effect: service.init() rejected.", initError);
-       });
-     }
--  }, [projectId]); // Add projectId dependency
-+    // eslint-disable-next-line react-hooks/exhaustive-deps
-+  }, [projectId]); // Keep only projectId as it's needed for creation
- 
--  // --- Effect to Attach/Detach Event Listeners ---
--  useEffect(() => {
--    const currentService = serviceRef.current; // Capture ref value for effect closure
--    if (!currentService) {
--      console.log(`%cWalletConnectProvider Listener Effect: Skipping setup, no service instance.`, "color: purple");
--      return;
--    }
--
--    console.log(`%cWalletConnectProvider Listener Effect: Attaching listeners to service instance.`, "color: purple");
--
--    // Define handlers
--    const handleInitialized: WalletConnectServiceEvents[ServiceEvents.Initialized] = ({ success, instance }) => {
--      console.log(`%cProvider Listener: ${ServiceEvents.Initialized} received (success=${success})`, "color: purple");
-+  // --- Event Handlers (wrapped in useCallback) ---
-+  const handleInitialized = useCallback<WalletConnectServiceEvents[ServiceEvents.Initialized]>(
-+    ({ success, instance }) => {
-+      console.log(`%cProvider Handler: ${ServiceEvents.Initialized} received (success=${success})`, "color: purple");
-       setIsInitialized(success);
-       setWalletKitInstance(success ? instance : null);
--      if (currentService) setActiveSessions(currentService.getActiveSessions());
-+      // Check serviceRef directly instead of captured value, as it might change over time if remount occurs
-+      if (serviceRef.current) setActiveSessions(serviceRef.current.getActiveSessions());
-       setIsInitializing(false);
-       if (!success && !error) setError("Initialization failed via event");
--    };
--    const handlePairStatus: WalletConnectServiceEvents[ServiceEvents.PairStatus] = ({ status, message }) => {
--      console.log(`%cProvider Listener: ${ServiceEvents.PairStatus} received: ${status}`, "color: purple", message);
--      setIsPairing(status === "pairing");
--      if (status === "error") {
--        setError(message || "Pairing failed");
--        setIsPairing(false);
--      } else if (status !== "pairing") {
--        setError(null);
--      }
--    };
--    const handleSessionProposal: WalletConnectServiceEvents[ServiceEvents.SessionProposal] = ({ proposal }) => {
--      console.log(`%cProvider Listener: ${ServiceEvents.SessionProposal} received:`, "color: purple", proposal.id);
--      setPendingProposal(proposal);
--      setIsPairing(false);
--      setError(null);
--    };
--    const handleSessionConnect: WalletConnectServiceEvents[ServiceEvents.SessionConnect] = ({ session }) => {
--      console.log(`%cProvider Listener: ${ServiceEvents.SessionConnect} received:`, "color: purple", session.topic);
--      setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
-+    },
-+    [error],
-+  ); // Dependency: error (to avoid setting error if one already exists)
-+
-+  const handlePairStatus = useCallback<WalletConnectServiceEvents[ServiceEvents.PairStatus]>(({ status, message }) => {
-+    console.log(`%cProvider Handler: ${ServiceEvents.PairStatus} received: ${status}`, "color: purple", message);
-+    setIsPairing(status === "pairing");
-+    if (status === "error") {
-+      setError(message || "Pairing failed");
-       setIsPairing(false);
-+    } else if (status !== "pairing") {
-       setError(null);
--      setPendingProposal(null);
--    };
--    // This now handles PEER disconnects or SDK internal cleanup events
--    const handleSessionDelete: WalletConnectServiceEvents[ServiceEvents.SessionDelete] = ({ topic }) => {
--      console.log(`%cProvider Listener: ${ServiceEvents.SessionDelete} received (likely from PEER) for topic:`, "color: purple", topic);
-+    }
-+  }, []); // No dependencies needed here as it only calls setters
-+
-+  const handleSessionProposal = useCallback<WalletConnectServiceEvents[ServiceEvents.SessionProposal]>(({ proposal }) => {
-+    console.log(`%cProvider Handler: ${ServiceEvents.SessionProposal} received:`, "color: purple", proposal.id);
-+    setPendingProposal(proposal);
-+    setIsPairing(false);
-+    setError(null);
-+  }, []); // No dependencies needed here as it only calls setters
-+
-+  const handleSessionConnect = useCallback<WalletConnectServiceEvents[ServiceEvents.SessionConnect]>(({ session }) => {
-+    console.log(`%cProvider Handler: ${ServiceEvents.SessionConnect} received:`, "color: purple", session.topic);
-+    setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
-+    setIsPairing(false);
-+    setError(null);
-+    setPendingProposal(null);
-+  }, []); // No dependencies needed here as it only calls setters
-+
-+  const handleSessionDelete = useCallback<WalletConnectServiceEvents[ServiceEvents.SessionDelete]>(
-+    ({ topic }) => {
-+      console.log(`%cProvider Handler: ${ServiceEvents.SessionDelete} received (likely from PEER) for topic:`, "color: purple", topic);
-       setActiveSessions((prev) => {
-         if (!prev[topic]) return prev;
-+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-         const { [topic]: _removed, ...rest } = prev;
-         console.log(`%cProvider State: Removing session ${topic} based on SDK/PEER event.`, "color: brown");
-         return rest;
-       });
-       setIsPairing(false);
-+      // Need pendingProposal to check pairingTopic
-       if (pendingProposal && pendingProposal.params.pairingTopic === topic) {
-         console.log("%cProvider: Clearing pending proposal due to SDK/peer session delete event.", "color: brown");
-         setPendingProposal(null);
-       }
--    };
--    const handleSessionsUpdated: WalletConnectServiceEvents[ServiceEvents.SessionsUpdated] = ({ sessions }) => {
--      console.log(`%cProvider Listener: ${ServiceEvents.SessionsUpdated} received`, "color: purple", sessions);
--      setActiveSessions(sessions);
--    };
--    const handleSessionRequest: WalletConnectServiceEvents[ServiceEvents.SessionRequest] = ({ request }) => {
--      console.log(`%cProvider Listener: ${ServiceEvents.SessionRequest} received:`, "color: purple", request.id, request.params.request.method);
--      if (request.params.request.method === "eth_sendTransaction") {
--        setPendingRequest(request);
--        setError(null);
--      } else {
--        console.warn(`%cProvider Listener: Received unhandled request method: ${request.params.request.method}`, "color: orange");
--      }
--    };
--    const handleError: WalletConnectServiceEvents[ServiceEvents.Error] = ({ message }) => {
--      console.error(`%cProvider Listener: ${ServiceEvents.Error} received:`, "color: red", message);
--      setError(message);
--      setIsPairing(false);
--      setIsProcessingAction(false);
--    };
--    const handleIsLoading: WalletConnectServiceEvents[ServiceEvents.IS_LOADING] = ({ isLoading }) => {
--      console.log(`%cProvider Listener: ${ServiceEvents.IS_LOADING} received: ${isLoading}`, "color: purple");
--      setIsProcessingAction(isLoading);
--    };
--    const handleIsPairing: WalletConnectServiceEvents[ServiceEvents.IS_PAIRING] = ({ isPairing }) => {
--      console.log(`%cProvider Listener: ${ServiceEvents.IS_PAIRING} received: ${isPairing}`, "color: purple");
--      setIsPairing(isPairing);
--    };
-+    },
-+    [pendingProposal],
-+  ); // Dependency: pendingProposal
-+
-+  const handleSessionsUpdated = useCallback<WalletConnectServiceEvents[ServiceEvents.SessionsUpdated]>(({ sessions }) => {
-+    console.log(`%cProvider Handler: ${ServiceEvents.SessionsUpdated} received`, "color: purple", sessions);
-+    setActiveSessions(sessions);
-+  }, []); // No dependencies needed here as it only calls setters
-+
-+  const handleSessionRequest = useCallback<WalletConnectServiceEvents[ServiceEvents.SessionRequest]>(({ request }) => {
-+    console.log(`%cProvider Handler: ${ServiceEvents.SessionRequest} received:`, "color: purple", request.id, request.params.request.method);
-+    if (request.params.request.method === "eth_sendTransaction") {
-+      setPendingRequest(request);
-+      setError(null);
-+    } else {
-+      console.warn(`%cProvider Handler: Received unhandled request method: ${request.params.request.method}`, "color: orange");
-+      // Maybe respond with an error here automatically?
-+      // respondRequest({ id: request.id, jsonrpc: '2.0', error: { code: -32601, message: 'Method not supported' } });
-+    }
-+  }, []); // Dependency: respondRequest (if adding automatic error response)
-+
-+  const handleError = useCallback<WalletConnectServiceEvents[ServiceEvents.Error]>(({ message }) => {
-+    console.error(`%cProvider Handler: ${ServiceEvents.Error} received:`, "color: red", message);
-+    setError(message);
-+    setIsPairing(false);
-+    setIsProcessingAction(false);
-+  }, []); // No dependencies needed here as it only calls setters
- 
--    // Attach listeners
-+  const handleIsLoading = useCallback<WalletConnectServiceEvents[ServiceEvents.IS_LOADING]>(({ isLoading }) => {
-+    console.log(`%cProvider Handler: ${ServiceEvents.IS_LOADING} received: ${isLoading}`, "color: purple");
-+    setIsProcessingAction(isLoading);
-+  }, []); // No dependencies needed here as it only calls setters
-+
-+  const handleIsPairing = useCallback<WalletConnectServiceEvents[ServiceEvents.IS_PAIRING]>(({ isPairing }) => {
-+    console.log(`%cProvider Handler: ${ServiceEvents.IS_PAIRING} received: ${isPairing}`, "color: purple");
-+    setIsPairing(isPairing);
-+  }, []); // No dependencies needed here as it only calls setters
-+
-+  // --- Effect to Attach/Detach Event Listeners ---
-+  useEffect(() => {
-+    const currentService = serviceRef.current; // Capture ref value
-+    if (!currentService) {
-+      console.log(`%cWalletConnectProvider Listener Effect: Skipping setup, no service instance.`, "color: purple");
-+      return;
-+    }
-+
-+    console.log(`%cWalletConnectProvider Listener Effect: Attaching listeners to service instance.`, "color: purple");
-+
-+    // Attach the useCallback handlers
-     currentService.on(ServiceEvents.Initialized, handleInitialized);
-     currentService.on(ServiceEvents.PairStatus, handlePairStatus);
-     currentService.on(ServiceEvents.SessionProposal, handleSessionProposal);
-@@ -200,11 +220,10 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
-     currentService.on(ServiceEvents.IS_PAIRING, handleIsPairing);
-     currentService.on(ServiceEvents.SessionRequest, handleSessionRequest);
- 
--    // Cleanup function
-+    // Cleanup function using the same stable handlers
-     return () => {
--      console.log("%cWalletConnectProvider Mount Effect: Cleaning up listeners.", "color: orange");
-+      console.log("%cWalletConnectProvider Listener Effect: Cleaning up listeners.", "color: orange");
-       if (currentService) {
--        // Use the captured variable
-         console.log("%cDetaching listeners from service instance in ref.", "color: orange");
-         currentService.off(ServiceEvents.Initialized, handleInitialized);
-         currentService.off(ServiceEvents.PairStatus, handlePairStatus);
-@@ -218,7 +237,21 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
-         currentService.off(ServiceEvents.SessionRequest, handleSessionRequest);
-       }
-     };
--  }, []);
-+  }, [
-+    // Dependencies are the stable handler functions themselves
-+    handleInitialized,
-+    handlePairStatus,
-+    handleSessionProposal,
-+    handleSessionConnect,
-+    handleSessionDelete,
-+    handleSessionsUpdated,
-+    handleError,
-+    handleIsLoading,
-+    handleIsPairing,
-+    handleSessionRequest,
-+    // Also include isInitialized or serviceRef.current? Let's try without first.
-+    // If listeners aren't attached correctly after init, add isInitialized.
-+  ]);
- 
-   // --- Context Methods ---
-   const pair = useCallback(
-@@ -228,15 +261,29 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
-       setError(null);
-       await serviceRef.current.pair(uri);
-     },
--    [isInitialized],
-+    // eslint-disable-next-line react-hooks/exhaustive-deps
-+    [isInitialized], // Keep isInitialized here
-   );
- 
-   const approveSession = useCallback(async () => {
--    if (!serviceRef.current?.isInitialized() || !pendingProposal || !lensAccountAddress) {
--      const reason = !isInitialized ? "Service not ready." : !pendingProposal ? "No proposal." : "No Lens address.";
-+    if (!serviceRef.current?.isInitialized() || !pendingProposal) {
-+      const reason = !isInitialized ? "Service not ready." : "No proposal.";
-       setError(`Cannot approve: ${reason}`);
-       return;
-     }
-+
-+    if (pendingProposal.params.expiryTimestamp && isExpired(pendingProposal.params.expiryTimestamp)) {
-+      console.warn(`Attempted to approve expired proposal ${pendingProposal.id}.`);
-+      setError("Connection proposal expired. Please try again.");
-+      setPendingProposal(null);
-+      return;
-+    }
-+
-+    if (!lensAccountAddress) {
-+      setError("Cannot approve: Lens Account address is missing.");
-+      return;
-+    }
-+
-     console.log(`%cWalletConnectProvider: approveSession called for proposal ${pendingProposal.id}`, "color: cyan");
-     setError(null);
- 
-@@ -261,8 +308,6 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
- 
-       const session = await serviceRef.current.approveSession(pendingProposal, approvedNamespaces);
-       console.log(`%cWalletConnectProvider: approveSession successful, received session:`, "color: green", session);
--      // Manually update state since event might not fire from SDK
--      setActiveSessions((prev) => ({ ...prev, [session.topic]: session }));
-       setPendingProposal(null);
-       setIsPairing(false);
-       setError(null);
-@@ -287,7 +332,6 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
-     }
-   }, [isInitialized, pendingProposal]);
- 
--  // >>>>>>>> REVERTED disconnect callback <<<<<<<<
-   const disconnect = useCallback(
-     async (topic: string) => {
-       if (!serviceRef.current?.isInitialized()) {
-@@ -308,24 +352,27 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps)
-             console.warn(`%cWalletConnectProvider: Tried to remove non-existent session ${topic} from state.`, "color: orange");
-             return prev;
-           }
-+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-           const { [topic]: _removed, ...rest } = prev;
-           console.log(`%cWalletConnectProvider: Manually removing session ${topic} from state.`, "color: brown");
-           return rest;
-         });
--        // Ensure other related states are cleared
-+
-+        // ---> KEEP This State Clearing Logic <---
-+        setPendingProposal(null);
-+        setPendingRequest(null); // Clear pending requests too
-         setIsPairing(false);
--        if (pendingProposal?.params?.pairingTopic === topic) {
--          console.log(`%cWalletConnectProvider: Clearing pending proposal during manual disconnect cleanup for topic ${topic}.`, "color: brown");
--          setPendingProposal(null);
--        }
-+        setError(null);
-+        // ---> End State Clearing Logic <---
-       } catch (e) {
-         console.error(`%cWalletConnectProvider: disconnect failed for topic ${topic}:`, "color: red", e);
-         setError((e as Error)?.message || "Disconnect failed");
-       }
-     },
--    [pendingProposal], // isInitialized was correctly removed previously
-+    // Add dependencies if they are used *inside* the logic before the service call,
-+    // but since it primarily relies on the `topic` argument, `[]` is okay here.
-+    [],
-   );
--  // >>>>>>>> ----------------------------- <<<<<<<<
- 
-   const respondRequest = useCallback(
-     async (response: JsonRpcResponse) => {
-</file>
 
 <file path="src/components/ConnectOwnerButton.tsx">
 // components/ConnectOwnerButton.tsx
@@ -2008,6 +1499,13 @@ export const LENS_ACCOUNT_ABI = parseAbi([
 
 export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
 export const ERC20_ABI = parseAbi(["function balanceOf(address owner) view returns (uint256)"]);
+
+// --- Local Storage Keys ---
+export const LOCAL_STORAGE_KEYS = {
+  LENS_ACCOUNT_ADDRESS: "lensSession:lensAccountAddress",
+  EXPECTED_OWNER_ADDRESS: "lensSession:expectedOwner",
+  LENS_USERNAME: "lensSession:username",
+};
 </file>
 
 <file path="src/components/DiscoveryForm.tsx">
@@ -2016,7 +1514,7 @@ export const ERC20_ABI = parseAbi(["function balanceOf(address owner) view retur
 
 import React, { useState, useEffect } from "react";
 import { useReadContract } from "wagmi";
-import { isAddress } from "viem";
+import { isAddress, type Address } from "viem";
 import { useDebounce } from "@/hooks/useDebounce";
 import { LENS_CHAIN_ID, LENS_GLOBAL_NAMESPACE_ADDRESS, LENS_GLOBAL_NAMESPACE_ABI } from "@/lib/constants";
 
@@ -2024,8 +1522,8 @@ import { LENS_CHAIN_ID, LENS_GLOBAL_NAMESPACE_ADDRESS, LENS_GLOBAL_NAMESPACE_ABI
 import { CheckCircleIcon, ExclamationTriangleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 
 interface DiscoveryFormProps {
-  // Allow empty string or null when no valid address is found
-  onAccountAddressFound: (address: `0x${string}` | "") => void; // Changed type
+  // Update the callback prop definition
+  onAccountDetailsFound: (details: { address: Address | ""; username: string }) => void;
   initialUsername?: string;
   initialAddress?: string;
 }
@@ -2046,11 +1544,10 @@ function StatusMessage({ type, message }: { type: "loading" | "error" | "success
   );
 }
 
-export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", initialAddress = "" }: DiscoveryFormProps) {
+export function DiscoveryForm({ onAccountDetailsFound, initialUsername = "", initialAddress = "" }: DiscoveryFormProps) {
   const [username, setUsername] = useState(initialUsername);
   const [address, setAddress] = useState(initialAddress);
   const [lookupError, setLookupError] = useState<string | null>(null);
-
   const [lastEdited, setLastEdited] = useState<"username" | "address" | null>(initialUsername ? "username" : initialAddress ? "address" : null);
 
   const debouncedUsername = useDebounce(username, 500);
@@ -2104,7 +1601,7 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
       refetchUsername();
     } else if (debouncedAddress && !isAddress(debouncedAddress) && lastEdited === "address") {
       setLookupError("Invalid address format");
-      onAccountAddressFound(""); // Use empty string
+      onAccountDetailsFound({ address: "", username: "" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedAddress, lastEdited]);
@@ -2114,40 +1611,38 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
       if (addressFromUsername === "0x0000000000000000000000000000000000000000") {
         setLookupError(`No account found for username "${debouncedUsername}"`);
         setAddress("");
-        onAccountAddressFound(""); // Use empty string
+        onAccountDetailsFound({ address: "", username: debouncedUsername || "" });
       } else {
         console.log(`Found address: ${addressFromUsername}`);
         setAddress(addressFromUsername);
-        onAccountAddressFound(addressFromUsername);
+        onAccountDetailsFound({ address: addressFromUsername, username: debouncedUsername || "" });
         setLookupError(null);
       }
     } else if (addressError && lastEdited === "username") {
       console.error("Error fetching address:", addressError);
-      // Check if it's a DoesNotExist error
       if (addressError.message.includes("0xb0ce7591") || addressError.message.includes("DoesNotExist")) {
         setLookupError(`Username "${debouncedUsername}" does not exist`);
       } else {
         setLookupError("Error fetching address. Please try again.");
       }
-      onAccountAddressFound(""); // Use empty string
+      onAccountDetailsFound({ address: "", username: debouncedUsername || "" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addressFromUsername, addressError, lastEdited]);
+  }, [addressFromUsername, addressError, lastEdited, debouncedUsername]);
 
   useEffect(() => {
     if (usernameFromAddress && lastEdited === "address") {
       console.log(`Found username: ${usernameFromAddress}`);
       setUsername(usernameFromAddress);
       if (isAddress(debouncedAddress)) {
-        // Ensure address is still valid
-        onAccountAddressFound(debouncedAddress as `0x${string}`);
+        onAccountDetailsFound({ address: debouncedAddress as Address, username: usernameFromAddress });
       }
       setLookupError(null);
     } else if (usernameError && lastEdited === "address") {
       console.log("No primary username found for address or error:", usernameError.message);
       setUsername("");
       if (isAddress(debouncedAddress)) {
-        onAccountAddressFound(debouncedAddress as `0x${string}`);
+        onAccountDetailsFound({ address: debouncedAddress as Address, username: "" });
       }
       setLookupError(null);
     }
@@ -2155,28 +1650,28 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
   }, [usernameFromAddress, usernameError, lastEdited, debouncedAddress]);
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const cleanValue = e.target.value.replace(/\s+/g, ""); // Remove all spaces
+    const cleanValue = e.target.value.replace(/\s+/g, "");
     setUsername(cleanValue);
     setLastEdited("username");
     if (lastEdited !== "address") setAddress("");
-    onAccountAddressFound(""); // Use empty string
+    onAccountDetailsFound({ address: "", username: cleanValue });
     setLookupError(null);
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const cleanValue = e.target.value.replace(/\s+/g, ""); // Remove all spaces
+    const cleanValue = e.target.value.replace(/\s+/g, "");
     setAddress(cleanValue);
     setLastEdited("address");
     if (lastEdited !== "username") setUsername("");
     if (!isAddress(cleanValue) && cleanValue !== "") {
       setLookupError("Invalid address format");
-      onAccountAddressFound(""); // Use empty string
+      onAccountDetailsFound({ address: "", username: "" });
     } else {
       setLookupError(null);
       if (isAddress(cleanValue)) {
-        onAccountAddressFound(cleanValue as `0x${string}`);
+        onAccountDetailsFound({ address: cleanValue as Address, username: "" });
       } else {
-        onAccountAddressFound(""); // Use empty string
+        onAccountDetailsFound({ address: "", username: "" });
       }
     }
   };
@@ -2476,7 +1971,8 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AccountDisplay } from "@/components/AccountDisplay";
 import { WcConnect } from "@/components/WcConnect";
-import { WcRequestDisplay } from "@/components/WcRequestDisplay"; // <<<--- IMPORTED
+import { WcRequestDisplay } from "@/components/WcRequestDisplay";
+import { LOCAL_STORAGE_KEYS } from "@/lib/constants"; // Import constants
 
 export default function Dashboard() {
   const { lensAccountAddress, ownerAddress, clearAccount } = useLensAccount();
@@ -2495,9 +1991,21 @@ export default function Dashboard() {
   }, [isConnected, lensAccountAddress, ownerAddress, router, clearAccount]);
 
   const handleLogout = () => {
+    console.log("Logout initiated: Clearing context, disconnecting wallet, and clearing localStorage session.");
+    // Disconnect wallet first
     disconnectOwnerWallet();
+    // Clear React context state
     clearAccount();
-    console.log("Logout initiated");
+
+    // Clear localStorage session data
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.EXPECTED_OWNER_ADDRESS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LENS_USERNAME);
+      console.log("Session data cleared from localStorage");
+    } catch (error) {
+      console.error("Failed to clear session from localStorage during logout:", error);
+    }
   };
 
   if (!isConnected || !lensAccountAddress || !ownerAddress) {
@@ -2547,35 +2055,54 @@ export default function Dashboard() {
 import { DiscoveryForm } from "@/components/DiscoveryForm";
 import { ConnectOwnerButton } from "@/components/ConnectOwnerButton";
 import { useState, useEffect } from "react";
-import { useAccount, useReadContract } from "wagmi"; // Import useAccount
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useAccount, useReadContract } from "wagmi";
+import { useRouter } from "next/navigation";
 import { type Address, isAddress } from "viem";
-import { useLensAccount } from "@/contexts/LensAccountContext"; // Import the context hook
-import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants";
+import { useLensAccount } from "@/contexts/LensAccountContext";
+import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, LOCAL_STORAGE_KEYS } from "@/lib/constants";
 
 export default function Home() {
-  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">("");
+  // Initialize state from localStorage
+  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const storedAddress = localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS);
+        return storedAddress && isAddress(storedAddress) ? storedAddress : "";
+      } catch (error) {
+        console.error("Failed to read lensAccountAddress from localStorage:", error);
+      }
+    }
+    return "";
+  });
+
+  const [lensUsername, setLensUsername] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_USERNAME) || "";
+      } catch (error) {
+        console.error("Failed to read lensUsername from localStorage:", error);
+      }
+    }
+    return "";
+  });
+
   const [expectedOwner, setExpectedOwner] = useState<Address | null>(null);
   const [ownerFetchError, setOwnerFetchError] = useState<string | null>(null);
-  const [verificationError, setVerificationError] = useState<string | null>(null); // State for verification errors
+  const [verificationError, setVerificationError] = useState<string | null>(null);
 
-  const {
-    address: connectedAddress,
-    chainId: connectedChainId,
-    isConnected,
-    // isConnecting, // REMOVED - Unused
-    // isReconnecting, // REMOVED - Unused
-  } = useAccount(); // Get connected account info
-  const router = useRouter(); // Initialize router
-  const { setVerifiedAccount, clearAccount: clearContext } = useLensAccount(); // Get context actions
+  const { address: connectedAddress, chainId: connectedChainId, isConnected, isConnecting, isReconnecting, status } = useAccount();
+  const router = useRouter();
+  const { setVerifiedAccount, clearAccount: clearContext } = useLensAccount();
 
-  const handleAccountFound = (address: Address | "") => {
-    console.log("Account Address Updated in Parent:", address);
-    setLensAccountAddress(address);
-    setExpectedOwner(null); // Reset owner when lens account changes
+  // Updated handler for DiscoveryForm callback
+  const handleAccountDetailsFound = (details: { address: Address | ""; username: string }) => {
+    console.log("Account Details Updated in Parent:", details);
+    setLensAccountAddress(details.address);
+    setLensUsername(details.username);
+    setExpectedOwner(null);
     setOwnerFetchError(null);
-    setVerificationError(null); // Reset verification error
-    clearContext(); // Clear context if lens account changes
+    setVerificationError(null);
+    clearContext();
   };
 
   const {
@@ -2612,52 +2139,136 @@ export default function Home() {
     }
   }, [ownerError, lensAccountAddress]);
 
-  // Effect for Owner Verification and Navigation
+  // Session Restore Effect
   useEffect(() => {
-    // Clear verification error on disconnect
-    if (!isConnected) {
-      setVerificationError(null);
-      clearContext(); // Also clear context on disconnect
+    console.log("Session Restore Check Effect: Running...");
+    // Prevent restore logic while connection is initializing/reconnecting
+    if (isConnecting || isReconnecting || status !== "connected") {
+      console.log("Session Restore Check Effect: Waiting for connection to settle...");
       return;
     }
 
-    if (connectedAddress && expectedOwner && isAddress(lensAccountAddress)) {
-      // Check if on the correct chain first
+    // Only attempt restore if the wallet is definitively connected
+    if (!connectedAddress) {
+      console.log("Session Restore Check Effect: Wallet not connected, skipping restore.");
+      // Ensure local storage is cleared if wallet is disconnected but data exists
+      try {
+        if (localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS)) {
+          console.log("Session Restore Check Effect: Clearing stale localStorage data as wallet is disconnected.");
+          localStorage.removeItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS);
+          localStorage.removeItem(LOCAL_STORAGE_KEYS.EXPECTED_OWNER_ADDRESS);
+          localStorage.removeItem(LOCAL_STORAGE_KEYS.LENS_USERNAME);
+        }
+      } catch (error) {
+        console.error("Failed to clear stale session from localStorage:", error);
+      }
+      return;
+    }
+
+    let storedLensAddress: Address | null = null;
+    let storedOwner: Address | null = null;
+    let storedUsername: string | null = null;
+
+    try {
+      storedLensAddress = localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS) as Address | null;
+      storedOwner = localStorage.getItem(LOCAL_STORAGE_KEYS.EXPECTED_OWNER_ADDRESS) as Address | null;
+      storedUsername = localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_USERNAME);
+      console.log("Session Restore Check Effect: Found stored data:", { storedLensAddress, storedOwner, storedUsername });
+    } catch (error) {
+      console.error("Session Restore Check Effect: Failed to read session from localStorage:", error);
+      return;
+    }
+
+    // Check if essential data exists and is valid, and matches the connected wallet
+    if (
+      storedLensAddress &&
+      isAddress(storedLensAddress) &&
+      storedOwner &&
+      isAddress(storedOwner) &&
+      connectedAddress.toLowerCase() === storedOwner.toLowerCase()
+    ) {
+      // Check chain ID
       if (connectedChainId !== LENS_CHAIN_ID) {
-        // Wagmi/ConnectKit handles the switch prompt, maybe show a generic message here
-        setVerificationError("Please switch to the Lens Chain in your wallet.");
-        clearContext();
-        return; // Don't proceed further if chain is wrong
+        console.log("Session Restore Check Effect: Wallet connected but on wrong chain. Waiting for switch.");
+        setVerificationError("Previous session found. Please switch to the Lens Chain.");
+        setLensAccountAddress(storedLensAddress);
+        setLensUsername(storedUsername || "");
+        setExpectedOwner(storedOwner);
+        return;
       }
 
-      // Now check if the address matches
-      if (connectedAddress.toLowerCase() === expectedOwner.toLowerCase()) {
-        console.log("Owner verified! Navigating to dashboard...");
-        setVerificationError(null); // Clear error on success
-        // Set the verified account details in context before navigating
-        setVerifiedAccount(lensAccountAddress, connectedAddress);
-        router.push("/dashboard");
-      } else {
-        console.log("Owner mismatch:", {
-          connected: connectedAddress,
-          expected: expectedOwner,
-        });
-        setVerificationError(`Incorrect owner connected. Please connect with wallet: ${expectedOwner}`);
-        clearContext();
+      console.log("Session Restore Check Effect: Valid session found, wallet connected correctly. Restoring session and redirecting...");
+      setVerifiedAccount(storedLensAddress, connectedAddress);
+      setLensAccountAddress(storedLensAddress);
+      setLensUsername(storedUsername || "");
+      setExpectedOwner(storedOwner);
+      setVerificationError(null);
+
+      router.replace("/dashboard");
+    } else {
+      console.log("Session Restore Check Effect: No valid stored session found or owner mismatch.");
+      try {
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS);
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.EXPECTED_OWNER_ADDRESS);
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.LENS_USERNAME);
+      } catch (error) {
+        console.error("Failed to clear invalid session data from localStorage:", error);
       }
     }
-  }, [connectedAddress, connectedChainId, expectedOwner, lensAccountAddress, isConnected, router, setVerifiedAccount, clearContext]);
+  }, [status, connectedAddress, connectedChainId, isConnecting, isReconnecting, router, setVerifiedAccount, clearContext]);
+
+  // Effect for Owner Verification and Navigation
+  useEffect(() => {
+    if (!isConnected || !connectedAddress || !expectedOwner || !isAddress(lensAccountAddress)) {
+      return;
+    }
+
+    if (connectedChainId !== LENS_CHAIN_ID) {
+      setVerificationError("Please switch to the Lens Chain in your wallet.");
+      clearContext();
+      return;
+    }
+
+    if (connectedAddress.toLowerCase() === expectedOwner.toLowerCase()) {
+      console.log("Owner verified! Storing session and navigating...");
+      setVerificationError(null);
+
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS, lensAccountAddress);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.EXPECTED_OWNER_ADDRESS, expectedOwner);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.LENS_USERNAME, lensUsername || "");
+        console.log("Session data stored in localStorage");
+      } catch (error) {
+        console.error("Failed to write session to localStorage:", error);
+      }
+
+      setVerifiedAccount(lensAccountAddress, connectedAddress);
+      router.push("/dashboard");
+    } else {
+      console.log("Owner mismatch:", { connected: connectedAddress, expected: expectedOwner });
+      setVerificationError(`Incorrect owner connected. Please connect with wallet: ${expectedOwner}`);
+      try {
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS);
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.EXPECTED_OWNER_ADDRESS);
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.LENS_USERNAME);
+      } catch (error) {
+        console.error("Failed to clear session from localStorage during mismatch:", error);
+      }
+      clearContext();
+    }
+  }, [connectedAddress, connectedChainId, expectedOwner, lensAccountAddress, lensUsername, isConnected, router, setVerifiedAccount, clearContext]);
 
   const showConnectButton = expectedOwner && !isLoadingOwner && !ownerFetchError;
-  // const connectButtonDisabled = // REMOVED - Unused
-  //   !!verificationError || connectedChainId !== LENS_CHAIN_ID;
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       <h1 className="text-4xl font-bold text-gray-800 mb-12">Lens Account Dashboard</h1>
-
       <div className="w-full max-w-lg p-8 space-y-8 bg-white rounded-xl shadow-lg">
-        <DiscoveryForm onAccountAddressFound={handleAccountFound} />
+        <DiscoveryForm
+          onAccountDetailsFound={handleAccountDetailsFound}
+          initialAddress={lensAccountAddress || ""}
+          initialUsername={lensUsername || ""}
+        />
 
         <div className="space-y-4">
           {isAddress(lensAccountAddress) && isLoadingOwner && <p className="text-center text-indigo-600">Fetching owner...</p>}
@@ -2971,55 +2582,6 @@ export class WalletConnectService extends EventEmitter {
 }
 </file>
 
-<file path="package.json">
-{
-  "name": "lens-account-interface4",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "prepare": "husky",
-    "generate-llms": "repomix --include \"*.*,src\" --ignore \"llms.txt\" -o llms.txt",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md,json}\"",
-    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
-  },
-  "dependencies": {
-    "@heroicons/react": "^2.2.0",
-    "@reown/walletkit": "^1.2.3",
-    "@tanstack/react-query": "^5.74.4",
-    "@walletconnect/core": "^2.20.0",
-    "@walletconnect/jsonrpc-utils": "^1.0.8",
-    "@walletconnect/utils": "^2.20.0",
-    "connectkit": "^1.9.0",
-    "next": "15.3.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "viem": "^2.27.2",
-    "wagmi": "^2.14.16"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/webpack": "^5.28.5",
-    "@walletconnect/types": "^2.20.0",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.1",
-    "husky": "^9.1.7",
-    "pino-pretty": "^13.0.0",
-    "prettier": "^3.5.3",
-    "repomix": "^0.3.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
-}
-</file>
-
 <file path="DEVELOPMENT_PLAN.md">
 **Version:** 1.0
 **Date:** 2025-04-19
@@ -3201,6 +2763,55 @@ We will follow an incremental development approach, building and verifying core 
 - Enhance error messages and user feedback.
 - Refine UI/UX, add loading states more granularly.
 - Mobile responsiveness.
+</file>
+
+<file path="package.json">
+{
+  "name": "lens-account-interface4",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prepare": "husky",
+    "generate-llms": "repomix --include \"*.*,src\" --ignore \"llms.txt\" -o llms.txt",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md,json}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@reown/walletkit": "^1.2.3",
+    "@tanstack/react-query": "^5.74.4",
+    "@walletconnect/core": "^2.20.0",
+    "@walletconnect/jsonrpc-utils": "^1.0.8",
+    "@walletconnect/utils": "^2.20.0",
+    "connectkit": "^1.9.0",
+    "next": "15.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.27.2",
+    "wagmi": "^2.14.16"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/webpack": "^5.28.5",
+    "@walletconnect/types": "^2.20.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "husky": "^9.1.7",
+    "pino-pretty": "^13.0.0",
+    "prettier": "^3.5.3",
+    "repomix": "^0.3.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
 </file>
 
 <file path="src/contexts/WalletConnectProvider.tsx">

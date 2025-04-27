@@ -36,3 +36,10 @@ export const LENS_ACCOUNT_ABI = parseAbi([
 
 export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
 export const ERC20_ABI = parseAbi(["function balanceOf(address owner) view returns (uint256)"]);
+
+// --- Local Storage Keys ---
+export const LOCAL_STORAGE_KEYS = {
+  LENS_ACCOUNT_ADDRESS: "lensSession:lensAccountAddress",
+  EXPECTED_OWNER_ADDRESS: "lensSession:expectedOwner",
+  LENS_USERNAME: "lensSession:username",
+};

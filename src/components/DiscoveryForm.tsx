@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useReadContract } from "wagmi";
-import { isAddress } from "viem";
+import { isAddress, type Address } from "viem";
 import { useDebounce } from "@/hooks/useDebounce";
 import { LENS_CHAIN_ID, LENS_GLOBAL_NAMESPACE_ADDRESS, LENS_GLOBAL_NAMESPACE_ABI } from "@/lib/constants";
 
@@ -11,8 +11,8 @@ import { LENS_CHAIN_ID, LENS_GLOBAL_NAMESPACE_ADDRESS, LENS_GLOBAL_NAMESPACE_ABI
 import { CheckCircleIcon, ExclamationTriangleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 
 interface DiscoveryFormProps {
-  // Allow empty string or null when no valid address is found
-  onAccountAddressFound: (address: `0x${string}` | "") => void; // Changed type
+  // Update the callback prop definition
+  onAccountDetailsFound: (details: { address: Address | ""; username: string }) => void;
   initialUsername?: string;
   initialAddress?: string;
 }
@@ -33,11 +33,10 @@ function StatusMessage({ type, message }: { type: "loading" | "error" | "success
   );
 }
 
-export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", initialAddress = "" }: DiscoveryFormProps) {
+export function DiscoveryForm({ onAccountDetailsFound, initialUsername = "", initialAddress = "" }: DiscoveryFormProps) {
   const [username, setUsername] = useState(initialUsername);
   const [address, setAddress] = useState(initialAddress);
   const [lookupError, setLookupError] = useState<string | null>(null);
-
   const [lastEdited, setLastEdited] = useState<"username" | "address" | null>(initialUsername ? "username" : initialAddress ? "address" : null);
 
   const debouncedUsername = useDebounce(username, 500);
@@ -91,7 +90,7 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
       refetchUsername();
     } else if (debouncedAddress && !isAddress(debouncedAddress) && lastEdited === "address") {
       setLookupError("Invalid address format");
-      onAccountAddressFound(""); // Use empty string
+      onAccountDetailsFound({ address: "", username: "" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedAddress, lastEdited]);
@@ -101,40 +100,38 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
       if (addressFromUsername === "0x0000000000000000000000000000000000000000") {
         setLookupError(`No account found for username "${debouncedUsername}"`);
         setAddress("");
-        onAccountAddressFound(""); // Use empty string
+        onAccountDetailsFound({ address: "", username: debouncedUsername || "" });
       } else {
         console.log(`Found address: ${addressFromUsername}`);
         setAddress(addressFromUsername);
-        onAccountAddressFound(addressFromUsername);
+        onAccountDetailsFound({ address: addressFromUsername, username: debouncedUsername || "" });
         setLookupError(null);
       }
     } else if (addressError && lastEdited === "username") {
       console.error("Error fetching address:", addressError);
-      // Check if it's a DoesNotExist error
       if (addressError.message.includes("0xb0ce7591") || addressError.message.includes("DoesNotExist")) {
         setLookupError(`Username "${debouncedUsername}" does not exist`);
       } else {
         setLookupError("Error fetching address. Please try again.");
       }
-      onAccountAddressFound(""); // Use empty string
+      onAccountDetailsFound({ address: "", username: debouncedUsername || "" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addressFromUsername, addressError, lastEdited]);
+  }, [addressFromUsername, addressError, lastEdited, debouncedUsername]);
 
   useEffect(() => {
     if (usernameFromAddress && lastEdited === "address") {
       console.log(`Found username: ${usernameFromAddress}`);
       setUsername(usernameFromAddress);
       if (isAddress(debouncedAddress)) {
-        // Ensure address is still valid
-        onAccountAddressFound(debouncedAddress as `0x${string}`);
+        onAccountDetailsFound({ address: debouncedAddress as Address, username: usernameFromAddress });
       }
       setLookupError(null);
     } else if (usernameError && lastEdited === "address") {
       console.log("No primary username found for address or error:", usernameError.message);
       setUsername("");
       if (isAddress(debouncedAddress)) {
-        onAccountAddressFound(debouncedAddress as `0x${string}`);
+        onAccountDetailsFound({ address: debouncedAddress as Address, username: "" });
       }
       setLookupError(null);
     }
@@ -142,28 +139,28 @@ export function DiscoveryForm({ onAccountAddressFound, initialUsername = "", ini
   }, [usernameFromAddress, usernameError, lastEdited, debouncedAddress]);
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const cleanValue = e.target.value.replace(/\s+/g, ""); // Remove all spaces
+    const cleanValue = e.target.value.replace(/\s+/g, "");
     setUsername(cleanValue);
     setLastEdited("username");
     if (lastEdited !== "address") setAddress("");
-    onAccountAddressFound(""); // Use empty string
+    onAccountDetailsFound({ address: "", username: cleanValue });
     setLookupError(null);
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const cleanValue = e.target.value.replace(/\s+/g, ""); // Remove all spaces
+    const cleanValue = e.target.value.replace(/\s+/g, "");
     setAddress(cleanValue);
     setLastEdited("address");
     if (lastEdited !== "username") setUsername("");
     if (!isAddress(cleanValue) && cleanValue !== "") {
       setLookupError("Invalid address format");
-      onAccountAddressFound(""); // Use empty string
+      onAccountDetailsFound({ address: "", username: "" });
     } else {
       setLookupError(null);
       if (isAddress(cleanValue)) {
-        onAccountAddressFound(cleanValue as `0x${string}`);
+        onAccountDetailsFound({ address: cleanValue as Address, username: "" });
       } else {
-        onAccountAddressFound(""); // Use empty string
+        onAccountDetailsFound({ address: "", username: "" });
       }
     }
   };

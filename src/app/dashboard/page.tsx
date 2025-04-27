@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AccountDisplay } from "@/components/AccountDisplay";
 import { WcConnect } from "@/components/WcConnect";
-import { WcRequestDisplay } from "@/components/WcRequestDisplay"; // <<<--- IMPORTED
+import { WcRequestDisplay } from "@/components/WcRequestDisplay";
+import { LOCAL_STORAGE_KEYS } from "@/lib/constants"; // Import constants
 
 export default function Dashboard() {
   const { lensAccountAddress, ownerAddress, clearAccount } = useLensAccount();
@@ -26,9 +27,21 @@ export default function Dashboard() {
   }, [isConnected, lensAccountAddress, ownerAddress, router, clearAccount]);
 
   const handleLogout = () => {
+    console.log("Logout initiated: Clearing context, disconnecting wallet, and clearing localStorage session.");
+    // Disconnect wallet first
     disconnectOwnerWallet();
+    // Clear React context state
     clearAccount();
-    console.log("Logout initiated");
+
+    // Clear localStorage session data
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.EXPECTED_OWNER_ADDRESS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LENS_USERNAME);
+      console.log("Session data cleared from localStorage");
+    } catch (error) {
+      console.error("Failed to clear session from localStorage during logout:", error);
+    }
   };
 
   if (!isConnected || !lensAccountAddress || !ownerAddress) {
