@@ -2,7 +2,7 @@
 
 import { type Address, isAddress } from "viem";
 import { useState } from "react";
-import { ExclamationTriangleIcon, CheckCircleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+import { ExclamationTriangleIcon, CheckCircleIcon, ArrowPathIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
 import { DocumentDuplicateIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { useLensAccount } from "@/contexts/LensAccountContext";
@@ -45,6 +45,10 @@ export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
       console.error("Failed to copy address:", err);
       alert("Failed to copy address."); // Simple error feedback
     }
+  };
+
+  const handleOpenExplorer = () => {
+    window.open(`https://explorer.lens.xyz/address/${ownerAddress}`, "_blank");
   };
 
   const handleToggleChangeOwner = () => {
@@ -125,6 +129,13 @@ export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
       <h2 className="text-xl font-semibold mb-4 text-gray-700">Account Owner</h2>
       <div className="flex items-center bg-gray-50 p-3 rounded-md border border-gray-200 mb-4">
         <p className="text-sm font-mono text-gray-700 break-all flex-1">{ownerAddress}</p>
+        <button
+          onClick={handleOpenExplorer}
+          title="View on Explorer"
+          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-200 rounded-md transition-colors duration-150"
+        >
+          <ArrowTopRightOnSquareIcon className="w-5 h-5" />
+        </button>
         <button
           onClick={handleCopy}
           title={copied ? "Copied!" : "Copy Address"}

@@ -2,6 +2,7 @@
 
 import { type Address } from "viem";
 import { DocumentDuplicateIcon, QrCodeIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import { QrCodeModal } from "@/components/modals/QrCodeModal";
 
@@ -36,6 +37,10 @@ export function AccountIdentityPanel({ username, address }: AccountIdentityPanel
     setIsQrModalOpen(false);
   };
 
+  const handleOpenExplorer = () => {
+    window.open(`https://explorer.lens.xyz/address/${address}`, "_blank");
+  };
+
   return (
     <div>
       {username && (
@@ -46,6 +51,13 @@ export function AccountIdentityPanel({ username, address }: AccountIdentityPanel
       <p className="text-sm text-gray-500 mb-3">Managing Lens Account:</p>
       <div className="flex items-center space-x-4 bg-gray-50 p-3 rounded-md border border-gray-200">
         <p className="text-lg md:text-xl font-mono text-gray-700 break-all flex-1">{address}</p>
+        <button
+          onClick={handleOpenExplorer}
+          title="View on Explorer"
+          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-200 rounded-md transition-colors duration-150"
+        >
+          <ArrowTopRightOnSquareIcon className="w-5 h-5" />
+        </button>
         <button
           onClick={handleCopy}
           title={copied ? "Copied!" : "Copy Address"}
