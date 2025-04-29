@@ -210,7 +210,7 @@ export default function Home() {
   const showConnectButton = expectedOwner && !isLoadingOwner && !ownerFetchError;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <main className="relative flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       <h1 className="text-4xl font-bold text-gray-800 mb-12">Lens Account Dashboard</h1>
       <div className="w-full max-w-lg p-8 space-y-8 bg-white rounded-xl shadow-lg">
         <DiscoveryForm
@@ -241,6 +241,13 @@ export default function Home() {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+        <a href="https://fkng.social" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-gray-500 transition-colors">
+          <img src="/FKNG.SOCIAL.svg" alt="FKNG.SOCIAL" className="h-4 w-auto" />
+        </a>
+        <p className="font-sans text-[10px] font-extralight text-gray-400">JOIN THE FKNG REVOLUTION</p>
       </div>
     </main>
   );

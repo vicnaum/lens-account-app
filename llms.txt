@@ -90,6 +90,7 @@ next.config.ts
 package.json
 postcss.config.mjs
 README.md
+repomix-output.xml
 Spec.functional.md
 Spec.technical.md
 tsconfig.json
@@ -97,6 +98,571 @@ tsconfig.json
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="repomix-output.xml">
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+components/
+  Head.tsx
+  RandomSlogan.tsx
+pages/
+  _app.tsx
+  _document.tsx
+  index.tsx
+public/
+  manifest.json
+styles/
+  globals.css
+  Home.module.css
+.eslintrc.json
+.gitignore
+next-sitemap.config.js
+next.config.js
+package.json
+README.md
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="pages/_app.tsx">
+import '../styles/globals.css'
+import type { AppProps } from 'next/app'
+
+function MyApp({ Component, pageProps }: AppProps) {
+  return <Component {...pageProps} />
+}
+
+export default MyApp
+</file>
+
+<file path="pages/_document.tsx">
+import { Html, Head, Main, NextScript } from "next/document";
+
+export default function Document() {
+  return (
+    <Html lang="en">
+      <Head />
+      <body>
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  );
+}
+</file>
+
+<file path="styles/globals.css">
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    color: white;
+    background: black;
+  }
+}
+</file>
+
+<file path="styles/Home.module.css">
+.container {
+  padding: 0;
+}
+
+.main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 0;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo {
+  margin: 0;
+  font-size: 6rem;
+  letter-spacing: 10px;
+}
+
+.slogan {
+  margin: 2rem 0 0 0;
+  font-size: 1.2rem;
+  letter-spacing: 4px;
+  color: #666;
+  font-weight: 200;
+}
+
+.social {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-right: 15px;
+  padding-bottom: 1rem;
+}
+</file>
+
+<file path=".eslintrc.json">
+{
+  "extends": "next/core-web-vitals"
+}
+</file>
+
+<file path="README.md">
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+
+[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+
+The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
+</file>
+
+<file path="components/Head.tsx">
+import Head from "next/head";
+
+const FKNGHead = () => {
+  const title = "FKNG.SOCIAL | Making social fkng great again";
+  const desc = "Making social fkng great again - A new way to connect in web3";
+  const image = "https://fkng.social/fkng.png";
+  return (
+    <Head>
+      <title>{title}</title>
+      <link rel="icon" href="/favicon.png" />
+      <link rel="manifest" href="/manifest.json" />
+      <meta name="description" content={desc} />
+
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={desc} />
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content="https://fkng.social/" />
+      <meta property="og:image" content={image} />
+      <meta property="og:image:type" content="image/png" />
+      <meta property="og:image:alt" content={desc} />
+
+      <meta name="twitter:site" content="fkng" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={desc} />
+      <meta name="twitter:image" content={image} />
+      <meta name="twitter:image:alt" content={desc} />
+    </Head>
+  );
+};
+
+export default FKNGHead;
+</file>
+
+<file path="public/manifest.json">
+{
+  "name": "FKNG.SOCIAL",
+  "short_name": "FKNG.SOCIAL",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#fff",
+  "background_color": "#fff",
+  "icons": [
+    {
+      "src": "https://fkng.social/favicon.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    }
+  ]
+}
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# sitemap
+/public/sitemap*.xml
+/public/robots.txt
+
+sitemap*.xml
+</file>
+
+<file path="next-sitemap.config.js">
+/** @type {import('next-sitemap').IConfig} */
+const config = {
+  siteUrl: "https://fkng.social",
+  generateRobotsTxt: true, // (optional)
+  changefreq: "monthly",
+};
+
+module.exports = config;
+</file>
+
+<file path="components/RandomSlogan.tsx">
+import { useState, useEffect } from "react";
+import styles from "../styles/Home.module.css";
+
+const slogans = [
+  "MAKING SOCIAL FKNG GREAT AGAIN",
+  "GET REAL. GET FKNG SOCIAL",
+  "TOUCH THE FKNG GRASS",
+  "NO BOTS. NO SLOP. JUST SOCIAL",
+  "THE BEST SOCIAL THERE IS",
+  "FKNG TIRED OF FAKE SOCIAL?",
+  "SOCIAL MEDIA WORTH GIVING A FK ABOUT",
+  "KEEP CALM AND GET FKNG SOCIAL",
+  "WHERE REAL PEOPLE GET FKNG REAL",
+  "LESS NOISE. MORE FKNG SIGNAL",
+  "FKNG AUTHENTIC SINCE DAY ONE",
+  "SOCIAL MEDIA DONE FKNG RIGHT",
+  "ZERO FKNG ALGORITHMS",
+  "YOUR FEED. YOUR FKNG CHOICE",
+  "BREAK THE FKNG ALGORITHM",
+  "WELCOME TO THE FKNG REVOLUTION",
+  "SOCIAL MEDIA THAT HITS DIFFERENT",
+  "NO FKNG INFLUENCER BS HERE",
+  "BE REAL. DONT FKNG INFLUENCE ME",
+  "ZERO FKNG BLUE CHECKMARKS",
+  "INFLUENCE THIS 🖕",
+  "WHERE NOBODY IS FKNG FAMOUS",
+  "NO CLOUT CHASERS. NO FKNG PROBLEM",
+  "ZERO SPONSORED FKNG CONTENT",
+  "NOT FOR SALE. NOT FKNG EVER",
+  "YOUR FEED ISN'T FOR SALE",
+  "NO FKNG PRODUCT PLACEMENT",
+  "JUST REAL PEOPLE HERE",
+  "NO BRANDS. NO SPAM. NO FKNG AROUND",
+  "ACTUAL HUMANS BEING FKNG SOCIAL",
+  "YOUR ATTENTION ISN'T FOR FKNG SALE",
+  "NOT FARMING FOR YOUR FKNG ATTENTION",
+  "SCROLL LESS. LIVE FKNG MORE",
+  "NO DOPAMINE FARMING HERE",
+  "NO FKNG CLICKBAIT ALLOWED",
+  "ZERO THIRST TRAPS. ZERO FKNG BAIT",
+  "BAIT-FREE ZONE",
+  "NO BAITS. NO FKNG TRICKS",
+  "NOT FARMING FOR FKNG LIKES",
+  "ENGAGEMENT FARMERS CAN FKNG LEAVE",
+  "NO FKNG ENGAGEMENT METRICS",
+  "REAL TALK. NOT FKNG METRICS",
+  "WHERE VIRAL ISN'T A FKNG GOAL",
+  "NO FKNG DOPAMINE LOOPS",
+  "POST WHATEVER. JUST DON'T BE FKNG FAKE",
+  "FREE SPEECH. ZERO FKNG BULLSHIT",
+  "ANON AF. REAL AF",
+  "PURE CHAOS. ZERO BAIT",
+  "REAL TAKES. NO FAKES",
+  "PURE CONTENT. ZERO FKNG GAMES",
+  "BASED AND FKNG REAL",
+  "JUST FKNG POST IT",
+  "NO RULES. EXCEPT NO FKNG BAIT",
+  "CHRONOLOGICAL FEED. FKNG FINALLY",
+  "WE ARE THE FKNG GRASS",
+  "WHERE FKNG NORMIES FEAR TO TREAD",
+  "ORGANIC REACH IS STILL FKNG REAL",
+  "NO FKNG MAIN CHARACTER SYNDROME",
+  "PUT A NAIL IN THE ENGAGEMENT COFFIN",
+  "FEELS GOOD MAN. FEELS FKNG REAL",
+  "NO MORE FKNG COPE",
+  "REJECT MODERNITY. EMBRACE FKNG REALITY",
+  "TOUCH GRASS ACHIEVEMENT: FKNG UNLOCKED",
+  "GG EZ? NAH, JUST BE FKNG REAL",
+  "I CAN HAS FKNG AUTHENTICITY?",
+  "THIS IS FINE. ACTUALLY FKNG FINE",
+  "DOGE IS DEAD. AUTHENTICITY IS FKNG FOREVER",
+  "LURK MOAR OR POST REAL",
+  "SAGE YOUR FKNG ENGAGEMENT METRICS",
+  "TRIPS DECIDE YOUR FKNG REACH",
+  "POV: YOU'RE BEING FKNG REAL",
+  "NO CAP. JUST FKNG FACTS",
+  "RATIO THIS, ENGAGEMENT FARMERS",
+  "NOT YOUR PERSONAL FKNG ARMY",
+  "COMFY AND FKNG AUTHENTIC",
+  "FEELS AUTHENTIC MAN",
+  "ZERO FKNG FILTERS FR",
+  "NOT YOUR FKNG CONTENT HOUSE",
+  "NO FYP",
+  "SPEEDRUN TO FKNG REALITY",
+  "RAGE QUIT YOUR FKNG ALGORITHM",
+  "FINAL BOSS: AUTHENTIC CONTENT",
+  "ALL YOUR BASE ARE FKNG REAL",
+  "NYAN CAT WOULDN'T FKNG FARM LIKES",
+  "PARASOCIAL? PARA-FKNG-NOID",
+  "TOUCH GRASS.EXE HAS STARTED",
+  "404: FAKE CONTENT NOT FOUND",
+  "CHRONOLOGICAL FEED OR GTFO",
+  "NORMALIZE BEING FKNG NORMAL",
+  "PARASOCIAL RELATIONSHIPS LEFT THE CHAT",
+  "PARASOCIAL THIS 🖕",
+  "NO RAGE BAIT. NO CRINGE",
+  "NOT YOUR FKNG OUTRAGE FARM",
+  "CONTROVERSY FARMERS REKT",
+  "BLUE CHECK? BLUE FKNG BALLS",
+  "YOUR TWEET DECK IS FKNG DEAD",
+  "ELON CAN'T BUY FKNG AUTHENTICITY",
+  "COMMUNITY NOTES: THIS IS FKNG REAL",
+  "NOT YOUR FKNG ECHO CHAMBER",
+  "GIGACHAD MOVE: BE FKNG AUTHENTIC",
+  "COZY POSTING ONLY FR FR",
+  "BLOATMAXXING THE FKNG TRUTH",
+  "IT'S GIVING FKNG AUTHENTIC",
+  "REAL ONES KNOW FR FR NO CAP",
+  "DIDN'T ASK + RATIO + GET REAL",
+  "SKILL ISSUE? NAH, AUTHENTICITY ISSUE",
+  "NOT THE FKNG ALGORITHM 💀",
+  "REAL POSTING (GONE RIGHT)",
+  "WHO UP TOUCHING GRASS RN",
+  "COMING FKNG SOON™",
+  "FKNG IS THE NEW BLACK",
+  "NO FKNG FAKE NEWS",
+  `NO "CONTENT" HERE. JUST REAL TALK`,
+  `CREATORS CAN GO FKNG HOME. THIS IS FOR REAL PEOPLE`,
+];
+
+const RandomSlogan = () => {
+  const [slogan, setSlogan] = useState(slogans[0]); // Start with a default slogan
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    setSlogan(slogans[Math.floor(Math.random() * slogans.length)]);
+  }, []);
+
+  // During SSR, show the default first slogan
+  if (!isClient) {
+    return <p className={styles.slogan}>{slogans[0]}</p>;
+  }
+
+  return <p className={styles.slogan}>{slogan}</p>;
+};
+
+export default RandomSlogan;
+</file>
+
+<file path="pages/index.tsx">
+import type { NextPage } from "next";
+import Image from "next/image";
+import styles from "../styles/Home.module.css";
+import { FaGithub, FaTwitter } from "react-icons/fa";
+import { IoIosMail } from "react-icons/io";
+import FKNGHead from "../components/Head";
+import RandomSlogan from "../components/RandomSlogan";
+
+const Home: NextPage = () => {
+  return (
+    <div className={styles.container}>
+      <FKNGHead />
+
+      <div className={styles.main}>
+        <div className={styles.content}>
+          <h1 className={styles.logo}>FKNG.SOCIAL</h1>
+          <RandomSlogan />
+        </div>
+        <div className={styles.social}>
+          <a href="mailto:contact@fkng.pro" rel="noreferrer" title="email">
+            <IoIosMail size={20} />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Home;
+</file>
+
+<file path="next.config.js">
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  poweredByHeader: false,
+  reactStrictMode: true,
+  output: "export", // Changed from 'standalone' to 'export' for static site generation
+  images: {
+    unoptimized: true, // Required for static export
+  },
+};
+
+module.exports = nextConfig;
+</file>
+
+<file path="package.json">
+{
+  "name": "fkng",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build && next-sitemap",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^14.1.0",
+    "next-sitemap": "^4.2.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^14.1.0",
+    "typescript": "^5.3.3"
+  }
+}
+</file>
+
+</files>
+</file>
 
 <file path="src/components/modals/SendModal.tsx">
 "use client";
@@ -732,92 +1298,6 @@ This specification is intended for developers, QA testers, and product managers 
 - **Chain ID:** 232
 - **Currency Symbol:** GHO
 - **Block Explorer URL:** https://explorer.lens.xyz
-</file>
-
-<file path="src/components/dashboard/AccountIdentityPanel.tsx">
-"use client";
-
-import { type Address } from "viem";
-import { DocumentDuplicateIcon, QrCodeIcon, CheckIcon } from "@heroicons/react/24/outline";
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
-import { useState } from "react";
-import { QrCodeModal } from "@/components/modals/QrCodeModal";
-
-interface AccountIdentityPanelProps {
-  username: string | null;
-  address: Address;
-}
-
-export function AccountIdentityPanel({ username, address }: AccountIdentityPanelProps) {
-  const [copied, setCopied] = useState(false);
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(address);
-      setCopied(true);
-      console.log("Address copied to clipboard:", address);
-      // Reset icon after a short delay
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy address: ", err);
-      alert("Failed to copy address."); // Simple error feedback
-    }
-  };
-
-  const handleShowQr = () => {
-    setIsQrModalOpen(true);
-    console.log("Showing QR code modal for:", address);
-  };
-
-  const handleCloseQr = () => {
-    setIsQrModalOpen(false);
-  };
-
-  const handleOpenExplorer = () => {
-    window.open(`https://explorer.lens.xyz/address/${address}`, "_blank");
-  };
-
-  return (
-    <div>
-      {username && (
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Welcome, <span className="text-indigo-600">{username}</span>!
-        </h2>
-      )}
-      <p className="text-sm text-gray-500 mb-3">Managing Lens Account:</p>
-      <div className="flex items-center space-x-4 bg-gray-50 p-3 rounded-md border border-gray-200">
-        <p className="text-lg md:text-xl font-mono text-gray-700 break-all flex-1">{address}</p>
-        <button
-          onClick={handleOpenExplorer}
-          title="View on Explorer"
-          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-200 rounded-md transition-colors duration-150"
-        >
-          <ArrowTopRightOnSquareIcon className="w-5 h-5" />
-        </button>
-        <button
-          onClick={handleCopy}
-          title={copied ? "Copied!" : "Copy Address"}
-          className={`p-2 rounded-md transition-colors duration-150 ${
-            copied ? "text-green-600 bg-green-100" : "text-gray-500 hover:text-indigo-600 hover:bg-gray-200"
-          }`}
-        >
-          {copied ? <CheckIcon className="w-5 h-5" /> : <DocumentDuplicateIcon className="w-5 h-5" />}
-        </button>
-        <button
-          onClick={handleShowQr}
-          title="Show QR Code"
-          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-200 rounded-md transition-colors duration-150"
-        >
-          <QrCodeIcon className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Render the QR modal */}
-      <QrCodeModal address={address} isOpen={isQrModalOpen} onClose={handleCloseQr} />
-    </div>
-  );
-}
 </file>
 
 <file path="src/components/modals/ApproveModal.tsx">
@@ -1919,138 +2399,60 @@ export default function RootLayout({
 }
 </file>
 
-<file path="src/components/dashboard/OwnerPanel.tsx">
+<file path="src/components/dashboard/AccountIdentityPanel.tsx">
 "use client";
 
-import { type Address, isAddress } from "viem";
+import { type Address } from "viem";
+import { DocumentDuplicateIcon, QrCodeIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
-import { ExclamationTriangleIcon, CheckCircleIcon, ArrowPathIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
-import { DocumentDuplicateIcon, CheckIcon } from "@heroicons/react/24/outline";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { useLensAccount } from "@/contexts/LensAccountContext";
-import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants";
+import { QrCodeModal } from "@/components/modals/QrCodeModal";
 
-interface OwnerPanelProps {
-  ownerAddress: Address;
+interface AccountIdentityPanelProps {
+  username: string | null;
+  address: Address;
 }
 
-export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
-  const [isChangingOwner, setIsChangingOwner] = useState(false);
-  const [newOwner, setNewOwner] = useState("");
-  const [inputError, setInputError] = useState<string | null>(null);
+export function AccountIdentityPanel({ username, address }: AccountIdentityPanelProps) {
   const [copied, setCopied] = useState(false);
-
-  // Wagmi hooks
-  const { address: connectedOwnerAddress, chainId } = useAccount();
-  const { lensAccountAddress } = useLensAccount();
-  const { data: hash, error: writeError, isPending: isWritePending, writeContract, reset } = useWriteContract();
-  const {
-    isLoading: isConfirming,
-    isSuccess: isConfirmed,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({
-    hash,
-    chainId: LENS_CHAIN_ID,
-  });
-
-  const isLoading = isWritePending || isConfirming;
-  const txError = writeError || receiptError;
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(ownerAddress);
+      await navigator.clipboard.writeText(address);
       setCopied(true);
-      console.log("Address copied to clipboard:", ownerAddress);
+      console.log("Address copied to clipboard:", address);
       // Reset icon after a short delay
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Failed to copy address:", err);
+      console.error("Failed to copy address: ", err);
       alert("Failed to copy address."); // Simple error feedback
     }
   };
 
+  const handleShowQr = () => {
+    setIsQrModalOpen(true);
+    console.log("Showing QR code modal for:", address);
+  };
+
+  const handleCloseQr = () => {
+    setIsQrModalOpen(false);
+  };
+
   const handleOpenExplorer = () => {
-    window.open(`https://explorer.lens.xyz/address/${ownerAddress}`, "_blank");
+    window.open(`https://explorer.lens.xyz/address/${address}`, "_blank");
   };
-
-  const handleToggleChangeOwner = () => {
-    setIsChangingOwner(!isChangingOwner);
-    setNewOwner("");
-    setInputError(null);
-    reset(); // Reset wagmi state on toggle
-  };
-
-  const handleNewOwnerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.trim();
-    setNewOwner(value);
-    if (value && !isAddress(value)) {
-      setInputError("Invalid address format");
-    } else {
-      setInputError(null);
-    }
-  };
-
-  const handleConfirmChangeOwner = () => {
-    if (!isAddress(newOwner) || !lensAccountAddress || !connectedOwnerAddress) {
-      setInputError("A valid new owner address is required and wallet must be connected.");
-      return;
-    }
-    if (newOwner.toLowerCase() === ownerAddress.toLowerCase()) {
-      setInputError("New owner cannot be the same as the current owner.");
-      return;
-    }
-    // Ensure the connected wallet IS the current owner
-    if (connectedOwnerAddress.toLowerCase() !== ownerAddress.toLowerCase()) {
-      setInputError("Only the current owner can initiate this transfer.");
-      return;
-    }
-    // Ensure connected to the correct chain
-    if (chainId !== LENS_CHAIN_ID) {
-      setInputError(`Please switch your wallet to Lens Chain (ID: ${LENS_CHAIN_ID}) to proceed.`);
-      return;
-    }
-
-    console.log(`Initiating ownership transfer to ${newOwner} for account ${lensAccountAddress}`);
-    writeContract({
-      address: lensAccountAddress,
-      abi: LENS_ACCOUNT_ABI,
-      functionName: "transferOwnership",
-      args: [newOwner as Address],
-      account: connectedOwnerAddress,
-      chainId: LENS_CHAIN_ID,
-    });
-  };
-
-  // Display Success/Error messages after transaction attempt
-  let statusMessage = null;
-  if (isLoading) {
-    statusMessage = (
-      <div className="flex items-center text-indigo-600 text-sm mt-2">
-        <ArrowPathIcon className="w-4 h-4 mr-1 animate-spin" />
-        {isWritePending ? "Waiting for confirmation..." : "Processing transaction..."}
-      </div>
-    );
-  } else if (isConfirmed) {
-    statusMessage = (
-      <div className="flex items-center text-green-600 text-sm mt-2">
-        <CheckCircleIcon className="w-4 h-4 mr-1" />
-        Ownership transferred successfully! Please login with the new owner account.
-      </div>
-    );
-  } else if (txError) {
-    statusMessage = (
-      <div className="flex items-center text-red-600 text-sm mt-2">
-        <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
-        Error: {txError.message.split(":")[0]} {/* Show concise error */}
-      </div>
-    );
-  }
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4 text-gray-700">Account Owner</h2>
-      <div className="flex items-center bg-gray-50 p-3 rounded-md border border-gray-200 mb-4">
-        <p className="text-sm font-mono text-gray-700 break-all flex-1">{ownerAddress}</p>
+      {username && (
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          Welcome, <span className="text-indigo-600">{username}</span>!
+        </h2>
+      )}
+      <p className="text-sm text-gray-500 mb-3">Managing Lens Account:</p>
+      <div className="flex items-center space-x-4 bg-gray-50 p-3 rounded-md border border-gray-200">
+        <p className="text-lg md:text-xl font-mono text-gray-700 break-all flex-1">{address}</p>
         <button
           onClick={handleOpenExplorer}
           title="View on Explorer"
@@ -2067,61 +2469,17 @@ export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
         >
           {copied ? <CheckIcon className="w-5 h-5" /> : <DocumentDuplicateIcon className="w-5 h-5" />}
         </button>
+        <button
+          onClick={handleShowQr}
+          title="Show QR Code"
+          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-200 rounded-md transition-colors duration-150"
+        >
+          <QrCodeIcon className="w-5 h-5" />
+        </button>
       </div>
 
-      {!isChangingOwner && (
-        <button onClick={handleToggleChangeOwner} className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline">
-          Change Owner
-        </button>
-      )}
-
-      {isChangingOwner && (
-        <div className="mt-4 p-4 border border-red-200 rounded-md bg-red-50 space-y-4">
-          <div className="flex items-center text-red-700">
-            <ExclamationTriangleIcon className="w-6 h-6 mr-2" />
-            <p className="text-sm font-semibold">Danger Zone: Transfer Ownership</p>
-          </div>
-          <p className="text-xs text-red-600">
-            Warning: Transferring ownership is irreversible. Ensure the new address is correct and accessible. You will lose control of this Lens
-            Account if you proceed.
-          </p>
-          <div>
-            <label htmlFor="new-owner" className="block text-sm font-medium text-gray-700 mb-1">
-              New Owner Address
-            </label>
-            <input
-              id="new-owner"
-              name="new-owner"
-              type="text"
-              value={newOwner}
-              onChange={handleNewOwnerChange}
-              placeholder="0x..."
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm ${
-                inputError ? "border-red-500 ring-red-500" : "border-gray-300 focus:ring-red-500 focus:border-red-500"
-              }`}
-            />
-            {inputError && <p className="mt-1 text-xs text-red-600">{inputError}</p>}
-          </div>
-          <div className="flex space-x-3">
-            <button
-              onClick={handleConfirmChangeOwner}
-              disabled={!isAddress(newOwner) || newOwner.toLowerCase() === ownerAddress.toLowerCase() || isLoading || isConfirmed}
-              className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? "Processing..." : isConfirmed ? "Transferred" : "Confirm Change Owner"}
-            </button>
-            <button
-              onClick={handleToggleChangeOwner}
-              disabled={isLoading}
-              className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:opacity-50"
-            >
-              Cancel
-            </button>
-          </div>
-          {/* Display status message */}
-          <div className="min-h-[20px]">{statusMessage}</div>
-        </div>
-      )}
+      {/* Render the QR modal */}
+      <QrCodeModal address={address} isOpen={isQrModalOpen} onClose={handleCloseQr} />
     </div>
   );
 }
@@ -2495,6 +2853,214 @@ export function Providers({ children }: Props) {
         </ConnectKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
+  );
+}
+</file>
+
+<file path="src/components/dashboard/OwnerPanel.tsx">
+"use client";
+
+import { type Address, isAddress } from "viem";
+import { useState } from "react";
+import { ExclamationTriangleIcon, CheckCircleIcon, ArrowPathIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
+import { DocumentDuplicateIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useLensAccount } from "@/contexts/LensAccountContext";
+import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID } from "@/lib/constants";
+
+interface OwnerPanelProps {
+  ownerAddress: Address;
+}
+
+export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
+  const [isChangingOwner, setIsChangingOwner] = useState(false);
+  const [newOwner, setNewOwner] = useState("");
+  const [inputError, setInputError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  // Wagmi hooks
+  const { address: connectedOwnerAddress, chainId } = useAccount();
+  const { lensAccountAddress } = useLensAccount();
+  const { data: hash, error: writeError, isPending: isWritePending, writeContract, reset } = useWriteContract();
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({
+    hash,
+    chainId: LENS_CHAIN_ID,
+  });
+
+  const isLoading = isWritePending || isConfirming;
+  const txError = writeError || receiptError;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(ownerAddress);
+      setCopied(true);
+      console.log("Address copied to clipboard:", ownerAddress);
+      // Reset icon after a short delay
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy address:", err);
+      alert("Failed to copy address."); // Simple error feedback
+    }
+  };
+
+  const handleOpenExplorer = () => {
+    window.open(`https://explorer.lens.xyz/address/${ownerAddress}`, "_blank");
+  };
+
+  const handleToggleChangeOwner = () => {
+    setIsChangingOwner(!isChangingOwner);
+    setNewOwner("");
+    setInputError(null);
+    reset(); // Reset wagmi state on toggle
+  };
+
+  const handleNewOwnerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.trim();
+    setNewOwner(value);
+    if (value && !isAddress(value)) {
+      setInputError("Invalid address format");
+    } else {
+      setInputError(null);
+    }
+  };
+
+  const handleConfirmChangeOwner = () => {
+    if (!isAddress(newOwner) || !lensAccountAddress || !connectedOwnerAddress) {
+      setInputError("A valid new owner address is required and wallet must be connected.");
+      return;
+    }
+    if (newOwner.toLowerCase() === ownerAddress.toLowerCase()) {
+      setInputError("New owner cannot be the same as the current owner.");
+      return;
+    }
+    // Ensure the connected wallet IS the current owner
+    if (connectedOwnerAddress.toLowerCase() !== ownerAddress.toLowerCase()) {
+      setInputError("Only the current owner can initiate this transfer.");
+      return;
+    }
+    // Ensure connected to the correct chain
+    if (chainId !== LENS_CHAIN_ID) {
+      setInputError(`Please switch your wallet to Lens Chain (ID: ${LENS_CHAIN_ID}) to proceed.`);
+      return;
+    }
+
+    console.log(`Initiating ownership transfer to ${newOwner} for account ${lensAccountAddress}`);
+    writeContract({
+      address: lensAccountAddress,
+      abi: LENS_ACCOUNT_ABI,
+      functionName: "transferOwnership",
+      args: [newOwner as Address],
+      account: connectedOwnerAddress,
+      chainId: LENS_CHAIN_ID,
+    });
+  };
+
+  // Display Success/Error messages after transaction attempt
+  let statusMessage = null;
+  if (isLoading) {
+    statusMessage = (
+      <div className="flex items-center text-indigo-600 text-sm mt-2">
+        <ArrowPathIcon className="w-4 h-4 mr-1 animate-spin" />
+        {isWritePending ? "Waiting for confirmation..." : "Processing transaction..."}
+      </div>
+    );
+  } else if (isConfirmed) {
+    statusMessage = (
+      <div className="flex items-center text-green-600 text-sm mt-2">
+        <CheckCircleIcon className="w-4 h-4 mr-1" />
+        Ownership transferred successfully! Please login with the new owner account.
+      </div>
+    );
+  } else if (txError) {
+    statusMessage = (
+      <div className="flex items-center text-red-600 text-sm mt-2">
+        <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
+        Error: {txError.message.split(":")[0]} {/* Show concise error */}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold mb-4 text-gray-700">Account Owner</h2>
+      <div className="flex items-center bg-gray-50 p-3 rounded-md border border-gray-200 mb-4">
+        <p className="text-sm font-mono text-gray-700 break-all flex-1">{ownerAddress}</p>
+        <button
+          onClick={handleOpenExplorer}
+          title="View on Explorer"
+          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-200 rounded-md transition-colors duration-150"
+        >
+          <ArrowTopRightOnSquareIcon className="w-5 h-5" />
+        </button>
+        <button
+          onClick={handleCopy}
+          title={copied ? "Copied!" : "Copy Address"}
+          className={`p-2 rounded-md transition-colors duration-150 ${
+            copied ? "text-green-600 bg-green-100" : "text-gray-500 hover:text-indigo-600 hover:bg-gray-200"
+          }`}
+        >
+          {copied ? <CheckIcon className="w-5 h-5" /> : <DocumentDuplicateIcon className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {!isChangingOwner && (
+        <button onClick={handleToggleChangeOwner} className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline">
+          Change Owner
+        </button>
+      )}
+
+      {isChangingOwner && (
+        <div className="mt-4 p-4 border border-red-200 rounded-md bg-red-50 space-y-4">
+          <div className="flex items-center text-red-700">
+            <ExclamationTriangleIcon className="w-6 h-6 mr-2" />
+            <p className="text-sm font-semibold">Danger Zone: Transfer Ownership</p>
+          </div>
+          <p className="text-xs text-red-600">
+            Warning: Transferring ownership is irreversible. Ensure the new address is correct and accessible. You will lose control of this Lens
+            Account if you proceed.
+          </p>
+          <div>
+            <label htmlFor="new-owner" className="block text-sm font-medium text-gray-700 mb-1">
+              New Owner Address
+            </label>
+            <input
+              id="new-owner"
+              name="new-owner"
+              type="text"
+              value={newOwner}
+              onChange={handleNewOwnerChange}
+              placeholder="0x..."
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm ${
+                inputError ? "border-red-500 ring-red-500" : "border-gray-300 focus:ring-red-500 focus:border-red-500"
+              }`}
+            />
+            {inputError && <p className="mt-1 text-xs text-red-600">{inputError}</p>}
+          </div>
+          <div className="flex space-x-3">
+            <button
+              onClick={handleConfirmChangeOwner}
+              disabled={!isAddress(newOwner) || newOwner.toLowerCase() === ownerAddress.toLowerCase() || isLoading || isConfirmed}
+              className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Processing..." : isConfirmed ? "Transferred" : "Confirm Change Owner"}
+            </button>
+            <button
+              onClick={handleToggleChangeOwner}
+              disabled={isLoading}
+              className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </div>
+          {/* Display status message */}
+          <div className="min-h-[20px]">{statusMessage}</div>
+        </div>
+      )}
+    </div>
   );
 }
 </file>
@@ -3639,7 +4205,7 @@ export default function Home() {
   const showConnectButton = expectedOwner && !isLoadingOwner && !ownerFetchError;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <main className="relative flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       <h1 className="text-4xl font-bold text-gray-800 mb-12">Lens Account Dashboard</h1>
       <div className="w-full max-w-lg p-8 space-y-8 bg-white rounded-xl shadow-lg">
         <DiscoveryForm
@@ -3670,6 +4236,13 @@ export default function Home() {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+        <a href="https://fkng.social" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-gray-500 transition-colors">
+          <img src="/FKNG.SOCIAL.svg" alt="FKNG.SOCIAL" className="h-4 w-auto" />
+        </a>
+        <p className="font-sans text-[10px] font-extralight text-gray-400">JOIN THE FKNG REVOLUTION</p>
       </div>
     </main>
   );
