@@ -3476,241 +3476,6 @@ export function AccountDisplay() {
 }
 </file>
 
-<file path="src/components/DiscoveryForm.tsx">
-// components/DiscoveryForm.tsx
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { useReadContract } from "wagmi";
-import { isAddress, type Address } from "viem";
-import { useDebounce } from "@/hooks/useDebounce";
-import { LENS_CHAIN_ID, LENS_GLOBAL_NAMESPACE_ADDRESS, LENS_GLOBAL_NAMESPACE_ABI } from "@/lib/constants";
-
-// Import icons from Heroicons
-import { CheckCircleIcon, ExclamationTriangleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
-
-interface DiscoveryFormProps {
-  // Update the callback prop definition
-  onAccountDetailsFound: (details: { address: Address | ""; username: string }) => void;
-  initialUsername?: string;
-  initialAddress?: string;
-}
-
-// Add a StatusMessage component for consistent styling
-function StatusMessage({ type, message }: { type: "loading" | "error" | "success"; message: string }) {
-  return (
-    <div
-      className={`flex items-center justify-center gap-2 text-sm font-medium ${
-        type === "loading" ? "text-indigo-600" : type === "error" ? "text-red-600" : "text-green-600"
-      }`}
-    >
-      {type === "loading" && <ArrowPathIcon className="w-4 h-4 animate-spin" />}
-      {type === "error" && <ExclamationTriangleIcon className="w-4 h-4" />}
-      {type === "success" && <CheckCircleIcon className="w-4 h-4" />}
-      <span>{message}</span>
-    </div>
-  );
-}
-
-export function DiscoveryForm({ onAccountDetailsFound, initialUsername = "", initialAddress = "" }: DiscoveryFormProps) {
-  const [username, setUsername] = useState(initialUsername);
-  const [address, setAddress] = useState(initialAddress);
-  const [lookupError, setLookupError] = useState<string | null>(null);
-  const [lastEdited, setLastEdited] = useState<"username" | "address" | null>(initialUsername ? "username" : initialAddress ? "address" : null);
-
-  const debouncedUsername = useDebounce(username, 500);
-  const debouncedAddress = useDebounce(address, 500);
-
-  const {
-    data: addressFromUsername,
-    isLoading: isLoadingAddress,
-    error: addressError,
-    refetch: refetchAddress,
-  } = useReadContract({
-    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
-    abi: LENS_GLOBAL_NAMESPACE_ABI,
-    functionName: "accountOf",
-    args: [debouncedUsername || ""],
-    chainId: LENS_CHAIN_ID,
-    query: {
-      enabled: false,
-    },
-  });
-
-  const {
-    data: usernameFromAddress,
-    isLoading: isLoadingUsername,
-    error: usernameError,
-    refetch: refetchUsername,
-  } = useReadContract({
-    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
-    abi: LENS_GLOBAL_NAMESPACE_ABI,
-    functionName: "usernameOf",
-    args: [debouncedAddress as `0x${string}`],
-    chainId: LENS_CHAIN_ID,
-    query: {
-      enabled: false,
-    },
-  });
-
-  useEffect(() => {
-    if (debouncedUsername && lastEdited === "username") {
-      setLookupError(null);
-      console.log(`Looking up address for username: ${debouncedUsername}`);
-      refetchAddress();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedUsername, lastEdited]);
-
-  useEffect(() => {
-    if (debouncedAddress && isAddress(debouncedAddress) && lastEdited === "address") {
-      setLookupError(null);
-      console.log(`Looking up username for address: ${debouncedAddress}`);
-      refetchUsername();
-    } else if (debouncedAddress && !isAddress(debouncedAddress) && lastEdited === "address") {
-      setLookupError("Invalid address format");
-      onAccountDetailsFound({ address: "", username: "" });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedAddress, lastEdited]);
-
-  useEffect(() => {
-    if (addressFromUsername && isAddress(addressFromUsername) && lastEdited === "username") {
-      if (addressFromUsername === "0x0000000000000000000000000000000000000000") {
-        setLookupError(`No account found for username "${debouncedUsername}"`);
-        setAddress("");
-        onAccountDetailsFound({ address: "", username: debouncedUsername || "" });
-      } else {
-        console.log(`Found address: ${addressFromUsername}`);
-        setAddress(addressFromUsername);
-        onAccountDetailsFound({ address: addressFromUsername, username: debouncedUsername || "" });
-        setLookupError(null);
-      }
-    } else if (addressError && lastEdited === "username") {
-      console.error("Error fetching address:", addressError);
-      if (addressError.message.includes("0xb0ce7591") || addressError.message.includes("DoesNotExist")) {
-        setLookupError(`Username "${debouncedUsername}" does not exist`);
-      } else {
-        setLookupError("Error fetching address. Please try again.");
-      }
-      onAccountDetailsFound({ address: "", username: debouncedUsername || "" });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addressFromUsername, addressError, lastEdited, debouncedUsername]);
-
-  useEffect(() => {
-    if (usernameFromAddress && lastEdited === "address") {
-      console.log(`Found username: ${usernameFromAddress}`);
-      setUsername(usernameFromAddress);
-      if (isAddress(debouncedAddress)) {
-        onAccountDetailsFound({ address: debouncedAddress as Address, username: usernameFromAddress });
-      }
-      setLookupError(null);
-    } else if (usernameError && lastEdited === "address") {
-      console.log("No primary username found for address or error:", usernameError.message);
-      setUsername("");
-      if (isAddress(debouncedAddress)) {
-        onAccountDetailsFound({ address: debouncedAddress as Address, username: "" });
-      }
-      setLookupError(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [usernameFromAddress, usernameError, lastEdited, debouncedAddress]);
-
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const cleanValue = e.target.value.replace(/\s+/g, "");
-    setUsername(cleanValue);
-    setLastEdited("username");
-    if (lastEdited !== "address") setAddress("");
-    onAccountDetailsFound({ address: "", username: cleanValue });
-    setLookupError(null);
-  };
-
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const cleanValue = e.target.value.replace(/\s+/g, "");
-    setAddress(cleanValue);
-    setLastEdited("address");
-    if (lastEdited !== "username") setUsername("");
-    if (!isAddress(cleanValue) && cleanValue !== "") {
-      setLookupError("Invalid address format");
-      onAccountDetailsFound({ address: "", username: "" });
-    } else {
-      setLookupError(null);
-      if (isAddress(cleanValue)) {
-        onAccountDetailsFound({ address: cleanValue as Address, username: "" });
-      } else {
-        onAccountDetailsFound({ address: "", username: "" });
-      }
-    }
-  };
-
-  const isLoading = isLoadingAddress || isLoadingUsername;
-
-  return (
-    <div className="w-full max-w-md mx-auto space-y-8">
-      <div className="text-center space-y-2">
-        <p className="text-base text-gray-500">To login, please enter your</p>
-      </div>
-
-      <div className="space-y-6">
-        <div>
-          <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
-            Lens Username
-          </label>
-          <input
-            id="username"
-            name="username"
-            type="text"
-            value={username}
-            onChange={handleUsernameChange}
-            placeholder="e.g. stani"
-            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition duration-200"
-            aria-describedby="username-status"
-            disabled={isLoading && lastEdited === "address"}
-          />
-        </div>
-
-        <div className="relative flex items-center justify-center my-6">
-          <div className="absolute inset-0 flex items-center" aria-hidden="true">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center">
-            <span className="bg-white px-2 text-sm font-medium text-gray-500">OR</span>
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
-            Lens Account Address
-          </label>
-          <input
-            id="address"
-            name="address"
-            type="text"
-            value={address}
-            onChange={handleAddressChange}
-            placeholder="0x..."
-            className={`w-full px-4 py-3 bg-gray-50 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition duration-200 ${
-              !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-300"
-            }`}
-            aria-describedby="address-status"
-            disabled={isLoading && lastEdited === "username"}
-          />
-        </div>
-      </div>
-
-      {/* Status messages with improved styling */}
-      <div className="min-h-[28px] flex justify-center">
-        {isLoading && lastEdited === "username" && <StatusMessage type="loading" message="Checking username..." />}
-        {isLoading && lastEdited === "address" && <StatusMessage type="loading" message="Checking address..." />}
-        {lookupError && <StatusMessage type="error" message={lookupError} />}
-        {!lookupError && isAddress(address) && lastEdited !== "username" && <StatusMessage type="success" message="Valid Address" />}
-      </div>
-    </div>
-  );
-}
-</file>
-
 <file path="src/services/walletConnectService.ts">
 // src/services/walletConnectService.ts
 import { WalletKit, IWalletKit, WalletKitTypes } from "@reown/walletkit";
@@ -3992,6 +3757,261 @@ export class WalletConnectService extends EventEmitter {
   emit<E extends keyof WalletConnectServiceEvents>(event: E, ...args: Parameters<WalletConnectServiceEvents[E]>): boolean {
     return super.emit(event, ...args);
   }
+}
+</file>
+
+<file path="src/components/DiscoveryForm.tsx">
+// components/DiscoveryForm.tsx
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useReadContract } from "wagmi";
+import { isAddress, type Address } from "viem";
+import { useDebounce } from "@/hooks/useDebounce";
+import { LENS_CHAIN_ID, LENS_GLOBAL_NAMESPACE_ADDRESS, LENS_GLOBAL_NAMESPACE_ABI } from "@/lib/constants";
+
+// Import icons from Heroicons
+import { CheckCircleIcon, ExclamationTriangleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+
+interface DiscoveryFormProps {
+  // Update the callback prop definition
+  onAccountDetailsFound: (details: { address: Address | ""; username: string }) => void;
+  initialUsername?: string;
+  initialAddress?: string;
+}
+
+// Add a StatusMessage component for consistent styling
+function StatusMessage({ type, message }: { type: "loading" | "error" | "success"; message: string }) {
+  return (
+    <div
+      className={`flex items-center justify-center gap-2 text-sm font-medium ${
+        type === "loading" ? "text-indigo-600" : type === "error" ? "text-red-600" : "text-green-600"
+      }`}
+    >
+      {type === "loading" && <ArrowPathIcon className="w-4 h-4 animate-spin" />}
+      {type === "error" && <ExclamationTriangleIcon className="w-4 h-4" />}
+      {type === "success" && <CheckCircleIcon className="w-4 h-4" />}
+      <span>{message}</span>
+    </div>
+  );
+}
+
+export function DiscoveryForm({ onAccountDetailsFound, initialUsername = "", initialAddress = "" }: DiscoveryFormProps) {
+  const [username, setUsername] = useState(initialUsername);
+  const [address, setAddress] = useState(initialAddress);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+  const [lastEdited, setLastEdited] = useState<"username" | "address" | null>(initialUsername ? "username" : initialAddress ? "address" : null);
+
+  // Add useEffect to sync props to internal state when they change
+  useEffect(() => {
+    // Update internal state if the incoming prop has changed and is not empty
+    if (initialUsername && initialUsername !== username) {
+      console.log("Syncing initialUsername prop to internal state:", initialUsername);
+      setUsername(initialUsername);
+      if (initialUsername && !initialAddress) {
+        setLastEdited("username");
+      }
+    }
+
+    if (initialAddress && initialAddress !== address) {
+      console.log("Syncing initialAddress prop to internal state:", initialAddress);
+      setAddress(initialAddress);
+      if (initialAddress && !initialUsername) {
+        setLastEdited("address");
+      }
+    }
+  }, [initialUsername, initialAddress, username, address]);
+
+  const debouncedUsername = useDebounce(username, 500);
+  const debouncedAddress = useDebounce(address, 500);
+
+  const {
+    data: addressFromUsername,
+    isLoading: isLoadingAddress,
+    error: addressError,
+    refetch: refetchAddress,
+  } = useReadContract({
+    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
+    abi: LENS_GLOBAL_NAMESPACE_ABI,
+    functionName: "accountOf",
+    args: [debouncedUsername || ""],
+    chainId: LENS_CHAIN_ID,
+    query: {
+      enabled: false,
+    },
+  });
+
+  const {
+    data: usernameFromAddress,
+    isLoading: isLoadingUsername,
+    error: usernameError,
+    refetch: refetchUsername,
+  } = useReadContract({
+    address: LENS_GLOBAL_NAMESPACE_ADDRESS,
+    abi: LENS_GLOBAL_NAMESPACE_ABI,
+    functionName: "usernameOf",
+    args: [debouncedAddress as `0x${string}`],
+    chainId: LENS_CHAIN_ID,
+    query: {
+      enabled: false,
+    },
+  });
+
+  useEffect(() => {
+    if (debouncedUsername && lastEdited === "username") {
+      setLookupError(null);
+      console.log(`Looking up address for username: ${debouncedUsername}`);
+      refetchAddress();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedUsername, lastEdited]);
+
+  useEffect(() => {
+    if (debouncedAddress && isAddress(debouncedAddress) && lastEdited === "address") {
+      setLookupError(null);
+      console.log(`Looking up username for address: ${debouncedAddress}`);
+      refetchUsername();
+    } else if (debouncedAddress && !isAddress(debouncedAddress) && lastEdited === "address") {
+      setLookupError("Invalid address format");
+      onAccountDetailsFound({ address: "", username: "" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedAddress, lastEdited]);
+
+  useEffect(() => {
+    if (addressFromUsername && isAddress(addressFromUsername) && lastEdited === "username") {
+      if (addressFromUsername === "0x0000000000000000000000000000000000000000") {
+        setLookupError(`No account found for username "${debouncedUsername}"`);
+        setAddress("");
+        onAccountDetailsFound({ address: "", username: debouncedUsername || "" });
+      } else {
+        console.log(`Found address: ${addressFromUsername}`);
+        setAddress(addressFromUsername);
+        onAccountDetailsFound({ address: addressFromUsername, username: debouncedUsername || "" });
+        setLookupError(null);
+      }
+    } else if (addressError && lastEdited === "username") {
+      console.error("Error fetching address:", addressError);
+      if (addressError.message.includes("0xb0ce7591") || addressError.message.includes("DoesNotExist")) {
+        setLookupError(`Username "${debouncedUsername}" does not exist`);
+      } else {
+        setLookupError("Error fetching address. Please try again.");
+      }
+      onAccountDetailsFound({ address: "", username: debouncedUsername || "" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addressFromUsername, addressError, lastEdited, debouncedUsername]);
+
+  useEffect(() => {
+    if (usernameFromAddress && lastEdited === "address") {
+      console.log(`Found username: ${usernameFromAddress}`);
+      setUsername(usernameFromAddress);
+      if (isAddress(debouncedAddress)) {
+        onAccountDetailsFound({ address: debouncedAddress as Address, username: usernameFromAddress });
+      }
+      setLookupError(null);
+    } else if (usernameError && lastEdited === "address") {
+      console.log("No primary username found for address or error:", usernameError.message);
+      setUsername("");
+      if (isAddress(debouncedAddress)) {
+        onAccountDetailsFound({ address: debouncedAddress as Address, username: "" });
+      }
+      setLookupError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usernameFromAddress, usernameError, lastEdited, debouncedAddress]);
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const cleanValue = e.target.value.replace(/\s+/g, "");
+    setUsername(cleanValue);
+    setLastEdited("username");
+    if (lastEdited !== "address") setAddress("");
+    onAccountDetailsFound({ address: "", username: cleanValue });
+    setLookupError(null);
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const cleanValue = e.target.value.replace(/\s+/g, "");
+    setAddress(cleanValue);
+    setLastEdited("address");
+    if (lastEdited !== "username") setUsername("");
+    if (!isAddress(cleanValue) && cleanValue !== "") {
+      setLookupError("Invalid address format");
+      onAccountDetailsFound({ address: "", username: "" });
+    } else {
+      setLookupError(null);
+      if (isAddress(cleanValue)) {
+        onAccountDetailsFound({ address: cleanValue as Address, username: "" });
+      } else {
+        onAccountDetailsFound({ address: "", username: "" });
+      }
+    }
+  };
+
+  const isLoading = isLoadingAddress || isLoadingUsername;
+
+  return (
+    <div className="w-full max-w-md mx-auto space-y-8">
+      <div className="text-center space-y-2">
+        <p className="text-base text-gray-500">To login, please enter your</p>
+      </div>
+
+      <div className="space-y-6">
+        <div>
+          <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
+            Lens Username
+          </label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            value={username}
+            onChange={handleUsernameChange}
+            placeholder="e.g. stani"
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition duration-200"
+            aria-describedby="username-status"
+            disabled={isLoading && lastEdited === "address"}
+          />
+        </div>
+
+        <div className="relative flex items-center justify-center my-6">
+          <div className="absolute inset-0 flex items-center" aria-hidden="true">
+            <div className="w-full border-t border-gray-200"></div>
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-white px-2 text-sm font-medium text-gray-500">OR</span>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+            Lens Account Address
+          </label>
+          <input
+            id="address"
+            name="address"
+            type="text"
+            value={address}
+            onChange={handleAddressChange}
+            placeholder="0x..."
+            className={`w-full px-4 py-3 bg-gray-50 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition duration-200 ${
+              !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-300"
+            }`}
+            aria-describedby="address-status"
+            disabled={isLoading && lastEdited === "username"}
+          />
+        </div>
+      </div>
+
+      {/* Status messages with improved styling */}
+      <div className="min-h-[28px] flex justify-center">
+        {isLoading && lastEdited === "username" && <StatusMessage type="loading" message="Checking username..." />}
+        {isLoading && lastEdited === "address" && <StatusMessage type="loading" message="Checking address..." />}
+        {lookupError && <StatusMessage type="error" message={lookupError} />}
+        {!lookupError && isAddress(address) && lastEdited !== "username" && <StatusMessage type="success" message="Valid Address" />}
+      </div>
+    </div>
+  );
 }
 </file>
 
@@ -4342,6 +4362,56 @@ export default function Dashboard() {
 }
 </file>
 
+<file path="package.json">
+{
+  "name": "lens-account-interface4",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prepare": "husky",
+    "generate-llms": "repomix --include \"*.*,src\" --ignore \"llms.txt\" -o llms.txt",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md,json}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@reown/walletkit": "^1.2.3",
+    "@tanstack/react-query": "^5.74.4",
+    "@walletconnect/core": "^2.20.0",
+    "@walletconnect/jsonrpc-utils": "^1.0.8",
+    "@walletconnect/utils": "^2.20.0",
+    "connectkit": "^1.9.0",
+    "next": "15.3.1",
+    "qrcode.react": "^4.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.27.2",
+    "wagmi": "^2.14.16"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/webpack": "^5.28.5",
+    "@walletconnect/types": "^2.20.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "husky": "^9.1.7",
+    "pino-pretty": "^13.0.0",
+    "prettier": "^3.5.3",
+    "repomix": "^0.3.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+</file>
+
 <file path="src/app/page.tsx">
 // src/app/page.tsx
 "use client";
@@ -4357,29 +4427,9 @@ import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, LOCAL_STORAGE_KEYS } from "@/lib/const
 import { ArrowPathIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 export default function Home() {
-  // Initialize state from localStorage
-  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const storedAddress = localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS);
-        return storedAddress && isAddress(storedAddress) ? storedAddress : "";
-      } catch (error) {
-        console.error("Failed to read lensAccountAddress from localStorage:", error);
-      }
-    }
-    return "";
-  });
-
-  const [lensUsername, setLensUsername] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        return localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_USERNAME) || "";
-      } catch (error) {
-        console.error("Failed to read lensUsername from localStorage:", error);
-      }
-    }
-    return "";
-  });
+  // Initialize state with empty defaults (server-renderable)
+  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">("");
+  const [lensUsername, setLensUsername] = useState<string>("");
 
   const [expectedOwner, setExpectedOwner] = useState<Address | null>(null);
   const [ownerFetchError, setOwnerFetchError] = useState<string | null>(null);
@@ -4388,6 +4438,24 @@ export default function Home() {
   const { address: connectedAddress, chainId: connectedChainId, isConnected, isConnecting, isReconnecting, status } = useAccount();
   const router = useRouter();
   const { setVerifiedAccount, clearAccount: clearContext } = useLensAccount();
+
+  // New useEffect to load from localStorage after component mount
+  useEffect(() => {
+    // This code only runs on the client after the initial render
+    try {
+      const storedAddress = localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS);
+      if (storedAddress && isAddress(storedAddress)) {
+        setLensAccountAddress(storedAddress);
+      }
+
+      const storedUsername = localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_USERNAME);
+      if (storedUsername) {
+        setLensUsername(storedUsername);
+      }
+    } catch (error) {
+      console.error("Failed to read session from localStorage on mount:", error);
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   // Updated handler for DiscoveryForm callback
   const handleAccountDetailsFound = (details: { address: Address | ""; username: string }) => {
@@ -4614,56 +4682,6 @@ export default function Home() {
       </div>
     </main>
   );
-}
-</file>
-
-<file path="package.json">
-{
-  "name": "lens-account-interface4",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "prepare": "husky",
-    "generate-llms": "repomix --include \"*.*,src\" --ignore \"llms.txt\" -o llms.txt",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md,json}\"",
-    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
-  },
-  "dependencies": {
-    "@heroicons/react": "^2.2.0",
-    "@reown/walletkit": "^1.2.3",
-    "@tanstack/react-query": "^5.74.4",
-    "@walletconnect/core": "^2.20.0",
-    "@walletconnect/jsonrpc-utils": "^1.0.8",
-    "@walletconnect/utils": "^2.20.0",
-    "connectkit": "^1.9.0",
-    "next": "15.3.1",
-    "qrcode.react": "^4.2.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "viem": "^2.27.2",
-    "wagmi": "^2.14.16"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/webpack": "^5.28.5",
-    "@walletconnect/types": "^2.20.0",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.1",
-    "husky": "^9.1.7",
-    "pino-pretty": "^13.0.0",
-    "prettier": "^3.5.3",
-    "repomix": "^0.3.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
 }
 </file>
 

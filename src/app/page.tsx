@@ -12,29 +12,9 @@ import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, LOCAL_STORAGE_KEYS } from "@/lib/const
 import { ArrowPathIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 export default function Home() {
-  // Initialize state from localStorage
-  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const storedAddress = localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS);
-        return storedAddress && isAddress(storedAddress) ? storedAddress : "";
-      } catch (error) {
-        console.error("Failed to read lensAccountAddress from localStorage:", error);
-      }
-    }
-    return "";
-  });
-
-  const [lensUsername, setLensUsername] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        return localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_USERNAME) || "";
-      } catch (error) {
-        console.error("Failed to read lensUsername from localStorage:", error);
-      }
-    }
-    return "";
-  });
+  // Initialize state with empty defaults (server-renderable)
+  const [lensAccountAddress, setLensAccountAddress] = useState<Address | "">("");
+  const [lensUsername, setLensUsername] = useState<string>("");
 
   const [expectedOwner, setExpectedOwner] = useState<Address | null>(null);
   const [ownerFetchError, setOwnerFetchError] = useState<string | null>(null);
@@ -43,6 +23,24 @@ export default function Home() {
   const { address: connectedAddress, chainId: connectedChainId, isConnected, isConnecting, isReconnecting, status } = useAccount();
   const router = useRouter();
   const { setVerifiedAccount, clearAccount: clearContext } = useLensAccount();
+
+  // New useEffect to load from localStorage after component mount
+  useEffect(() => {
+    // This code only runs on the client after the initial render
+    try {
+      const storedAddress = localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS);
+      if (storedAddress && isAddress(storedAddress)) {
+        setLensAccountAddress(storedAddress);
+      }
+
+      const storedUsername = localStorage.getItem(LOCAL_STORAGE_KEYS.LENS_USERNAME);
+      if (storedUsername) {
+        setLensUsername(storedUsername);
+      }
+    } catch (error) {
+      console.error("Failed to read session from localStorage on mount:", error);
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   // Updated handler for DiscoveryForm callback
   const handleAccountDetailsFound = (details: { address: Address | ""; username: string }) => {

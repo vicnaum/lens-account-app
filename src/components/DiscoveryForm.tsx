@@ -39,6 +39,26 @@ export function DiscoveryForm({ onAccountDetailsFound, initialUsername = "", ini
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [lastEdited, setLastEdited] = useState<"username" | "address" | null>(initialUsername ? "username" : initialAddress ? "address" : null);
 
+  // Add useEffect to sync props to internal state when they change
+  useEffect(() => {
+    // Update internal state if the incoming prop has changed and is not empty
+    if (initialUsername && initialUsername !== username) {
+      console.log("Syncing initialUsername prop to internal state:", initialUsername);
+      setUsername(initialUsername);
+      if (initialUsername && !initialAddress) {
+        setLastEdited("username");
+      }
+    }
+
+    if (initialAddress && initialAddress !== address) {
+      console.log("Syncing initialAddress prop to internal state:", initialAddress);
+      setAddress(initialAddress);
+      if (initialAddress && !initialUsername) {
+        setLastEdited("address");
+      }
+    }
+  }, [initialUsername, initialAddress, username, address]);
+
   const debouncedUsername = useDebounce(username, 500);
   const debouncedAddress = useDebounce(address, 500);
 
