@@ -79,8 +79,8 @@ function ActionButton({ label, icon: Icon, onClick, disabled = false, variant = 
         return {
           bg: "bg-slate-50",
           hoverBg: "bg-slate-100",
-          iconColor: "text-slate-500 group-hover:text-indigo-600",
-          textColor: "text-slate-700 group-hover:text-indigo-700",
+          iconColor: "text-slate-500 group-hover:text-emerald-600",
+          textColor: "text-slate-700 group-hover:text-emerald-700",
           border: "group-hover:border-slate-300",
           shadow: "group-hover:shadow-slate-200",
         };

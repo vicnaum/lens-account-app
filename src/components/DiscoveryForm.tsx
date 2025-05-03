@@ -22,7 +22,7 @@ function StatusMessage({ type, message }: { type: "loading" | "error" | "success
   return (
     <div
       className={`flex items-center justify-center gap-2 text-sm font-medium ${
-        type === "loading" ? "text-indigo-600" : type === "error" ? "text-red-600" : "text-green-600"
+        type === "loading" ? "text-emerald-600" : type === "error" ? "text-red-600" : "text-green-600"
       }`}
     >
       {type === "loading" && <ArrowPathIcon className="w-4 h-4 animate-spin" />}
@@ -205,7 +205,7 @@ export function DiscoveryForm({ onAccountDetailsFound, initialUsername = "", ini
             value={username}
             onChange={handleUsernameChange}
             placeholder="e.g. stani"
-            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition duration-200"
+            className={`w-full px-4 py-3 bg-gray-50 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-200`}
             aria-describedby="username-status"
             disabled={isLoading && lastEdited === "address"}
           />
@@ -231,7 +231,7 @@ export function DiscoveryForm({ onAccountDetailsFound, initialUsername = "", ini
             value={address}
             onChange={handleAddressChange}
             placeholder="0x..."
-            className={`w-full px-4 py-3 bg-gray-50 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition duration-200 ${
+            className={`w-full px-4 py-3 bg-gray-50 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-200 ${
               !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-300"
             }`}
             aria-describedby="address-status"

@@ -195,13 +195,13 @@ export function WcConnect() {
               value={uri}
               onChange={(e) => setUri(e.target.value)}
               placeholder="wc:..."
-              className="flex-grow px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm disabled:bg-gray-100 transition-colors"
+              className="flex-grow px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white sm:text-sm disabled:bg-gray-100 transition-colors"
               disabled={isLoading || !isInitialized} // Use combined loading state
             />
             <button
               onClick={handleConnect}
               disabled={!uri || isLoading || !isInitialized} // Use combined loading state
-              className="px-5 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
+              className="px-5 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
             >
               {connectButtonText}
             </button>
@@ -211,7 +211,7 @@ export function WcConnect() {
 
       {/* --- Status/Error Messages --- */}
       {error && !isLoading && <p className="text-red-600 text-sm mt-2">Error: {error}</p>}
-      {isPairing && <p className="text-indigo-600 text-sm mt-2">Pairing initiated, check dApp/wallet if needed...</p>}
+      {isPairing && <p className="text-emerald-600 text-sm mt-2">Pairing initiated, check dApp/wallet if needed...</p>}
       {/* Check both flags here now */}
       {!isInitialized && !isInitializing && !error && <p className="text-orange-600 text-sm mt-2">WalletConnect service not ready.</p>}
       {/* And display initializing message correctly */}

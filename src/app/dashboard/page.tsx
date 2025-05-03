@@ -66,7 +66,7 @@ export default function Dashboard() {
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Lens Account Dashboard</h1>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-sm transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 shadow-sm transition-colors"
         >
           <ArrowRightStartOnRectangleIcon className="w-4 h-4 text-gray-500" />
           Logout
@@ -113,7 +113,7 @@ export default function Dashboard() {
             href="https://github.com/vicnaum/lens-account-app"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
+            className="text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors"
           >
             GitHub
           </a>

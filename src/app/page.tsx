@@ -209,7 +209,7 @@ export default function Home() {
   const showConnectButton = expectedOwner && !isLoadingOwner && !ownerFetchError;
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
+    <main className="relative flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-emerald-100 via-teal-100 to-blue-100">
       <h1 className="text-5xl font-extrabold text-gray-900 mb-16 tracking-tight">Lens Account Dashboard</h1>
       <div className="w-full max-w-lg p-10 md:p-12 space-y-10 bg-white rounded-2xl shadow-xl">
         <DiscoveryForm
@@ -220,7 +220,7 @@ export default function Home() {
 
         <div className="space-y-4">
           {isAddress(lensAccountAddress) && isLoadingOwner && (
-            <div className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-indigo-600">
+            <div className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-emerald-600">
               <ArrowPathIcon className="w-5 h-5 animate-spin" />
               <span>Fetching owner...</span>
             </div>

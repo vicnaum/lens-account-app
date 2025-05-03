@@ -277,8 +277,8 @@ export function WcRequestDisplay() {
 
   return (
     // Remove border, use background, add padding here
-    <div className="p-6 md:p-8 bg-indigo-50 space-y-5">
-      <h3 className="text-lg font-semibold text-indigo-900">WalletConnect Request</h3>
+    <div className="p-6 md:p-8 bg-emerald-50 space-y-5">
+      <h3 className="text-lg font-semibold text-emerald-900">WalletConnect Request</h3>
       <div className="flex items-center space-x-3 mb-3 pb-3 border-b border-blue-200">
         <FallbackIcon size={30} />
         <div>
@@ -305,13 +305,13 @@ export function WcRequestDisplay() {
           <textarea
             readOnly
             value={txDetails?.data ?? "0x"}
-            className="mt-1 w-full h-20 p-2 border border-indigo-100 rounded-md text-xs font-mono bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300"
+            className="mt-1 w-full h-20 p-2 border border-emerald-100 rounded-md text-xs font-mono bg-white focus:outline-none focus:ring-1 focus:ring-emerald-300"
           />
         </div>
       </div>
 
       {/* Status Display */}
-      {localLoadingMessage && <p className="text-sm text-center text-indigo-600 animate-pulse">{localLoadingMessage}</p>}
+      {localLoadingMessage && <p className="text-sm text-center text-emerald-600 animate-pulse">{localLoadingMessage}</p>}
       {localError && <p className="text-sm text-center text-red-600">{localError}</p>}
       {wcError && !localError && <p className="text-sm text-center text-red-600">WC Error: {wcError}</p>}
 

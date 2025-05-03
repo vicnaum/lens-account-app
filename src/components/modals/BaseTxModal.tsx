@@ -55,14 +55,14 @@ export function BaseTxModal({ isOpen, onClose, title, children, isLoading, isSuc
   let statusMessage = null;
   if (isLoading) {
     statusMessage = (
-      <div className="flex items-center justify-center text-indigo-600 text-sm mt-3 p-2 bg-indigo-50 rounded">
+      <div className="flex items-center justify-center text-emerald-600 text-sm mt-3 p-2 bg-emerald-50 rounded">
         <ArrowPathIcon className="w-4 h-4 mr-1 animate-spin" />
         Processing transaction... Check your wallet.
       </div>
     );
   } else if (isSuccess) {
     statusMessage = (
-      <div className="flex items-center justify-center text-green-600 text-sm mt-3 p-2 bg-green-50 rounded">
+      <div className="flex items-center justify-center text-emerald-600 text-sm mt-3 p-2 bg-emerald-50 rounded">
         <CheckCircleIcon className="w-4 h-4 mr-1" />
         Transaction successful!
         {txHash && (
@@ -70,7 +70,7 @@ export function BaseTxModal({ isOpen, onClose, title, children, isLoading, isSuc
             href={`https://explorer.lens.xyz/tx/${txHash}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-1 underline hover:text-green-800"
+            className="ml-1 underline hover:text-emerald-800"
           >
             View on Explorer
           </a>

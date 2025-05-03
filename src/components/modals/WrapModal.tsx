@@ -120,7 +120,7 @@ export function WrapModal({ isOpen, onClose, balance }: WrapModalProps) {
             min="0"
             step="any"
             disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
           />
           {balance !== undefined && (
             <p className="text-xs text-gray-500 mt-1">
@@ -142,7 +142,7 @@ export function WrapModal({ isOpen, onClose, balance }: WrapModalProps) {
         <button
           onClick={handleWrap}
           disabled={isLoading || isConfirmed || !amount}
-          className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Wrapping..." : isConfirmed ? "Wrapped!" : `Wrap ${lensChain.nativeCurrency.symbol}`}
         </button>
