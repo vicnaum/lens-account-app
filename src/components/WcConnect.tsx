@@ -122,12 +122,14 @@ export function WcConnect() {
     : undefined;
 
   return (
-    <div className="p-4 border rounded-md bg-gray-50 space-y-4">
-      <h3 className="text-md font-semibold text-gray-700">Connect to dApp (via Lens Account)</h3>
+    // Remove border, adjust padding and background if needed (now inside a white card)
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-gray-800">Connect to dApp</h3>
 
       {/* --- Session Proposal Modal (Simplified Inline) --- */}
       {pendingProposal && (
-        <div className="p-3 border border-yellow-300 bg-yellow-50 rounded-md space-y-2">
+        // Use softer warning style
+        <div className="p-4 border border-orange-200 bg-orange-50 rounded-lg space-y-3">
           <p className="text-sm font-medium text-yellow-800">Connection Request from:</p>
           <div className="flex items-center space-x-2">
             <DAppIcon iconUrl={proposalIconUrl} name={pendingProposal.params.proposer.metadata.name} size={30} />
@@ -155,7 +157,8 @@ export function WcConnect() {
 
       {/* --- Connected Session Display --- */}
       {connectedSession && !pendingProposal && (
-        <div className="space-y-3 p-3 bg-green-50 border border-green-200 rounded-md">
+        // Use softer success style
+        <div className="space-y-3 p-4 bg-green-50 border border-green-200 rounded-lg">
           {/* Display connected dApp info */}
           <p className="text-green-800 font-medium">Connected to:</p>
           <div className="flex items-center space-x-3">
@@ -171,7 +174,7 @@ export function WcConnect() {
           <button
             onClick={handleDisconnect}
             disabled={isLoading || !isInitialized} // Use combined loading state
-            className="w-full px-4 py-2 mt-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+            className="w-full px-4 py-2 mt-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
           >
             {disconnectButtonText}
           </button>
@@ -192,13 +195,13 @@ export function WcConnect() {
               value={uri}
               onChange={(e) => setUri(e.target.value)}
               placeholder="wc:..."
-              className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100"
+              className="flex-grow px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm disabled:bg-gray-100 transition-colors"
               disabled={isLoading || !isInitialized} // Use combined loading state
             />
             <button
               onClick={handleConnect}
               disabled={!uri || isLoading || !isInitialized} // Use combined loading state
-              className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+              className="px-5 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
             >
               {connectButtonText}
             </button>

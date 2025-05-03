@@ -126,21 +126,22 @@ export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4 text-gray-700">Account Owner</h2>
-      <div className="flex items-center bg-gray-50 p-3 rounded-md border border-gray-200 mb-4">
-        <p className="text-sm font-mono text-gray-700 break-all flex-1">{ownerAddress}</p>
+      <h2 className="text-xl font-semibold mb-6 text-gray-800">Account Owner</h2>
+      {/* Consistent address display */}
+      <div className="flex items-center space-x-3 bg-slate-50 p-4 rounded-lg mb-4">
+        <p className="text-sm font-mono text-gray-800 break-all flex-1">{ownerAddress}</p>
         <button
           onClick={handleOpenExplorer}
           title="View on Explorer"
-          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-200 rounded-md transition-colors duration-150"
+          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-slate-200 rounded-lg transition-colors duration-150"
         >
           <ArrowTopRightOnSquareIcon className="w-5 h-5" />
         </button>
         <button
           onClick={handleCopy}
           title={copied ? "Copied!" : "Copy Address"}
-          className={`p-2 rounded-md transition-colors duration-150 ${
-            copied ? "text-green-600 bg-green-100" : "text-gray-500 hover:text-indigo-600 hover:bg-gray-200"
+          className={`p-2 rounded-lg transition-colors duration-150 ${
+            copied ? "text-green-600 bg-green-100 hover:bg-green-200" : "text-gray-500 hover:text-indigo-600 hover:bg-slate-200"
           }`}
         >
           {copied ? <CheckIcon className="w-5 h-5" /> : <DocumentDuplicateIcon className="w-5 h-5" />}
@@ -148,13 +149,13 @@ export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
       </div>
 
       {!isChangingOwner && (
-        <button onClick={handleToggleChangeOwner} className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline">
+        <button onClick={handleToggleChangeOwner} className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
           Change Owner
         </button>
       )}
 
       {isChangingOwner && (
-        <div className="mt-4 p-4 border border-red-200 rounded-md bg-red-50 space-y-4">
+        <div className="mt-6 p-5 border border-red-200 rounded-lg bg-red-50 space-y-4">
           <div className="flex items-center text-red-700">
             <ExclamationTriangleIcon className="w-6 h-6 mr-2" />
             <p className="text-sm font-semibold">Danger Zone: Transfer Ownership</p>
@@ -176,7 +177,7 @@ export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
               placeholder="0x..."
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm ${
                 inputError ? "border-red-500 ring-red-500" : "border-gray-300 focus:ring-red-500 focus:border-red-500"
-              }`}
+              } bg-white`} // Ensure bg is white
             />
             {inputError && <p className="mt-1 text-xs text-red-600">{inputError}</p>}
           </div>

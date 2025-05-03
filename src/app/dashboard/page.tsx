@@ -11,6 +11,7 @@ import { WcRequestDisplay } from "@/components/WcRequestDisplay";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants";
 import { AccountIdentityPanel } from "@/components/dashboard/AccountIdentityPanel";
 import { OwnerPanel } from "@/components/dashboard/OwnerPanel";
+import { ArrowRightStartOnRectangleIcon } from "@heroicons/react/24/outline"; // For logout icon
 
 export default function Dashboard() {
   const { lensAccountAddress, ownerAddress, clearAccount } = useLensAccount();
@@ -38,55 +39,67 @@ export default function Dashboard() {
   const handleLogout = () => {
     disconnectOwnerWallet();
     clearAccount();
+    // Clear localStorage on explicit logout
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LENS_ACCOUNT_ADDRESS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.EXPECTED_OWNER_ADDRESS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LENS_USERNAME);
+      console.log("Cleared localStorage on logout.");
+    } catch (error) {
+      console.error("Failed to clear localStorage on logout:", error);
+    }
     router.push("/");
   };
 
   if (!isConnected || !lensAccountAddress || !ownerAddress) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <p className="text-gray-500">Loading or redirecting...</p>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 p-4 md:p-8">
+    <main className="min-h-screen bg-gray-50 p-6 md:p-10">
       {/* Header Area */}
-      <div className="max-w-7xl mx-auto mb-6 flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-800">Lens Account Dashboard</h1>
+      <div className="max-w-7xl mx-auto mb-8 flex justify-between items-center">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Lens Account Dashboard</h1>
         <button
           onClick={handleLogout}
-          className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 shadow-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-sm transition-colors"
         >
+          <ArrowRightStartOnRectangleIcon className="w-4 h-4 text-gray-500" />
           Logout
         </button>
       </div>
 
       {/* Main Grid for Panels */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Panel 1: Account Identity */}
-        <div className="col-span-1 md:col-span-2 bg-white p-6 rounded-lg shadow">
+        <div className="col-span-1 md:col-span-2 bg-white p-8 rounded-xl shadow-md">
           <AccountIdentityPanel username={lensUsername} address={lensAccountAddress} />
         </div>
 
         {/* Panel 2: Owner Info */}
-        <div className="col-span-1 bg-white p-6 rounded-lg shadow">
+        <div className="col-span-1 bg-white p-8 rounded-xl shadow-md">
           <OwnerPanel ownerAddress={ownerAddress} />
         </div>
 
         {/* Panel 3: Balances */}
-        <div className="col-span-1 bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">Account Balances</h2>
+        <div className="col-span-1 bg-white p-8 rounded-xl shadow-md">
+          <h2 className="text-xl font-semibold mb-6 text-gray-800">Account Balances</h2>
           <AccountDisplay />
         </div>
 
         {/* Panel 4: WalletConnect Connect */}
-        <div className="col-span-1 md:col-span-2 bg-white p-6 rounded-lg shadow">
+        <div className="col-span-1 md:col-span-2 bg-white p-8 rounded-xl shadow-md">
           <WcConnect />
         </div>
 
         {/* Panel 5: WalletConnect Requests */}
-        <div className="col-span-1 md:col-span-2 bg-white p-6 rounded-lg shadow">
+        <div className="col-span-1 md:col-span-2 bg-white p-0 rounded-xl shadow-md overflow-hidden">
+          {" "}
+          {/* Use padding within component */}
           <WcRequestDisplay />
         </div>
       </div>

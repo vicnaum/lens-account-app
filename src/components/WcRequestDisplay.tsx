@@ -258,8 +258,9 @@ export function WcRequestDisplay() {
   // --- Render Logic ---
   if (!pendingRequest) {
     return (
-      <div className="p-4 border rounded-md bg-gray-50">
-        <p className="text-gray-600 text-center italic">No pending WalletConnect requests.</p>
+      // Style the "no requests" message slightly differently
+      <div className="p-8 text-center">
+        <p className="text-gray-500 italic">No pending WalletConnect requests.</p>
       </div>
     );
   }
@@ -275,8 +276,9 @@ export function WcRequestDisplay() {
   const isLoading = isWritePending || isConfirming || isWcLoading;
 
   return (
-    <div className="p-4 border-2 border-blue-300 rounded-md bg-blue-50 shadow-md space-y-4">
-      <h3 className="text-md font-semibold text-blue-800">WalletConnect Request</h3>
+    // Remove border, use background, add padding here
+    <div className="p-6 md:p-8 bg-indigo-50 space-y-5">
+      <h3 className="text-lg font-semibold text-indigo-900">WalletConnect Request</h3>
       <div className="flex items-center space-x-3 mb-3 pb-3 border-b border-blue-200">
         <FallbackIcon size={30} />
         <div>
@@ -288,13 +290,13 @@ export function WcRequestDisplay() {
       <div className="space-y-2 text-sm">
         <p>
           <strong className="text-gray-600">Method:</strong> <span className="font-mono bg-gray-100 px-1 rounded">{request.method}</span>
-        </p>
-        <p>
+          {/* Add space */}
           <strong className="text-gray-600">Chain:</strong> <span className="font-mono bg-gray-100 px-1 rounded">{chainId}</span>
         </p>
         <p>
           <strong className="text-gray-600">Target (to):</strong> <span className="font-mono text-xs break-all">{txDetails?.to ?? "N/A"}</span>
         </p>
+        {/* Keep Value and Data separated for clarity */}
         <p>
           <strong className="text-gray-600">Value:</strong> <span className="font-mono">{formattedValue}</span>
         </p>
@@ -303,7 +305,7 @@ export function WcRequestDisplay() {
           <textarea
             readOnly
             value={txDetails?.data ?? "0x"}
-            className="mt-1 w-full h-20 p-1 border border-gray-300 rounded text-xs font-mono bg-gray-50"
+            className="mt-1 w-full h-20 p-2 border border-indigo-100 rounded-md text-xs font-mono bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300"
           />
         </div>
       </div>
@@ -318,14 +320,14 @@ export function WcRequestDisplay() {
         <button
           onClick={handleApprove}
           disabled={isLoading}
-          className="flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50"
+          className="flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
         >
           {isWritePending ? "Check Wallet..." : isConfirming ? "Confirming..." : "Approve & Send"}
         </button>
         <button
           onClick={handleReject}
           disabled={isLoading}
-          className="flex-1 px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+          className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
         >
           Reject
         </button>
