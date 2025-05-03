@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useReadContract, useBalance } from "wagmi";
 import { formatUnits, type Address } from "viem";
 import { useLensAccount } from "@/contexts/LensAccountContext";
-import { ERC20_ABI, WGHO_TOKEN_ADDRESS, BONSAI_TOKEN_ADDRESS, LENS_CHAIN_ID, lensChain } from "@/lib/constants";
+import { ERC20_ABI, WGHO_TOKEN_ADDRESS, BONSAI_TOKEN_ADDRESS, LENS_CHAIN_ID, lensChain, NATIVE_GHO_ADDRESS } from "@/lib/constants";
 import { SendModal } from "@/components/modals/SendModal";
 import { ApproveModal } from "@/components/modals/ApproveModal";
 import { WrapModal } from "@/components/modals/WrapModal";
@@ -193,7 +193,15 @@ export function AccountTokensDisplay() {
       {/* --- Native GHO Row --- */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Image src="/tokens/gho.svg" alt="GHO icon" width={40} height={40} className="rounded-full" unoptimized />
+          <a
+            href={`https://explorer.lens.xyz/address/${NATIVE_GHO_ADDRESS}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="View native GHO token on Lens Chain Explorer"
+            className="block hover:opacity-80 transition-opacity"
+          >
+            <Image src="/tokens/gho.svg" alt="GHO icon" width={40} height={40} className="rounded-full" unoptimized />
+          </a>
           <div className="flex items-baseline">
             <p className="text-2xl font-bold text-gray-900 leading-tight">{formattedNativeBalance}</p>
             <p className="text-2xl font-bold text-gray-400 leading-tight ml-2">{lensChain.nativeCurrency.symbol}</p>
@@ -222,7 +230,15 @@ export function AccountTokensDisplay() {
       {/* --- WGHO Row --- */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Image src="/tokens/wgho.svg" alt="WGHO icon" width={40} height={40} className="rounded-full" unoptimized />
+          <a
+            href={`https://explorer.lens.xyz/address/${WGHO_TOKEN_ADDRESS}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="View WGHO token on Lens Chain Explorer"
+            className="block hover:opacity-80 transition-opacity"
+          >
+            <Image src="/tokens/wgho.svg" alt="WGHO icon" width={40} height={40} className="rounded-full" unoptimized />
+          </a>
           <div className="flex items-baseline">
             <p className="text-2xl font-bold text-gray-900 leading-tight">{formattedWghoBalance}</p>
             <p className="text-2xl font-bold text-gray-400 leading-tight ml-2">WGHO</p>
@@ -253,7 +269,15 @@ export function AccountTokensDisplay() {
       {/* --- BONSAI Row --- */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Image src="/tokens/bonsai.svg" alt="BONSAI icon" width={40} height={40} className="rounded-full object-cover" unoptimized />
+          <a
+            href={`https://explorer.lens.xyz/address/${BONSAI_TOKEN_ADDRESS}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="View BONSAI token on Lens Chain Explorer"
+            className="block hover:opacity-80 transition-opacity"
+          >
+            <Image src="/tokens/bonsai.svg" alt="BONSAI icon" width={40} height={40} className="rounded-full object-cover" unoptimized />
+          </a>
           <div className="flex items-baseline">
             <p className="text-2xl font-bold text-gray-900 leading-tight">{formattedBonsaiBalance}</p>
             <p className="text-2xl font-bold text-gray-400 leading-tight ml-2">BONSAI</p>
