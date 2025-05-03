@@ -5,7 +5,7 @@ import { useLensAccount } from "@/contexts/LensAccountContext";
 import { useAccount, useDisconnect } from "wagmi";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AccountDisplay } from "@/components/AccountDisplay";
+import { AccountTokensDisplay } from "@/components/AccountTokensDisplay";
 import { WcConnect } from "@/components/WcConnect";
 import { WcRequestDisplay } from "@/components/WcRequestDisplay";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants";
@@ -88,7 +88,7 @@ export default function Dashboard() {
         {/* Panel 3: Balances */}
         <div className="col-span-1 bg-white p-8 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold mb-6 text-gray-800">Account Balances</h2>
-          <AccountDisplay />
+          <AccountTokensDisplay />
         </div>
 
         {/* Panel 4: WalletConnect Connect */}

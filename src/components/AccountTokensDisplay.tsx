@@ -1,4 +1,4 @@
-// components/AccountDisplay.tsx
+// components/AccountTokensDisplay.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -39,7 +39,7 @@ interface ModalState {
   balance?: bigint;
 }
 
-export function AccountDisplay() {
+export function AccountTokensDisplay() {
   const { lensAccountAddress } = useLensAccount();
   const [modalState, setModalState] = useState<ModalState>({
     type: null,
