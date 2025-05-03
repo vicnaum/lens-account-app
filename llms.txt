@@ -5263,9 +5263,9 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6 md:p-10 relative pb-24">
+    <main className="min-h-screen bg-gray-50 p-6 md:p-10 flex flex-col">
       {/* Header Area */}
-      <div className="max-w-7xl mx-auto mb-8 flex justify-between items-center">
+      <div className="max-w-7xl mx-auto mb-8 flex justify-between items-center w-full">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Lens Account Dashboard</h1>
         <button
           onClick={handleLogout}
@@ -5277,7 +5277,7 @@ export default function Dashboard() {
       </div>
 
       {/* Main Grid for Panels */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
         {/* Panel 1: Account Identity */}
         <div className="col-span-1 md:col-span-2 bg-white p-8 rounded-xl shadow-md">
           <AccountIdentityPanel username={lensUsername} address={lensAccountAddress} />
@@ -5307,8 +5307,8 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Footer with FKNG SOCIAL and GitHub links */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-8">
+      {/* Footer with FKNG SOCIAL and GitHub links - Now part of the normal flow */}
+      <div className="max-w-7xl w-full mx-auto mt-16 mb-8 flex flex-col items-center gap-8">
         {/* GitHub and future platform icons */}
         <div className="flex items-center gap-3">
           <span className="text-xs font-medium text-gray-500">Contribute:</span>
