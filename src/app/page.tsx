@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { type Address, isAddress } from "viem";
 import { useLensAccount } from "@/contexts/LensAccountContext";
 import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, LOCAL_STORAGE_KEYS } from "@/lib/constants";
+import { ArrowPathIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 export default function Home() {
   // Initialize state from localStorage
@@ -210,9 +211,9 @@ export default function Home() {
   const showConnectButton = expectedOwner && !isLoadingOwner && !ownerFetchError;
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      <h1 className="text-4xl font-bold text-gray-800 mb-12">Lens Account Dashboard</h1>
-      <div className="w-full max-w-lg p-8 space-y-8 bg-white rounded-xl shadow-lg">
+    <main className="relative flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
+      <h1 className="text-5xl font-extrabold text-gray-900 mb-16 tracking-tight">Lens Account Dashboard</h1>
+      <div className="w-full max-w-lg p-10 md:p-12 space-y-10 bg-white rounded-2xl shadow-xl">
         <DiscoveryForm
           onAccountDetailsFound={handleAccountDetailsFound}
           initialAddress={lensAccountAddress || ""}
@@ -220,34 +221,51 @@ export default function Home() {
         />
 
         <div className="space-y-4">
-          {isAddress(lensAccountAddress) && isLoadingOwner && <p className="text-center text-indigo-600">Fetching owner...</p>}
+          {isAddress(lensAccountAddress) && isLoadingOwner && (
+            <div className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-indigo-600">
+              <ArrowPathIcon className="w-5 h-5 animate-spin" />
+              <span>Fetching owner...</span>
+            </div>
+          )}
 
-          {ownerFetchError && !isLoadingOwner && <p className="text-center text-red-600">{ownerFetchError}</p>}
+          {ownerFetchError && !isLoadingOwner && (
+            <div className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-red-600 bg-red-50 p-3 rounded-lg">
+              <ExclamationTriangleIcon className="w-5 h-5" />
+              <span>{ownerFetchError}</span>
+            </div>
+          )}
 
           {expectedOwner && !isLoadingOwner && !ownerFetchError && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm font-medium text-blue-800 mb-1">Identified Account Owner:</p>
+            <div className="p-5 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm font-semibold text-blue-800 mb-1">Identified Account Owner:</p>
               <p className="text-xs text-blue-700 break-words font-mono">{expectedOwner}</p>
               {!isConnected && <p className="text-xs text-blue-600 mt-2">Connect this wallet to proceed.</p>}
             </div>
           )}
 
-          {verificationError && <p className="text-sm text-center text-red-600">{verificationError}</p>}
+          {verificationError && (
+            <div className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-red-600 bg-red-50 p-3 rounded-lg">
+              <ExclamationTriangleIcon className="w-5 h-5" />
+              <span>{verificationError}</span>
+            </div>
+          )}
 
           {showConnectButton && (
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-3 mt-2">
               <ConnectOwnerButton />
-              {isConnected && connectedChainId !== LENS_CHAIN_ID && <p className="text-xs text-orange-600">Waiting for network switch...</p>}
+              {isConnected && connectedChainId !== LENS_CHAIN_ID && (
+                <p className="text-xs text-orange-600 bg-orange-50 px-3 py-2 rounded-md">Waiting for network switch...</p>
+              )}
             </div>
           )}
         </div>
       </div>
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-        <a href="https://fkng.social" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-gray-500 transition-colors">
-          <img src="/FKNG.SOCIAL.svg" alt="FKNG.SOCIAL" className="h-4 w-auto" />
+        <a href="https://fkng.social" target="_blank" rel="noopener noreferrer" className="block text-gray-500 hover:text-gray-600 transition-colors">
+          <img src="/FKNG.SOCIAL.svg" alt="FKNG.SOCIAL" className="h-5 w-auto" />
         </a>
-        <p className="font-sans text-[10px] font-extralight text-gray-400">JOIN THE FKNG REVOLUTION</p>
+        <p className="font-sans text-[11px] font-light text-gray-500">JOIN THE FKNG REVOLUTION</p>
       </div>
     </main>
   );

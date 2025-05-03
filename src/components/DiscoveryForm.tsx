@@ -170,12 +170,12 @@ export function DiscoveryForm({ onAccountDetailsFound, initialUsername = "", ini
   return (
     <div className="w-full max-w-md mx-auto space-y-8">
       <div className="text-center space-y-2">
-        <p className="text-lg text-gray-600 font-light">To login, please enter your</p>
+        <p className="text-base text-gray-500">To login, please enter your</p>
       </div>
 
       <div className="space-y-6">
         <div>
-          <label htmlFor="username" className="block text-lg font-medium text-gray-700 mb-2">
+          <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
             Lens Username
           </label>
           <input
@@ -185,20 +185,23 @@ export function DiscoveryForm({ onAccountDetailsFound, initialUsername = "", ini
             value={username}
             onChange={handleUsernameChange}
             placeholder="e.g. stani"
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200"
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition duration-200"
             aria-describedby="username-status"
             disabled={isLoading && lastEdited === "address"}
           />
         </div>
 
-        <div className="flex items-center justify-center space-x-4">
-          <div className="h-px bg-gray-200 w-20"></div>
-          <span className="text-xl font-semibold text-gray-400">OR</span>
-          <div className="h-px bg-gray-200 w-20"></div>
+        <div className="relative flex items-center justify-center my-6">
+          <div className="absolute inset-0 flex items-center" aria-hidden="true">
+            <div className="w-full border-t border-gray-200"></div>
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-white px-2 text-sm font-medium text-gray-500">OR</span>
+          </div>
         </div>
 
         <div>
-          <label htmlFor="address" className="block text-lg font-medium text-gray-700 mb-2">
+          <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
             Lens Account Address
           </label>
           <input
@@ -208,8 +211,8 @@ export function DiscoveryForm({ onAccountDetailsFound, initialUsername = "", ini
             value={address}
             onChange={handleAddressChange}
             placeholder="0x..."
-            className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 ${
-              !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-200"
+            className={`w-full px-4 py-3 bg-gray-50 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition duration-200 ${
+              !lookupError && isAddress(address) ? "border-green-500" : address && !isAddress(address) ? "border-red-500" : "border-gray-300"
             }`}
             aria-describedby="address-status"
             disabled={isLoading && lastEdited === "username"}
