@@ -60,7 +60,7 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6 md:p-10">
+    <main className="min-h-screen bg-gray-50 p-6 md:p-10 relative pb-24">
       {/* Header Area */}
       <div className="max-w-7xl mx-auto mb-8 flex justify-between items-center">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Lens Account Dashboard</h1>
@@ -101,6 +101,36 @@ export default function Dashboard() {
           {" "}
           {/* Use padding within component */}
           <WcRequestDisplay />
+        </div>
+      </div>
+
+      {/* Footer with FKNG SOCIAL and GitHub links */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-8">
+        {/* GitHub and future platform icons */}
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium text-gray-500">Contribute:</span>
+          <a
+            href="https://github.com/vicnaum/lens-account-app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
+          >
+            GitHub
+          </a>
+          {/* Space for additional platform icons */}
+        </div>
+
+        {/* FKNG SOCIAL branding */}
+        <div className="flex flex-col items-center gap-1">
+          <a
+            href="https://fkng.social"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-gray-500 hover:text-gray-600 transition-colors"
+          >
+            <img src="/FKNG.SOCIAL.svg" alt="FKNG.SOCIAL" className="h-5 w-auto" />
+          </a>
+          <p className="font-sans text-[11px] font-light text-gray-500">JOIN THE FKNG REVOLUTION</p>
         </div>
       </div>
     </main>
