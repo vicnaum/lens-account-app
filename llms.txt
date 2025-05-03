@@ -50,6 +50,8 @@ src/
     dashboard/
       layout.tsx
       page.tsx
+    test-connect/
+      page.tsx
     layout.tsx
     page.tsx
     providers.tsx
@@ -90,7 +92,6 @@ next.config.ts
 package.json
 postcss.config.mjs
 README.md
-repomix-output.xml
 Spec.functional.md
 Spec.technical.md
 tsconfig.json
@@ -99,569 +100,117 @@ tsconfig.json
 <files>
 This section contains the contents of the repository's files.
 
-<file path="repomix-output.xml">
-This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+<file path="src/app/test-connect/page.tsx">
+// src/app/test-connect/page.tsx
+"use client";
 
-<file_summary>
-This section contains a summary of this file.
-
-<purpose>
-This file contains a packed representation of the entire repository's contents.
-It is designed to be easily consumable by AI systems for analysis, code review,
-or other automated processes.
-</purpose>
-
-<file_format>
-The content is organized as follows:
-1. This summary section
-2. Repository information
-3. Directory structure
-4. Repository files, each consisting of:
-  - File path as an attribute
-  - Full contents of the file
-</file_format>
-
-<usage_guidelines>
-- This file should be treated as read-only. Any changes should be made to the
-  original repository files, not this packed version.
-- When processing this file, use the file path to distinguish
-  between different files in the repository.
-- Be aware that this file may contain sensitive information. Handle it with
-  the same level of security as you would the original repository.
-</usage_guidelines>
-
-<notes>
-- Some files may have been excluded based on .gitignore rules and Repomix's configuration
-- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Files matching patterns in .gitignore are excluded
-- Files matching default ignore patterns are excluded
-- Files are sorted by Git change count (files with more changes are at the bottom)
-</notes>
-
-<additional_info>
-
-</additional_info>
-
-</file_summary>
-
-<directory_structure>
-components/
-  Head.tsx
-  RandomSlogan.tsx
-pages/
-  _app.tsx
-  _document.tsx
-  index.tsx
-public/
-  manifest.json
-styles/
-  globals.css
-  Home.module.css
-.eslintrc.json
-.gitignore
-next-sitemap.config.js
-next.config.js
-package.json
-README.md
-tsconfig.json
-</directory_structure>
-
-<files>
-This section contains the contents of the repository's files.
-
-<file path="pages/_app.tsx">
-import '../styles/globals.css'
-import type { AppProps } from 'next/app'
-
-function MyApp({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
-}
-
-export default MyApp
-</file>
-
-<file path="pages/_document.tsx">
-import { Html, Head, Main, NextScript } from "next/document";
-
-export default function Document() {
-  return (
-    <Html lang="en">
-      <Head />
-      <body>
-        <Main />
-        <NextScript />
-      </body>
-    </Html>
-  );
-}
-</file>
-
-<file path="styles/globals.css">
-html,
-body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-  body {
-    color: white;
-    background: black;
-  }
-}
-</file>
-
-<file path="styles/Home.module.css">
-.container {
-  padding: 0;
-}
-
-.main {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2rem 0;
-}
-
-.content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.logo {
-  margin: 0;
-  font-size: 6rem;
-  letter-spacing: 10px;
-}
-
-.slogan {
-  margin: 2rem 0 0 0;
-  font-size: 1.2rem;
-  letter-spacing: 4px;
-  color: #666;
-  font-weight: 200;
-}
-
-.social {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-right: 15px;
-  padding-bottom: 1rem;
-}
-</file>
-
-<file path=".eslintrc.json">
-{
-  "extends": "next/core-web-vitals"
-}
-</file>
-
-<file path="README.md">
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-</file>
-
-<file path="tsconfig.json">
-{
-  "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
-}
-</file>
-
-<file path="components/Head.tsx">
-import Head from "next/head";
-
-const FKNGHead = () => {
-  const title = "FKNG.SOCIAL | Making social fkng great again";
-  const desc = "Making social fkng great again - A new way to connect in web3";
-  const image = "https://fkng.social/fkng.png";
-  return (
-    <Head>
-      <title>{title}</title>
-      <link rel="icon" href="/favicon.png" />
-      <link rel="manifest" href="/manifest.json" />
-      <meta name="description" content={desc} />
-
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={desc} />
-      <meta property="og:type" content="website" />
-      <meta property="og:url" content="https://fkng.social/" />
-      <meta property="og:image" content={image} />
-      <meta property="og:image:type" content="image/png" />
-      <meta property="og:image:alt" content={desc} />
-
-      <meta name="twitter:site" content="fkng" />
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={desc} />
-      <meta name="twitter:image" content={image} />
-      <meta name="twitter:image:alt" content={desc} />
-    </Head>
-  );
-};
-
-export default FKNGHead;
-</file>
-
-<file path="public/manifest.json">
-{
-  "name": "FKNG.SOCIAL",
-  "short_name": "FKNG.SOCIAL",
-  "start_url": "/",
-  "display": "standalone",
-  "theme_color": "#fff",
-  "background_color": "#fff",
-  "icons": [
-    {
-      "src": "https://fkng.social/favicon.png",
-      "sizes": "128x128",
-      "type": "image/png"
-    }
-  ]
-}
-</file>
-
-<file path=".gitignore">
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# local env files
-.env*.local
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# sitemap
-/public/sitemap*.xml
-/public/robots.txt
-
-sitemap*.xml
-</file>
-
-<file path="next-sitemap.config.js">
-/** @type {import('next-sitemap').IConfig} */
-const config = {
-  siteUrl: "https://fkng.social",
-  generateRobotsTxt: true, // (optional)
-  changefreq: "monthly",
-};
-
-module.exports = config;
-</file>
-
-<file path="components/RandomSlogan.tsx">
 import { useState, useEffect } from "react";
-import styles from "../styles/Home.module.css";
+import { ConnectKitButton } from "connectkit";
+import { useAccount, useDisconnect, useSwitchChain } from "wagmi";
+import { LENS_CHAIN_ID } from "@/lib/constants"; // Assuming your constants are here
 
-const slogans = [
-  "MAKING SOCIAL FKNG GREAT AGAIN",
-  "GET REAL. GET FKNG SOCIAL",
-  "TOUCH THE FKNG GRASS",
-  "NO BOTS. NO SLOP. JUST SOCIAL",
-  "THE BEST SOCIAL THERE IS",
-  "FKNG TIRED OF FAKE SOCIAL?",
-  "SOCIAL MEDIA WORTH GIVING A FK ABOUT",
-  "KEEP CALM AND GET FKNG SOCIAL",
-  "WHERE REAL PEOPLE GET FKNG REAL",
-  "LESS NOISE. MORE FKNG SIGNAL",
-  "FKNG AUTHENTIC SINCE DAY ONE",
-  "SOCIAL MEDIA DONE FKNG RIGHT",
-  "ZERO FKNG ALGORITHMS",
-  "YOUR FEED. YOUR FKNG CHOICE",
-  "BREAK THE FKNG ALGORITHM",
-  "WELCOME TO THE FKNG REVOLUTION",
-  "SOCIAL MEDIA THAT HITS DIFFERENT",
-  "NO FKNG INFLUENCER BS HERE",
-  "BE REAL. DONT FKNG INFLUENCE ME",
-  "ZERO FKNG BLUE CHECKMARKS",
-  "INFLUENCE THIS 🖕",
-  "WHERE NOBODY IS FKNG FAMOUS",
-  "NO CLOUT CHASERS. NO FKNG PROBLEM",
-  "ZERO SPONSORED FKNG CONTENT",
-  "NOT FOR SALE. NOT FKNG EVER",
-  "YOUR FEED ISN'T FOR SALE",
-  "NO FKNG PRODUCT PLACEMENT",
-  "JUST REAL PEOPLE HERE",
-  "NO BRANDS. NO SPAM. NO FKNG AROUND",
-  "ACTUAL HUMANS BEING FKNG SOCIAL",
-  "YOUR ATTENTION ISN'T FOR FKNG SALE",
-  "NOT FARMING FOR YOUR FKNG ATTENTION",
-  "SCROLL LESS. LIVE FKNG MORE",
-  "NO DOPAMINE FARMING HERE",
-  "NO FKNG CLICKBAIT ALLOWED",
-  "ZERO THIRST TRAPS. ZERO FKNG BAIT",
-  "BAIT-FREE ZONE",
-  "NO BAITS. NO FKNG TRICKS",
-  "NOT FARMING FOR FKNG LIKES",
-  "ENGAGEMENT FARMERS CAN FKNG LEAVE",
-  "NO FKNG ENGAGEMENT METRICS",
-  "REAL TALK. NOT FKNG METRICS",
-  "WHERE VIRAL ISN'T A FKNG GOAL",
-  "NO FKNG DOPAMINE LOOPS",
-  "POST WHATEVER. JUST DON'T BE FKNG FAKE",
-  "FREE SPEECH. ZERO FKNG BULLSHIT",
-  "ANON AF. REAL AF",
-  "PURE CHAOS. ZERO BAIT",
-  "REAL TAKES. NO FAKES",
-  "PURE CONTENT. ZERO FKNG GAMES",
-  "BASED AND FKNG REAL",
-  "JUST FKNG POST IT",
-  "NO RULES. EXCEPT NO FKNG BAIT",
-  "CHRONOLOGICAL FEED. FKNG FINALLY",
-  "WE ARE THE FKNG GRASS",
-  "WHERE FKNG NORMIES FEAR TO TREAD",
-  "ORGANIC REACH IS STILL FKNG REAL",
-  "NO FKNG MAIN CHARACTER SYNDROME",
-  "PUT A NAIL IN THE ENGAGEMENT COFFIN",
-  "FEELS GOOD MAN. FEELS FKNG REAL",
-  "NO MORE FKNG COPE",
-  "REJECT MODERNITY. EMBRACE FKNG REALITY",
-  "TOUCH GRASS ACHIEVEMENT: FKNG UNLOCKED",
-  "GG EZ? NAH, JUST BE FKNG REAL",
-  "I CAN HAS FKNG AUTHENTICITY?",
-  "THIS IS FINE. ACTUALLY FKNG FINE",
-  "DOGE IS DEAD. AUTHENTICITY IS FKNG FOREVER",
-  "LURK MOAR OR POST REAL",
-  "SAGE YOUR FKNG ENGAGEMENT METRICS",
-  "TRIPS DECIDE YOUR FKNG REACH",
-  "POV: YOU'RE BEING FKNG REAL",
-  "NO CAP. JUST FKNG FACTS",
-  "RATIO THIS, ENGAGEMENT FARMERS",
-  "NOT YOUR PERSONAL FKNG ARMY",
-  "COMFY AND FKNG AUTHENTIC",
-  "FEELS AUTHENTIC MAN",
-  "ZERO FKNG FILTERS FR",
-  "NOT YOUR FKNG CONTENT HOUSE",
-  "NO FYP",
-  "SPEEDRUN TO FKNG REALITY",
-  "RAGE QUIT YOUR FKNG ALGORITHM",
-  "FINAL BOSS: AUTHENTIC CONTENT",
-  "ALL YOUR BASE ARE FKNG REAL",
-  "NYAN CAT WOULDN'T FKNG FARM LIKES",
-  "PARASOCIAL? PARA-FKNG-NOID",
-  "TOUCH GRASS.EXE HAS STARTED",
-  "404: FAKE CONTENT NOT FOUND",
-  "CHRONOLOGICAL FEED OR GTFO",
-  "NORMALIZE BEING FKNG NORMAL",
-  "PARASOCIAL RELATIONSHIPS LEFT THE CHAT",
-  "PARASOCIAL THIS 🖕",
-  "NO RAGE BAIT. NO CRINGE",
-  "NOT YOUR FKNG OUTRAGE FARM",
-  "CONTROVERSY FARMERS REKT",
-  "BLUE CHECK? BLUE FKNG BALLS",
-  "YOUR TWEET DECK IS FKNG DEAD",
-  "ELON CAN'T BUY FKNG AUTHENTICITY",
-  "COMMUNITY NOTES: THIS IS FKNG REAL",
-  "NOT YOUR FKNG ECHO CHAMBER",
-  "GIGACHAD MOVE: BE FKNG AUTHENTIC",
-  "COZY POSTING ONLY FR FR",
-  "BLOATMAXXING THE FKNG TRUTH",
-  "IT'S GIVING FKNG AUTHENTIC",
-  "REAL ONES KNOW FR FR NO CAP",
-  "DIDN'T ASK + RATIO + GET REAL",
-  "SKILL ISSUE? NAH, AUTHENTICITY ISSUE",
-  "NOT THE FKNG ALGORITHM 💀",
-  "REAL POSTING (GONE RIGHT)",
-  "WHO UP TOUCHING GRASS RN",
-  "COMING FKNG SOON™",
-  "FKNG IS THE NEW BLACK",
-  "NO FKNG FAKE NEWS",
-  `NO "CONTENT" HERE. JUST REAL TALK`,
-  `CREATORS CAN GO FKNG HOME. THIS IS FOR REAL PEOPLE`,
-];
+export default function TestConnectPage() {
+  const account = useAccount();
+  const { disconnect } = useDisconnect();
+  const { switchChain, error: switchChainError, isPending: isSwitching } = useSwitchChain();
+  const [manualSwitchError, setManualSwitchError] = useState<string | null>(null);
 
-const RandomSlogan = () => {
-  const [slogan, setSlogan] = useState(slogans[0]); // Start with a default slogan
-  const [isClient, setIsClient] = useState(false);
-
+  // Log account status changes for debugging
   useEffect(() => {
-    setIsClient(true);
-    setSlogan(slogans[Math.floor(Math.random() * slogans.length)]);
-  }, []);
+    console.log(
+      "Test Page - Account Status Change:",
+      JSON.stringify(
+        {
+          status: account.status,
+          address: account.address,
+          chainId: account.chainId,
+          isConnected: account.isConnected,
+          isConnecting: account.isConnecting,
+          isReconnecting: account.isReconnecting,
+          isDisconnected: account.isDisconnected,
+        },
+        null,
+        2,
+      ),
+    );
+  }, [account.status, account.address, account.chainId, account.isConnected, account.isConnecting, account.isReconnecting, account.isDisconnected]);
 
-  // During SSR, show the default first slogan
-  if (!isClient) {
-    return <p className={styles.slogan}>{slogans[0]}</p>;
-  }
+  // Log switch chain errors
+  useEffect(() => {
+    if (switchChainError) {
+      console.error("Test Page - Switch Chain Hook Error:", switchChainError);
+      setManualSwitchError(switchChainError.message);
+    } else {
+      setManualSwitchError(null);
+    }
+  }, [switchChainError]);
 
-  return <p className={styles.slogan}>{slogan}</p>;
-};
+  const handleManualSwitch = () => {
+    setManualSwitchError(null);
+    console.log("Test Page - Manually attempting to switch to chain:", LENS_CHAIN_ID);
+    switchChain(
+      { chainId: LENS_CHAIN_ID },
+      {
+        onError: (err) => {
+          console.error("Test Page - Manual switchChain onError:", err);
+          // Error is already captured by the hook's error state
+        },
+        onSuccess: (data) => {
+          console.log("Test Page - Manual switchChain onSuccess:", data);
+        },
+      },
+    );
+  };
 
-export default RandomSlogan;
-</file>
-
-<file path="pages/index.tsx">
-import type { NextPage } from "next";
-import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { FaGithub, FaTwitter } from "react-icons/fa";
-import { IoIosMail } from "react-icons/io";
-import FKNGHead from "../components/Head";
-import RandomSlogan from "../components/RandomSlogan";
-
-const Home: NextPage = () => {
   return (
-    <div className={styles.container}>
-      <FKNGHead />
+    <main className="flex min-h-screen flex-col items-center justify-center p-12 bg-gray-100">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold text-center">Connection & Chain Switch Test</h1>
 
-      <div className={styles.main}>
-        <div className={styles.content}>
-          <h1 className={styles.logo}>FKNG.SOCIAL</h1>
-          <RandomSlogan />
+        <p className="text-sm text-gray-600 text-center">
+          Use this page to test the connection flow, especially when Lens Chain (ID: {LENS_CHAIN_ID}) needs to be added to MetaMask.
+        </p>
+
+        <div className="flex justify-center">
+          <ConnectKitButton />
         </div>
-        <div className={styles.social}>
-          <a href="mailto:contact@fkng.pro" rel="noreferrer" title="email">
-            <IoIosMail size={20} />
-          </a>
+
+        <div className="mt-6 p-4 border rounded bg-gray-50 text-xs overflow-auto">
+          <h2 className="text-sm font-semibold mb-2">Account State (`useAccount`)</h2>
+          <pre>{JSON.stringify(account, null, 2)}</pre>
         </div>
+
+        {account.isConnected && account.chainId !== LENS_CHAIN_ID && (
+          <div className="mt-4 text-center">
+            <p className="text-orange-600 text-sm mb-2">Connected to wrong chain ({account.chainId}). Try switching manually:</p>
+            <button
+              onClick={handleManualSwitch}
+              disabled={isSwitching}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+            >
+              {isSwitching ? "Switching..." : `Switch to Lens Chain (${LENS_CHAIN_ID})`}
+            </button>
+          </div>
+        )}
+
+        {(manualSwitchError || (switchChainError && !manualSwitchError)) && (
+          <div className="mt-4 p-3 border border-red-300 bg-red-50 rounded text-red-700 text-xs">
+            <p className="font-semibold mb-1">Switch Error:</p>
+            <p>{manualSwitchError ?? switchChainError?.message}</p>
+          </div>
+        )}
+
+        {account.isConnected && (
+          <div className="mt-4 flex justify-center">
+            <button onClick={() => disconnect()} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+              Disconnect
+            </button>
+          </div>
+        )}
       </div>
-    </div>
+    </main>
   );
-};
-
-export default Home;
-</file>
-
-<file path="next.config.js">
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  poweredByHeader: false,
-  reactStrictMode: true,
-  output: "export", // Changed from 'standalone' to 'export' for static site generation
-  images: {
-    unoptimized: true, // Required for static export
-  },
-};
-
-module.exports = nextConfig;
-</file>
-
-<file path="package.json">
-{
-  "name": "fkng",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build && next-sitemap",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "next": "^14.1.0",
-    "next-sitemap": "^4.2.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-icons": "^5.0.1"
-  },
-  "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8.56.0",
-    "eslint-config-next": "^14.1.0",
-    "typescript": "^5.3.3"
-  }
 }
-</file>
-
-</files>
 </file>
 
 <file path="src/components/ConnectOwnerButton.tsx">
@@ -4145,7 +3694,7 @@ export const LENS_CHAIN_ID = 232;
 
 export const lensChain = defineChain({
   id: LENS_CHAIN_ID,
-  name: "Lens Chain",
+  name: "Lens", // Changed from "Lens Chain" to match MetaMask's suggestion
   nativeCurrency: { name: "GHO", symbol: "GHO", decimals: 18 },
   rpcUrls: {
     default: {
@@ -4231,8 +3780,8 @@ export const LOCAL_STORAGE_KEYS = {
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "viem": "^2.27.2",
-    "wagmi": "^2.14.16"
+    "viem": "^2.28.3",
+    "wagmi": "^2.15.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

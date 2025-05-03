@@ -5,7 +5,7 @@ export const LENS_CHAIN_ID = 232;
 
 export const lensChain = defineChain({
   id: LENS_CHAIN_ID,
-  name: "Lens Chain",
+  name: "Lens", // Changed from "Lens Chain" to match MetaMask's suggestion
   nativeCurrency: { name: "GHO", symbol: "GHO", decimals: 18 },
   rpcUrls: {
     default: {
