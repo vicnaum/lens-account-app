@@ -1145,203 +1145,6 @@ export function QrCodeModal({ address, isOpen, onClose }: QrCodeModalProps) {
 }
 </file>
 
-<file path="src/components/modals/SendModal.tsx">
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { isAddress, parseUnits, formatUnits, encodeFunctionData, type Address, type Hash } from "viem";
-import { BaseTxModal } from "./BaseTxModal";
-import { useLensAccount } from "@/contexts/LensAccountContext";
-import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, ERC20_ABI } from "@/lib/constants";
-
-interface SendModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  tokenSymbol: string;
-  tokenAddress?: Address; // Undefined for native GHO
-  decimals: number;
-  balance?: bigint; // Optional: for validation against available balance
-}
-
-export function SendModal({ isOpen, onClose, tokenSymbol, tokenAddress, decimals, balance }: SendModalProps) {
-  const [recipient, setRecipient] = useState("");
-  const [amount, setAmount] = useState("");
-  const [inputError, setInputError] = useState<string | null>(null);
-
-  const { lensAccountAddress } = useLensAccount();
-  const { address: ownerAddress, chainId } = useAccount();
-  const { data: hash, error: writeError, isPending: isWritePending, writeContract, reset } = useWriteContract();
-
-  const {
-    isLoading: isConfirming,
-    isSuccess: isConfirmed,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({
-    hash,
-    chainId: LENS_CHAIN_ID,
-  });
-
-  const isLoading = isWritePending || isConfirming;
-  const txError = writeError || receiptError;
-
-  // Reset form when modal opens or closes
-  useEffect(() => {
-    if (isOpen) {
-      setRecipient("");
-      setAmount("");
-      setInputError(null);
-      reset(); // Reset wagmi state
-    }
-  }, [isOpen, reset]);
-
-  // Validate and prepare transaction
-  const handleSend = () => {
-    setInputError(null);
-
-    // Basic input validation
-    if (!isAddress(recipient)) {
-      setInputError("Invalid recipient address");
-      return;
-    }
-    if (!amount || parseFloat(amount) <= 0) {
-      setInputError("Invalid amount");
-      return;
-    }
-    if (!lensAccountAddress || !ownerAddress) {
-      setInputError("Wallet not connected");
-      return;
-    }
-    if (chainId !== LENS_CHAIN_ID) {
-      setInputError(`Please switch to Lens Chain (ID: ${LENS_CHAIN_ID})`);
-      return;
-    }
-
-    try {
-      const amountBigInt = parseUnits(amount, decimals);
-
-      // Optional balance validation
-      if (balance !== undefined && amountBigInt > balance) {
-        setInputError("Insufficient balance");
-        return;
-      }
-
-      let targetAddress: Address;
-      let txValue: bigint;
-      let txData: Hash;
-
-      if (tokenAddress) {
-        // ERC20 token transfer
-        targetAddress = tokenAddress;
-        txValue = 0n;
-        txData = encodeFunctionData({
-          abi: ERC20_ABI,
-          functionName: "transfer",
-          args: [recipient as Address, amountBigInt],
-        });
-      } else {
-        // Native GHO transfer
-        targetAddress = recipient as Address;
-        txValue = amountBigInt;
-        txData = "0x";
-      }
-
-      console.log("Sending via executeTransaction:", {
-        target: targetAddress,
-        value: txValue.toString(),
-        data: txData,
-        type: tokenAddress ? "ERC20" : "Native",
-      });
-
-      writeContract({
-        address: lensAccountAddress,
-        abi: LENS_ACCOUNT_ABI,
-        functionName: "executeTransaction",
-        args: [targetAddress, txValue, txData],
-        account: ownerAddress,
-        chainId: LENS_CHAIN_ID,
-      });
-    } catch (e) {
-      console.error("Transaction preparation failed:", e);
-      setInputError("Failed to prepare transaction");
-    }
-  };
-
-  // Form content without the button
-  const modalContent = (
-    <>
-      {/* Recipient Input */}
-      <div>
-        <label htmlFor="recipient" className="block text-sm font-medium text-gray-700 mb-1.5">
-          Recipient Address
-        </label>
-        <input
-          id="recipient"
-          type="text"
-          value={recipient}
-          onChange={(e) => setRecipient(e.target.value.trim())}
-          placeholder="0x..."
-          disabled={isLoading}
-          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
-        />
-      </div>
-
-      {/* Amount Input */}
-      <div>
-        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1.5">
-          Amount ({tokenSymbol})
-        </label>
-        <input
-          id="amount"
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="0.0"
-          min="0"
-          step="any"
-          disabled={isLoading}
-          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
-        />
-        {balance !== undefined && (
-          <p className="text-xs text-gray-500 mt-1">
-            Available: {formatUnits(balance, decimals)} {tokenSymbol}
-          </p>
-        )}
-      </div>
-
-      {/* Error Display */}
-      {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
-    </>
-  );
-
-  // The action button
-  const modalActions = (
-    <button
-      onClick={handleSend}
-      disabled={isLoading || isConfirmed || !recipient || !amount}
-      className="w-full px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-    >
-      {isLoading ? "Sending..." : isConfirmed ? "Sent!" : `Send ${tokenSymbol}`}
-    </button>
-  );
-
-  return (
-    <BaseTxModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Send ${tokenSymbol}`}
-      isLoading={isLoading}
-      isSuccess={isConfirmed}
-      error={txError}
-      txHash={hash}
-      disableClose={isLoading} // Prevent closing during transaction
-      content={modalContent}
-      actions={modalActions}
-    />
-  );
-}
-</file>
-
 <file path="src/contexts/LensAccountContext.tsx">
 // contexts/LensAccountContext.tsx
 "use client";
@@ -1786,6 +1589,237 @@ export default function RootLayout({
         <Providers /*initialState={initialState}*/>{children}</Providers>
       </body>
     </html>
+  );
+}
+</file>
+
+<file path="src/components/modals/SendModal.tsx">
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { isAddress, parseUnits, formatUnits, encodeFunctionData, type Address, type Hash } from "viem";
+import { BaseTxModal } from "./BaseTxModal";
+import { useLensAccount } from "@/contexts/LensAccountContext";
+import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, ERC20_ABI } from "@/lib/constants";
+
+interface SendModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  tokenSymbol: string;
+  tokenAddress?: Address; // Undefined for native GHO
+  decimals: number;
+  balance?: bigint; // Optional: for validation against available balance
+}
+
+export function SendModal({ isOpen, onClose, tokenSymbol, tokenAddress, decimals, balance }: SendModalProps) {
+  const [recipient, setRecipient] = useState("");
+  const [amount, setAmount] = useState("");
+  const [inputError, setInputError] = useState<string | null>(null);
+
+  const { lensAccountAddress } = useLensAccount();
+  const { address: ownerAddress, chainId } = useAccount();
+  const { data: hash, error: writeError, isPending: isWritePending, writeContract, reset } = useWriteContract();
+
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({
+    hash,
+    chainId: LENS_CHAIN_ID,
+  });
+
+  const isLoading = isWritePending || isConfirming;
+  const txError = writeError || receiptError;
+
+  // Reset form when modal opens or closes
+  useEffect(() => {
+    if (isOpen) {
+      setRecipient("");
+      setAmount("");
+      setInputError(null);
+      reset(); // Reset wagmi state
+    }
+  }, [isOpen, reset]);
+
+  // Validate and prepare transaction
+  const handleSend = () => {
+    setInputError(null);
+
+    // Basic input validation
+    if (!isAddress(recipient)) {
+      setInputError("Invalid recipient address");
+      return;
+    }
+    if (!amount || parseFloat(amount) <= 0) {
+      setInputError("Invalid amount");
+      return;
+    }
+    if (!lensAccountAddress || !ownerAddress) {
+      setInputError("Wallet not connected");
+      return;
+    }
+    if (chainId !== LENS_CHAIN_ID) {
+      setInputError(`Please switch to Lens Chain (ID: ${LENS_CHAIN_ID})`);
+      return;
+    }
+
+    try {
+      const amountBigInt = parseUnits(amount, decimals);
+
+      // Optional balance validation
+      if (balance !== undefined && amountBigInt > balance) {
+        setInputError("Insufficient balance");
+        return;
+      }
+
+      let targetAddress: Address;
+      let txValue: bigint;
+      let txData: Hash;
+
+      if (tokenAddress) {
+        // ERC20 token transfer
+        targetAddress = tokenAddress;
+        txValue = 0n;
+        txData = encodeFunctionData({
+          abi: ERC20_ABI,
+          functionName: "transfer",
+          args: [recipient as Address, amountBigInt],
+        });
+      } else {
+        // Native GHO transfer
+        targetAddress = recipient as Address;
+        txValue = amountBigInt;
+        txData = "0x";
+      }
+
+      console.log("Sending via executeTransaction:", {
+        target: targetAddress,
+        value: txValue.toString(),
+        data: txData,
+        type: tokenAddress ? "ERC20" : "Native",
+      });
+
+      writeContract({
+        address: lensAccountAddress,
+        abi: LENS_ACCOUNT_ABI,
+        functionName: "executeTransaction",
+        args: [targetAddress, txValue, txData],
+        account: ownerAddress,
+        chainId: LENS_CHAIN_ID,
+      });
+    } catch (e) {
+      console.error("Transaction preparation failed:", e);
+      setInputError("Failed to prepare transaction");
+    }
+  };
+
+  // Form content without the button
+  const modalContent = (
+    <>
+      {/* Recipient Input */}
+      <div>
+        <label htmlFor="recipient" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Recipient Address
+        </label>
+        <input
+          id="recipient"
+          type="text"
+          value={recipient}
+          onChange={(e) => setRecipient(e.target.value.trim())}
+          placeholder="0x..."
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+      </div>
+
+      {/* Amount Input */}
+      <div>
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Amount ({tokenSymbol})
+        </label>
+        <input
+          id="amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0.0"
+          min="0"
+          step="any"
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+        {balance !== undefined && (
+          <p className="text-xs text-gray-500 mt-1">
+            Available: {formatUnits(balance, decimals)} {tokenSymbol}
+          </p>
+        )}
+      </div>
+
+      {/* Error Display */}
+      {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
+    </>
+  );
+
+  // The action button
+  const modalActions = (
+    <button
+      onClick={handleSend}
+      disabled={isLoading || isConfirmed || !recipient || !amount}
+      className="w-full px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {isLoading ? "Sending..." : isConfirmed ? "Sent!" : `Send ${tokenSymbol}`}
+    </button>
+  );
+
+  return (
+    <BaseTxModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Send ${tokenSymbol}`}
+      isLoading={isLoading}
+      isSuccess={isConfirmed}
+      error={txError}
+      txHash={hash}
+      disableClose={isLoading} // Prevent closing during transaction
+      content={modalContent}
+      actions={modalActions}
+    />
+  );
+}
+</file>
+
+<file path="src/app/providers.tsx">
+// src/app/providers.tsx
+"use client";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider } from "wagmi";
+import { ConnectKitProvider } from "connectkit";
+import { config } from "@/lib/wagmi";
+import React, { useState } from "react";
+import { LensAccountProvider } from "@/contexts/LensAccountContext";
+
+type Props = {
+  children: React.ReactNode;
+};
+
+export function Providers({ children }: Props) {
+  const [queryClient] = useState(() => new QueryClient());
+
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <ConnectKitProvider>
+          {/* Wrap with LensAccountProvider */}
+          <LensAccountProvider>
+            {/* Wrap with WalletConnectProvider */}
+            {children}
+          </LensAccountProvider>
+        </ConnectKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
 </file>
@@ -2444,40 +2478,6 @@ export function WrapModal({ isOpen, onClose, balance }: WrapModalProps) {
       content={modalContent}
       actions={modalActions}
     />
-  );
-}
-</file>
-
-<file path="src/app/providers.tsx">
-// src/app/providers.tsx
-"use client";
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider } from "wagmi";
-import { ConnectKitProvider } from "connectkit";
-import { config } from "@/lib/wagmi";
-import React, { useState } from "react";
-import { LensAccountProvider } from "@/contexts/LensAccountContext";
-
-type Props = {
-  children: React.ReactNode;
-};
-
-export function Providers({ children }: Props) {
-  const [queryClient] = useState(() => new QueryClient());
-
-  return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <ConnectKitProvider>
-          {/* Wrap with LensAccountProvider */}
-          <LensAccountProvider>
-            {/* Wrap with WalletConnectProvider */}
-            {children}
-          </LensAccountProvider>
-        </ConnectKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
   );
 }
 </file>
@@ -5211,6 +5211,7 @@ import { LOCAL_STORAGE_KEYS } from "@/lib/constants";
 import { AccountIdentityPanel } from "@/components/dashboard/AccountIdentityPanel";
 import { OwnerPanel } from "@/components/dashboard/OwnerPanel";
 import { ArrowRightStartOnRectangleIcon } from "@heroicons/react/24/outline"; // For logout icon
+import { useWalletConnect } from "@/contexts/WalletConnectProvider";
 
 export default function Dashboard() {
   const { lensAccountAddress, ownerAddress, clearAccount } = useLensAccount();
@@ -5218,6 +5219,9 @@ export default function Dashboard() {
   const { disconnect: disconnectOwnerWallet } = useDisconnect();
   const router = useRouter();
   const [lensUsername, setLensUsername] = useState<string | null>(null);
+  const { activeSessions } = useWalletConnect();
+
+  const hasActiveSessions = Object.keys(activeSessions).length > 0;
 
   useEffect(() => {
     try {
@@ -5295,12 +5299,12 @@ export default function Dashboard() {
           <WcConnect />
         </div>
 
-        {/* Panel 5: WalletConnect Requests */}
-        <div className="col-span-1 md:col-span-2 bg-white p-0 rounded-xl shadow-md overflow-hidden">
-          {" "}
-          {/* Use padding within component */}
-          <WcRequestDisplay />
-        </div>
+        {/* Panel 5: WalletConnect Requests - Only show when sessions exist */}
+        {hasActiveSessions && (
+          <div className="col-span-1 md:col-span-2 bg-white p-0 rounded-xl shadow-md overflow-hidden">
+            <WcRequestDisplay />
+          </div>
+        )}
       </div>
 
       {/* Footer with FKNG SOCIAL and GitHub links */}

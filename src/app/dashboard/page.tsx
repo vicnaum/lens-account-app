@@ -12,6 +12,7 @@ import { LOCAL_STORAGE_KEYS } from "@/lib/constants";
 import { AccountIdentityPanel } from "@/components/dashboard/AccountIdentityPanel";
 import { OwnerPanel } from "@/components/dashboard/OwnerPanel";
 import { ArrowRightStartOnRectangleIcon } from "@heroicons/react/24/outline"; // For logout icon
+import { useWalletConnect } from "@/contexts/WalletConnectProvider";
 
 export default function Dashboard() {
   const { lensAccountAddress, ownerAddress, clearAccount } = useLensAccount();
@@ -19,6 +20,9 @@ export default function Dashboard() {
   const { disconnect: disconnectOwnerWallet } = useDisconnect();
   const router = useRouter();
   const [lensUsername, setLensUsername] = useState<string | null>(null);
+  const { activeSessions } = useWalletConnect();
+
+  const hasActiveSessions = Object.keys(activeSessions).length > 0;
 
   useEffect(() => {
     try {
@@ -96,12 +100,12 @@ export default function Dashboard() {
           <WcConnect />
         </div>
 
-        {/* Panel 5: WalletConnect Requests */}
-        <div className="col-span-1 md:col-span-2 bg-white p-0 rounded-xl shadow-md overflow-hidden">
-          {" "}
-          {/* Use padding within component */}
-          <WcRequestDisplay />
-        </div>
+        {/* Panel 5: WalletConnect Requests - Only show when sessions exist */}
+        {hasActiveSessions && (
+          <div className="col-span-1 md:col-span-2 bg-white p-0 rounded-xl shadow-md overflow-hidden">
+            <WcRequestDisplay />
+          </div>
+        )}
       </div>
 
       {/* Footer with FKNG SOCIAL and GitHub links */}
