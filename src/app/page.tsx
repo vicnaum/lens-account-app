@@ -260,6 +260,19 @@ export default function Home() {
       </div>
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+        {/* GitHub contribution link */}
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-xs font-medium text-gray-500">Contribute:</span>
+          <a
+            href="https://github.com/vicnaum/lens-account-app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors"
+          >
+            GitHub
+          </a>
+        </div>
+
         <a href="https://fkng.social" target="_blank" rel="noopener noreferrer" className="block text-gray-500 hover:text-gray-600 transition-colors">
           <img src="/FKNG.SOCIAL.svg" alt="FKNG.SOCIAL" className="h-5 w-auto" />
         </a>
