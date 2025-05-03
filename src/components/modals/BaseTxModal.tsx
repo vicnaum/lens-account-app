@@ -8,7 +8,9 @@ interface BaseTxModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  children: ReactNode; // Content specific to the modal type
+  children?: ReactNode; // For backward compatibility
+  content?: ReactNode; // Form content
+  actions?: ReactNode; // Action buttons
   isLoading: boolean;
   isSuccess: boolean;
   error: Error | null;
@@ -16,7 +18,19 @@ interface BaseTxModalProps {
   disableClose?: boolean; // Optional: prevent closing during transaction
 }
 
-export function BaseTxModal({ isOpen, onClose, title, children, isLoading, isSuccess, error, txHash, disableClose = false }: BaseTxModalProps) {
+export function BaseTxModal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  content,
+  actions,
+  isLoading,
+  isSuccess,
+  error,
+  txHash,
+  disableClose = false,
+}: BaseTxModalProps) {
   const [countdown, setCountdown] = useState(5);
 
   // Auto-close after success
@@ -55,22 +69,22 @@ export function BaseTxModal({ isOpen, onClose, title, children, isLoading, isSuc
   let statusMessage = null;
   if (isLoading) {
     statusMessage = (
-      <div className="flex items-center justify-center text-emerald-600 text-sm mt-3 p-2 bg-emerald-50 rounded">
-        <ArrowPathIcon className="w-4 h-4 mr-1 animate-spin" />
+      <div className="flex items-center justify-center text-emerald-700 text-sm p-3 bg-emerald-50 rounded-lg">
+        <ArrowPathIcon className="w-4 h-4 mr-1.5 animate-spin" />
         Processing transaction... Check your wallet.
       </div>
     );
   } else if (isSuccess) {
     statusMessage = (
-      <div className="flex items-center justify-center text-emerald-600 text-sm mt-3 p-2 bg-emerald-50 rounded">
-        <CheckCircleIcon className="w-4 h-4 mr-1" />
+      <div className="flex items-center justify-center text-emerald-700 text-sm p-3 bg-emerald-50 rounded-lg">
+        <CheckCircleIcon className="w-5 h-5 mr-1.5" />
         Transaction successful!
         {txHash && (
           <a
             href={`https://explorer.lens.xyz/tx/${txHash}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-1 underline hover:text-emerald-800"
+            className="ml-1.5 underline hover:text-emerald-800 font-medium"
           >
             View on Explorer
           </a>
@@ -80,32 +94,39 @@ export function BaseTxModal({ isOpen, onClose, title, children, isLoading, isSuc
     );
   } else if (error) {
     statusMessage = (
-      <div className="flex items-center justify-center text-red-600 text-sm mt-3 p-2 bg-red-50 rounded">
+      <div className="flex items-center justify-center text-red-700 text-sm p-3 bg-red-50 rounded-lg">
         <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
         Error: {error.message?.split("(")?.[0]?.trim() || "Unknown error"} {/* Show concise error with fallback */}
       </div>
     );
   }
 
+  // Determine what to render in the content area
+  const contentToRender = content || children;
+  const actionsToRender = actions; // Actions from props or null
+
   return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-black/50 flex items-center justify-center z-50" onClick={handleClose}>
-      <div className="bg-white p-6 rounded-lg shadow-xl relative max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 backdrop-blur-md bg-black/60 flex items-center justify-center z-50 p-4" onClick={handleClose}>
+      <div className="bg-white p-8 rounded-2xl shadow-2xl relative max-w-xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={handleClose}
           disabled={disableClose || isLoading}
-          className={`absolute top-3 right-3 ${disableClose || isLoading ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:text-gray-600"}`}
+          className={`absolute top-4 right-4 p-1 rounded-full ${disableClose || isLoading ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:bg-gray-100 hover:text-gray-700"} transition-colors`}
           aria-label="Close modal"
         >
           <XMarkIcon className="w-6 h-6" />
         </button>
 
-        <h3 className="text-xl font-semibold mb-4 text-gray-800 pr-8">{title}</h3>
+        <h3 className="text-2xl font-semibold mb-6 text-gray-800 pr-8">{title}</h3>
 
-        {/* Modal specific content */}
-        <div className="space-y-4">{children}</div>
+        {/* Modal Form Content */}
+        <div className="space-y-5 mb-5">{contentToRender}</div>
 
         {/* Status Message Area */}
-        <div className="min-h-[40px] mt-4">{statusMessage}</div>
+        <div className="mb-5">{statusMessage}</div>
+
+        {/* Action Buttons */}
+        {actionsToRender && <div>{actionsToRender}</div>}
       </div>
     </div>
   );

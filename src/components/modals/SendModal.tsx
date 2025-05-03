@@ -119,6 +119,64 @@ export function SendModal({ isOpen, onClose, tokenSymbol, tokenAddress, decimals
     }
   };
 
+  // Form content without the button
+  const modalContent = (
+    <>
+      {/* Recipient Input */}
+      <div>
+        <label htmlFor="recipient" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Recipient Address
+        </label>
+        <input
+          id="recipient"
+          type="text"
+          value={recipient}
+          onChange={(e) => setRecipient(e.target.value.trim())}
+          placeholder="0x..."
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+      </div>
+
+      {/* Amount Input */}
+      <div>
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Amount ({tokenSymbol})
+        </label>
+        <input
+          id="amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0.0"
+          min="0"
+          step="any"
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+        {balance !== undefined && (
+          <p className="text-xs text-gray-500 mt-1">
+            Available: {formatUnits(balance, decimals)} {tokenSymbol}
+          </p>
+        )}
+      </div>
+
+      {/* Error Display */}
+      {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
+    </>
+  );
+
+  // The action button
+  const modalActions = (
+    <button
+      onClick={handleSend}
+      disabled={isLoading || isConfirmed || !recipient || !amount}
+      className="w-full px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {isLoading ? "Sending..." : isConfirmed ? "Sent!" : `Send ${tokenSymbol}`}
+    </button>
+  );
+
   return (
     <BaseTxModal
       isOpen={isOpen}
@@ -129,59 +187,8 @@ export function SendModal({ isOpen, onClose, tokenSymbol, tokenAddress, decimals
       error={txError}
       txHash={hash}
       disableClose={isLoading} // Prevent closing during transaction
-    >
-      <div className="space-y-4">
-        {/* Recipient Input */}
-        <div>
-          <label htmlFor="recipient" className="block text-sm font-medium text-gray-700 mb-1">
-            Recipient Address
-          </label>
-          <input
-            id="recipient"
-            type="text"
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value.trim())}
-            placeholder="0x..."
-            disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
-          />
-        </div>
-
-        {/* Amount Input */}
-        <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-            Amount ({tokenSymbol})
-          </label>
-          <input
-            id="amount"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.0"
-            min="0"
-            step="any"
-            disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
-          />
-          {balance !== undefined && (
-            <p className="text-xs text-gray-500 mt-1">
-              Available: {formatUnits(balance, decimals)} {tokenSymbol}
-            </p>
-          )}
-        </div>
-
-        {/* Error Display */}
-        {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
-
-        {/* Send Button */}
-        <button
-          onClick={handleSend}
-          disabled={isLoading || isConfirmed || !recipient || !amount}
-          className="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Sending..." : isConfirmed ? "Sent!" : `Send ${tokenSymbol}`}
-        </button>
-      </div>
-    </BaseTxModal>
+      content={modalContent}
+      actions={modalActions}
+    />
   );
 }

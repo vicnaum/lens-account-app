@@ -94,6 +94,54 @@ export function WrapModal({ isOpen, onClose, balance }: WrapModalProps) {
     }
   };
 
+  // Form content without the button
+  const modalContent = (
+    <>
+      {/* Amount Input */}
+      <div>
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Amount ({lensChain.nativeCurrency.symbol})
+        </label>
+        <input
+          id="amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0.0"
+          min="0"
+          step="any"
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+        {balance !== undefined && (
+          <p className="text-xs text-gray-500 mt-1">
+            Available: {formatUnits(balance, lensChain.nativeCurrency.decimals)} {lensChain.nativeCurrency.symbol}
+          </p>
+        )}
+      </div>
+
+      {/* Information Box */}
+      <div className="text-sm text-gray-700 bg-slate-50 p-4 rounded-lg border border-slate-200">
+        Wrapping converts your native {lensChain.nativeCurrency.symbol} into WGHO (Wrapped {lensChain.nativeCurrency.symbol}), an ERC20 token that can
+        be used in DeFi applications. You can unwrap back to native {lensChain.nativeCurrency.symbol} at any time.
+      </div>
+
+      {/* Error Display */}
+      {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
+    </>
+  );
+
+  // The action button
+  const modalActions = (
+    <button
+      onClick={handleWrap}
+      disabled={isLoading || isConfirmed || !amount}
+      className="w-full px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {isLoading ? "Wrapping..." : isConfirmed ? "Wrapped!" : `Wrap ${lensChain.nativeCurrency.symbol}`}
+    </button>
+  );
+
   return (
     <BaseTxModal
       isOpen={isOpen}
@@ -104,49 +152,8 @@ export function WrapModal({ isOpen, onClose, balance }: WrapModalProps) {
       error={txError}
       txHash={hash}
       disableClose={isLoading}
-    >
-      <div className="space-y-4">
-        {/* Amount Input */}
-        <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-            Amount ({lensChain.nativeCurrency.symbol})
-          </label>
-          <input
-            id="amount"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.0"
-            min="0"
-            step="any"
-            disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
-          />
-          {balance !== undefined && (
-            <p className="text-xs text-gray-500 mt-1">
-              Available: {formatUnits(balance, lensChain.nativeCurrency.decimals)} {lensChain.nativeCurrency.symbol}
-            </p>
-          )}
-        </div>
-
-        {/* Information Box */}
-        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
-          Wrapping converts your native {lensChain.nativeCurrency.symbol} into WGHO (Wrapped {lensChain.nativeCurrency.symbol}), an ERC20 token that
-          can be used in DeFi applications. You can unwrap back to native {lensChain.nativeCurrency.symbol} at any time.
-        </div>
-
-        {/* Error Display */}
-        {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
-
-        {/* Wrap Button */}
-        <button
-          onClick={handleWrap}
-          disabled={isLoading || isConfirmed || !amount}
-          className="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Wrapping..." : isConfirmed ? "Wrapped!" : `Wrap ${lensChain.nativeCurrency.symbol}`}
-        </button>
-      </div>
-    </BaseTxModal>
+      content={modalContent}
+      actions={modalActions}
+    />
   );
 }

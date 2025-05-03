@@ -664,196 +664,6 @@ module.exports = nextConfig;
 </files>
 </file>
 
-<file path="src/components/modals/SendModal.tsx">
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { isAddress, parseUnits, formatUnits, encodeFunctionData, type Address, type Hash } from "viem";
-import { BaseTxModal } from "./BaseTxModal";
-import { useLensAccount } from "@/contexts/LensAccountContext";
-import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, ERC20_ABI } from "@/lib/constants";
-
-interface SendModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  tokenSymbol: string;
-  tokenAddress?: Address; // Undefined for native GHO
-  decimals: number;
-  balance?: bigint; // Optional: for validation against available balance
-}
-
-export function SendModal({ isOpen, onClose, tokenSymbol, tokenAddress, decimals, balance }: SendModalProps) {
-  const [recipient, setRecipient] = useState("");
-  const [amount, setAmount] = useState("");
-  const [inputError, setInputError] = useState<string | null>(null);
-
-  const { lensAccountAddress } = useLensAccount();
-  const { address: ownerAddress, chainId } = useAccount();
-  const { data: hash, error: writeError, isPending: isWritePending, writeContract, reset } = useWriteContract();
-
-  const {
-    isLoading: isConfirming,
-    isSuccess: isConfirmed,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({
-    hash,
-    chainId: LENS_CHAIN_ID,
-  });
-
-  const isLoading = isWritePending || isConfirming;
-  const txError = writeError || receiptError;
-
-  // Reset form when modal opens or closes
-  useEffect(() => {
-    if (isOpen) {
-      setRecipient("");
-      setAmount("");
-      setInputError(null);
-      reset(); // Reset wagmi state
-    }
-  }, [isOpen, reset]);
-
-  // Validate and prepare transaction
-  const handleSend = () => {
-    setInputError(null);
-
-    // Basic input validation
-    if (!isAddress(recipient)) {
-      setInputError("Invalid recipient address");
-      return;
-    }
-    if (!amount || parseFloat(amount) <= 0) {
-      setInputError("Invalid amount");
-      return;
-    }
-    if (!lensAccountAddress || !ownerAddress) {
-      setInputError("Wallet not connected");
-      return;
-    }
-    if (chainId !== LENS_CHAIN_ID) {
-      setInputError(`Please switch to Lens Chain (ID: ${LENS_CHAIN_ID})`);
-      return;
-    }
-
-    try {
-      const amountBigInt = parseUnits(amount, decimals);
-
-      // Optional balance validation
-      if (balance !== undefined && amountBigInt > balance) {
-        setInputError("Insufficient balance");
-        return;
-      }
-
-      let targetAddress: Address;
-      let txValue: bigint;
-      let txData: Hash;
-
-      if (tokenAddress) {
-        // ERC20 token transfer
-        targetAddress = tokenAddress;
-        txValue = 0n;
-        txData = encodeFunctionData({
-          abi: ERC20_ABI,
-          functionName: "transfer",
-          args: [recipient as Address, amountBigInt],
-        });
-      } else {
-        // Native GHO transfer
-        targetAddress = recipient as Address;
-        txValue = amountBigInt;
-        txData = "0x";
-      }
-
-      console.log("Sending via executeTransaction:", {
-        target: targetAddress,
-        value: txValue.toString(),
-        data: txData,
-        type: tokenAddress ? "ERC20" : "Native",
-      });
-
-      writeContract({
-        address: lensAccountAddress,
-        abi: LENS_ACCOUNT_ABI,
-        functionName: "executeTransaction",
-        args: [targetAddress, txValue, txData],
-        account: ownerAddress,
-        chainId: LENS_CHAIN_ID,
-      });
-    } catch (e) {
-      console.error("Transaction preparation failed:", e);
-      setInputError("Failed to prepare transaction");
-    }
-  };
-
-  return (
-    <BaseTxModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Send ${tokenSymbol}`}
-      isLoading={isLoading}
-      isSuccess={isConfirmed}
-      error={txError}
-      txHash={hash}
-      disableClose={isLoading} // Prevent closing during transaction
-    >
-      <div className="space-y-4">
-        {/* Recipient Input */}
-        <div>
-          <label htmlFor="recipient" className="block text-sm font-medium text-gray-700 mb-1">
-            Recipient Address
-          </label>
-          <input
-            id="recipient"
-            type="text"
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value.trim())}
-            placeholder="0x..."
-            disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
-          />
-        </div>
-
-        {/* Amount Input */}
-        <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-            Amount ({tokenSymbol})
-          </label>
-          <input
-            id="amount"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.0"
-            min="0"
-            step="any"
-            disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
-          />
-          {balance !== undefined && (
-            <p className="text-xs text-gray-500 mt-1">
-              Available: {formatUnits(balance, decimals)} {tokenSymbol}
-            </p>
-          )}
-        </div>
-
-        {/* Error Display */}
-        {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
-
-        {/* Send Button */}
-        <button
-          onClick={handleSend}
-          disabled={isLoading || isConfirmed || !recipient || !amount}
-          className="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Sending..." : isConfirmed ? "Sent!" : `Send ${tokenSymbol}`}
-        </button>
-      </div>
-    </BaseTxModal>
-  );
-}
-</file>
-
 <file path="src/components/ConnectOwnerButton.tsx">
 // components/ConnectOwnerButton.tsx
 "use client";
@@ -1300,313 +1110,6 @@ This specification is intended for developers, QA testers, and product managers 
 - **Block Explorer URL:** https://explorer.lens.xyz
 </file>
 
-<file path="src/components/modals/ApproveModal.tsx">
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { isAddress, parseUnits, encodeFunctionData, type Address, maxUint256 } from "viem";
-import { BaseTxModal } from "./BaseTxModal";
-import { useLensAccount } from "@/contexts/LensAccountContext";
-import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, ERC20_ABI } from "@/lib/constants";
-
-interface ApproveModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  tokenSymbol: string;
-  tokenAddress: Address;
-  decimals: number;
-}
-
-export function ApproveModal({ isOpen, onClose, tokenSymbol, tokenAddress, decimals }: ApproveModalProps) {
-  const [spender, setSpender] = useState("");
-  const [amount, setAmount] = useState("");
-  const [isInfinite, setIsInfinite] = useState(false);
-  const [inputError, setInputError] = useState<string | null>(null);
-
-  const { lensAccountAddress } = useLensAccount();
-  const { address: ownerAddress, chainId } = useAccount();
-  const { data: hash, error: writeError, isPending: isWritePending, writeContract, reset } = useWriteContract();
-
-  const {
-    isLoading: isConfirming,
-    isSuccess: isConfirmed,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({
-    hash,
-    chainId: LENS_CHAIN_ID,
-  });
-
-  const isLoading = isWritePending || isConfirming;
-  const txError = writeError || receiptError;
-
-  // Reset form when modal opens/closes
-  useEffect(() => {
-    if (isOpen) {
-      setSpender("");
-      setAmount("");
-      setIsInfinite(false);
-      setInputError(null);
-      reset();
-    }
-  }, [isOpen, reset]);
-
-  const handleApprove = () => {
-    setInputError(null);
-
-    // Input validation
-    if (!isAddress(spender)) {
-      setInputError("Invalid spender address");
-      return;
-    }
-    if (!isInfinite && (!amount || parseFloat(amount) <= 0)) {
-      setInputError("Please enter a valid amount or use infinite approval");
-      return;
-    }
-    if (!lensAccountAddress || !ownerAddress) {
-      setInputError("Wallet not connected");
-      return;
-    }
-    if (chainId !== LENS_CHAIN_ID) {
-      setInputError(`Please switch to Lens Chain (ID: ${LENS_CHAIN_ID})`);
-      return;
-    }
-
-    try {
-      const amountBigInt = isInfinite ? maxUint256 : parseUnits(amount, decimals);
-
-      const txData = encodeFunctionData({
-        abi: ERC20_ABI,
-        functionName: "approve",
-        args: [spender as Address, amountBigInt],
-      });
-
-      console.log("Preparing approval via executeTransaction:", {
-        token: tokenAddress,
-        spender,
-        amount: isInfinite ? "MAX_UINT256" : amount,
-        txData,
-      });
-
-      writeContract({
-        address: lensAccountAddress,
-        abi: LENS_ACCOUNT_ABI,
-        functionName: "executeTransaction",
-        args: [tokenAddress, 0n, txData],
-        account: ownerAddress,
-        chainId: LENS_CHAIN_ID,
-      });
-    } catch (e) {
-      console.error("Transaction preparation failed:", e);
-      setInputError("Failed to prepare transaction");
-    }
-  };
-
-  return (
-    <BaseTxModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Approve ${tokenSymbol} Spending`}
-      isLoading={isLoading}
-      isSuccess={isConfirmed}
-      error={txError}
-      txHash={hash}
-      disableClose={isLoading}
-    >
-      <div className="space-y-4">
-        {/* Spender Input */}
-        <div>
-          <label htmlFor="spender" className="block text-sm font-medium text-gray-700 mb-1">
-            Spender Address
-          </label>
-          <input
-            id="spender"
-            type="text"
-            value={spender}
-            onChange={(e) => setSpender(e.target.value.trim())}
-            placeholder="0x..."
-            disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
-          />
-          <p className="mt-1 text-xs text-gray-500">The address that will be allowed to spend your {tokenSymbol}</p>
-        </div>
-
-        {/* Amount Input */}
-        <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-            Amount ({tokenSymbol})
-          </label>
-          <input
-            id="amount"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.0"
-            min="0"
-            step="any"
-            disabled={isLoading || isInfinite}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
-          />
-
-          {/* Infinite Approval Toggle */}
-          <div className="mt-2 flex items-center">
-            <input
-              id="infinite"
-              type="checkbox"
-              checked={isInfinite}
-              onChange={(e) => {
-                setIsInfinite(e.target.checked);
-                if (e.target.checked) setAmount("");
-              }}
-              disabled={isLoading}
-              className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
-            />
-            <label htmlFor="infinite" className="ml-2 text-sm text-gray-700">
-              Infinite Approval
-            </label>
-            <span className="ml-1 text-xs text-gray-500">(Maximum possible amount)</span>
-          </div>
-        </div>
-
-        {/* Warning for Infinite Approval */}
-        {isInfinite && (
-          <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
-            ⚠️ Infinite approval grants unlimited spending permission to the spender address. Only use this with trusted contracts and platforms.
-          </div>
-        )}
-
-        {/* Error Display */}
-        {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
-
-        {/* Approve Button */}
-        <button
-          onClick={handleApprove}
-          disabled={isLoading || isConfirmed || !spender || (!isInfinite && !amount)}
-          className="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Approving..." : isConfirmed ? "Approved!" : `Approve ${tokenSymbol}`}
-        </button>
-      </div>
-    </BaseTxModal>
-  );
-}
-</file>
-
-<file path="src/components/modals/BaseTxModal.tsx">
-"use client";
-
-import React, { ReactNode, useEffect, useState } from "react";
-import { XMarkIcon, ExclamationTriangleIcon, CheckCircleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
-import { type Hash } from "viem";
-
-interface BaseTxModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  children: ReactNode; // Content specific to the modal type
-  isLoading: boolean;
-  isSuccess: boolean;
-  error: Error | null;
-  txHash?: Hash | null; // Optional transaction hash
-  disableClose?: boolean; // Optional: prevent closing during transaction
-}
-
-export function BaseTxModal({ isOpen, onClose, title, children, isLoading, isSuccess, error, txHash, disableClose = false }: BaseTxModalProps) {
-  const [countdown, setCountdown] = useState(5);
-
-  // Auto-close after success
-  useEffect(() => {
-    if (isSuccess) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, 5000); // 5 seconds
-      return () => clearTimeout(timer);
-    }
-  }, [isSuccess, onClose]);
-
-  // Countdown effect
-  useEffect(() => {
-    if (isSuccess && countdown > 0) {
-      const interval = setInterval(() => {
-        setCountdown((prev) => prev - 1);
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [isSuccess, countdown]);
-
-  // Reset countdown when modal opens/closes
-  useEffect(() => {
-    setCountdown(5);
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  const handleClose = () => {
-    if (!disableClose && !isLoading) {
-      onClose();
-    }
-  };
-
-  let statusMessage = null;
-  if (isLoading) {
-    statusMessage = (
-      <div className="flex items-center justify-center text-emerald-600 text-sm mt-3 p-2 bg-emerald-50 rounded">
-        <ArrowPathIcon className="w-4 h-4 mr-1 animate-spin" />
-        Processing transaction... Check your wallet.
-      </div>
-    );
-  } else if (isSuccess) {
-    statusMessage = (
-      <div className="flex items-center justify-center text-emerald-600 text-sm mt-3 p-2 bg-emerald-50 rounded">
-        <CheckCircleIcon className="w-4 h-4 mr-1" />
-        Transaction successful!
-        {txHash && (
-          <a
-            href={`https://explorer.lens.xyz/tx/${txHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ml-1 underline hover:text-emerald-800"
-          >
-            View on Explorer
-          </a>
-        )}
-        <span className="ml-2 text-gray-500">(Closing in {countdown}s)</span>
-      </div>
-    );
-  } else if (error) {
-    statusMessage = (
-      <div className="flex items-center justify-center text-red-600 text-sm mt-3 p-2 bg-red-50 rounded">
-        <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
-        Error: {error.message?.split("(")?.[0]?.trim() || "Unknown error"} {/* Show concise error with fallback */}
-      </div>
-    );
-  }
-
-  return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-black/50 flex items-center justify-center z-50" onClick={handleClose}>
-      <div className="bg-white p-6 rounded-lg shadow-xl relative max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()}>
-        <button
-          onClick={handleClose}
-          disabled={disableClose || isLoading}
-          className={`absolute top-3 right-3 ${disableClose || isLoading ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:text-gray-600"}`}
-          aria-label="Close modal"
-        >
-          <XMarkIcon className="w-6 h-6" />
-        </button>
-
-        <h3 className="text-xl font-semibold mb-4 text-gray-800 pr-8">{title}</h3>
-
-        {/* Modal specific content */}
-        <div className="space-y-4">{children}</div>
-
-        {/* Status Message Area */}
-        <div className="min-h-[40px] mt-4">{statusMessage}</div>
-      </div>
-    </div>
-  );
-}
-</file>
-
 <file path="src/components/modals/QrCodeModal.tsx">
 "use client";
 
@@ -1642,23 +1145,27 @@ export function QrCodeModal({ address, isOpen, onClose }: QrCodeModalProps) {
 }
 </file>
 
-<file path="src/components/modals/UnwrapModal.tsx">
+<file path="src/components/modals/SendModal.tsx">
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseUnits, formatUnits, encodeFunctionData, type Address } from "viem";
+import { isAddress, parseUnits, formatUnits, encodeFunctionData, type Address, type Hash } from "viem";
 import { BaseTxModal } from "./BaseTxModal";
 import { useLensAccount } from "@/contexts/LensAccountContext";
-import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, WGHO_TOKEN_ADDRESS, WGHO_ABI, lensChain } from "@/lib/constants";
+import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, ERC20_ABI } from "@/lib/constants";
 
-interface UnwrapModalProps {
+interface SendModalProps {
   isOpen: boolean;
   onClose: () => void;
-  balance?: bigint; // Optional: WGHO balance for validation
+  tokenSymbol: string;
+  tokenAddress?: Address; // Undefined for native GHO
+  decimals: number;
+  balance?: bigint; // Optional: for validation against available balance
 }
 
-export function UnwrapModal({ isOpen, onClose, balance }: UnwrapModalProps) {
+export function SendModal({ isOpen, onClose, tokenSymbol, tokenAddress, decimals, balance }: SendModalProps) {
+  const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [inputError, setInputError] = useState<string | null>(null);
 
@@ -1678,21 +1185,27 @@ export function UnwrapModal({ isOpen, onClose, balance }: UnwrapModalProps) {
   const isLoading = isWritePending || isConfirming;
   const txError = writeError || receiptError;
 
-  // Reset form when modal opens/closes
+  // Reset form when modal opens or closes
   useEffect(() => {
     if (isOpen) {
+      setRecipient("");
       setAmount("");
       setInputError(null);
-      reset();
+      reset(); // Reset wagmi state
     }
   }, [isOpen, reset]);
 
-  const handleUnwrap = () => {
+  // Validate and prepare transaction
+  const handleSend = () => {
     setInputError(null);
 
-    // Input validation
+    // Basic input validation
+    if (!isAddress(recipient)) {
+      setInputError("Invalid recipient address");
+      return;
+    }
     if (!amount || parseFloat(amount) <= 0) {
-      setInputError("Please enter a valid amount");
+      setInputError("Invalid amount");
       return;
     }
     if (!lensAccountAddress || !ownerAddress) {
@@ -1705,32 +1218,46 @@ export function UnwrapModal({ isOpen, onClose, balance }: UnwrapModalProps) {
     }
 
     try {
-      const amountBigInt = parseUnits(amount, lensChain.nativeCurrency.decimals);
+      const amountBigInt = parseUnits(amount, decimals);
 
       // Optional balance validation
       if (balance !== undefined && amountBigInt > balance) {
-        setInputError("Insufficient WGHO balance");
+        setInputError("Insufficient balance");
         return;
       }
 
-      const txData = encodeFunctionData({
-        abi: WGHO_ABI,
-        functionName: "withdraw",
-        args: [amountBigInt],
-      });
+      let targetAddress: Address;
+      let txValue: bigint;
+      let txData: Hash;
 
-      console.log("Preparing unwrap via executeTransaction:", {
-        target: WGHO_TOKEN_ADDRESS,
-        value: "0",
-        amount: amountBigInt.toString(),
+      if (tokenAddress) {
+        // ERC20 token transfer
+        targetAddress = tokenAddress;
+        txValue = 0n;
+        txData = encodeFunctionData({
+          abi: ERC20_ABI,
+          functionName: "transfer",
+          args: [recipient as Address, amountBigInt],
+        });
+      } else {
+        // Native GHO transfer
+        targetAddress = recipient as Address;
+        txValue = amountBigInt;
+        txData = "0x";
+      }
+
+      console.log("Sending via executeTransaction:", {
+        target: targetAddress,
+        value: txValue.toString(),
         data: txData,
+        type: tokenAddress ? "ERC20" : "Native",
       });
 
       writeContract({
         address: lensAccountAddress,
         abi: LENS_ACCOUNT_ABI,
         functionName: "executeTransaction",
-        args: [WGHO_TOKEN_ADDRESS as Address, 0n, txData],
+        args: [targetAddress, txValue, txData],
         account: ownerAddress,
         chainId: LENS_CHAIN_ID,
       });
@@ -1740,213 +1267,77 @@ export function UnwrapModal({ isOpen, onClose, balance }: UnwrapModalProps) {
     }
   };
 
-  return (
-    <BaseTxModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Unwrap WGHO to ${lensChain.nativeCurrency.symbol}`}
-      isLoading={isLoading}
-      isSuccess={isConfirmed}
-      error={txError}
-      txHash={hash}
-      disableClose={isLoading}
-    >
-      <div className="space-y-4">
-        {/* Amount Input */}
-        <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-            Amount (WGHO)
-          </label>
-          <input
-            id="amount"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.0"
-            min="0"
-            step="any"
-            disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
-          />
-          {balance !== undefined && (
-            <p className="text-xs text-gray-500 mt-1">Available: {formatUnits(balance, lensChain.nativeCurrency.decimals)} WGHO</p>
-          )}
-        </div>
-
-        {/* Information Box */}
-        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
-          Unwrapping converts your WGHO (Wrapped {lensChain.nativeCurrency.symbol}) back into native {lensChain.nativeCurrency.symbol}. This is useful
-          when you need to use the native token for gas fees or other native transactions.
-        </div>
-
-        {/* Error Display */}
-        {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
-
-        {/* Unwrap Button */}
-        <button
-          onClick={handleUnwrap}
-          disabled={isLoading || isConfirmed || !amount}
-          className="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Unwrapping..." : isConfirmed ? "Unwrapped!" : "Unwrap WGHO"}
-        </button>
+  // Form content without the button
+  const modalContent = (
+    <>
+      {/* Recipient Input */}
+      <div>
+        <label htmlFor="recipient" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Recipient Address
+        </label>
+        <input
+          id="recipient"
+          type="text"
+          value={recipient}
+          onChange={(e) => setRecipient(e.target.value.trim())}
+          placeholder="0x..."
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
       </div>
-    </BaseTxModal>
+
+      {/* Amount Input */}
+      <div>
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Amount ({tokenSymbol})
+        </label>
+        <input
+          id="amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0.0"
+          min="0"
+          step="any"
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+        {balance !== undefined && (
+          <p className="text-xs text-gray-500 mt-1">
+            Available: {formatUnits(balance, decimals)} {tokenSymbol}
+          </p>
+        )}
+      </div>
+
+      {/* Error Display */}
+      {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
+    </>
   );
-}
-</file>
 
-<file path="src/components/modals/WrapModal.tsx">
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseUnits, formatUnits, encodeFunctionData, type Address } from "viem";
-import { BaseTxModal } from "./BaseTxModal";
-import { useLensAccount } from "@/contexts/LensAccountContext";
-import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, WGHO_TOKEN_ADDRESS, WGHO_ABI, lensChain } from "@/lib/constants";
-
-interface WrapModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  balance?: bigint; // Optional: native GHO balance for validation
-}
-
-export function WrapModal({ isOpen, onClose, balance }: WrapModalProps) {
-  const [amount, setAmount] = useState("");
-  const [inputError, setInputError] = useState<string | null>(null);
-
-  const { lensAccountAddress } = useLensAccount();
-  const { address: ownerAddress, chainId } = useAccount();
-  const { data: hash, error: writeError, isPending: isWritePending, writeContract, reset } = useWriteContract();
-
-  const {
-    isLoading: isConfirming,
-    isSuccess: isConfirmed,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({
-    hash,
-    chainId: LENS_CHAIN_ID,
-  });
-
-  const isLoading = isWritePending || isConfirming;
-  const txError = writeError || receiptError;
-
-  // Reset form when modal opens/closes
-  useEffect(() => {
-    if (isOpen) {
-      setAmount("");
-      setInputError(null);
-      reset();
-    }
-  }, [isOpen, reset]);
-
-  const handleWrap = () => {
-    setInputError(null);
-
-    // Input validation
-    if (!amount || parseFloat(amount) <= 0) {
-      setInputError("Please enter a valid amount");
-      return;
-    }
-    if (!lensAccountAddress || !ownerAddress) {
-      setInputError("Wallet not connected");
-      return;
-    }
-    if (chainId !== LENS_CHAIN_ID) {
-      setInputError(`Please switch to Lens Chain (ID: ${LENS_CHAIN_ID})`);
-      return;
-    }
-
-    try {
-      const amountBigInt = parseUnits(amount, lensChain.nativeCurrency.decimals);
-
-      // Optional balance validation
-      if (balance !== undefined && amountBigInt > balance) {
-        setInputError("Insufficient GHO balance");
-        return;
-      }
-
-      // WGHO deposit() is called with value, no args needed
-      const txData = encodeFunctionData({
-        abi: WGHO_ABI,
-        functionName: "deposit",
-      });
-
-      console.log("Preparing wrap via executeTransaction:", {
-        target: WGHO_TOKEN_ADDRESS,
-        value: amountBigInt.toString(),
-        data: txData,
-      });
-
-      writeContract({
-        address: lensAccountAddress,
-        abi: LENS_ACCOUNT_ABI,
-        functionName: "executeTransaction",
-        args: [WGHO_TOKEN_ADDRESS as Address, amountBigInt, txData],
-        account: ownerAddress,
-        chainId: LENS_CHAIN_ID,
-      });
-    } catch (e) {
-      console.error("Transaction preparation failed:", e);
-      setInputError("Failed to prepare transaction");
-    }
-  };
+  // The action button
+  const modalActions = (
+    <button
+      onClick={handleSend}
+      disabled={isLoading || isConfirmed || !recipient || !amount}
+      className="w-full px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {isLoading ? "Sending..." : isConfirmed ? "Sent!" : `Send ${tokenSymbol}`}
+    </button>
+  );
 
   return (
     <BaseTxModal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Wrap ${lensChain.nativeCurrency.symbol} to WGHO`}
+      title={`Send ${tokenSymbol}`}
       isLoading={isLoading}
       isSuccess={isConfirmed}
       error={txError}
       txHash={hash}
-      disableClose={isLoading}
-    >
-      <div className="space-y-4">
-        {/* Amount Input */}
-        <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-            Amount ({lensChain.nativeCurrency.symbol})
-          </label>
-          <input
-            id="amount"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.0"
-            min="0"
-            step="any"
-            disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
-          />
-          {balance !== undefined && (
-            <p className="text-xs text-gray-500 mt-1">
-              Available: {formatUnits(balance, lensChain.nativeCurrency.decimals)} {lensChain.nativeCurrency.symbol}
-            </p>
-          )}
-        </div>
-
-        {/* Information Box */}
-        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
-          Wrapping converts your native {lensChain.nativeCurrency.symbol} into WGHO (Wrapped {lensChain.nativeCurrency.symbol}), an ERC20 token that
-          can be used in DeFi applications. You can unwrap back to native {lensChain.nativeCurrency.symbol} at any time.
-        </div>
-
-        {/* Error Display */}
-        {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
-
-        {/* Wrap Button */}
-        <button
-          onClick={handleWrap}
-          disabled={isLoading || isConfirmed || !amount}
-          className="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Wrapping..." : isConfirmed ? "Wrapped!" : `Wrap ${lensChain.nativeCurrency.symbol}`}
-        </button>
-      </div>
-    </BaseTxModal>
+      disableClose={isLoading} // Prevent closing during transaction
+      content={modalContent}
+      actions={modalActions}
+    />
   );
 }
 </file>
@@ -2399,6 +1790,698 @@ export default function RootLayout({
 }
 </file>
 
+<file path="src/components/modals/ApproveModal.tsx">
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { isAddress, parseUnits, encodeFunctionData, type Address, maxUint256 } from "viem";
+import { BaseTxModal } from "./BaseTxModal";
+import { useLensAccount } from "@/contexts/LensAccountContext";
+import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, ERC20_ABI } from "@/lib/constants";
+
+interface ApproveModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  tokenSymbol: string;
+  tokenAddress: Address;
+  decimals: number;
+}
+
+export function ApproveModal({ isOpen, onClose, tokenSymbol, tokenAddress, decimals }: ApproveModalProps) {
+  const [spender, setSpender] = useState("");
+  const [amount, setAmount] = useState("");
+  const [isInfinite, setIsInfinite] = useState(false);
+  const [inputError, setInputError] = useState<string | null>(null);
+
+  const { lensAccountAddress } = useLensAccount();
+  const { address: ownerAddress, chainId } = useAccount();
+  const { data: hash, error: writeError, isPending: isWritePending, writeContract, reset } = useWriteContract();
+
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({
+    hash,
+    chainId: LENS_CHAIN_ID,
+  });
+
+  const isLoading = isWritePending || isConfirming;
+  const txError = writeError || receiptError;
+
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setSpender("");
+      setAmount("");
+      setIsInfinite(false);
+      setInputError(null);
+      reset();
+    }
+  }, [isOpen, reset]);
+
+  const handleApprove = () => {
+    setInputError(null);
+
+    // Input validation
+    if (!isAddress(spender)) {
+      setInputError("Invalid spender address");
+      return;
+    }
+    if (!isInfinite && (!amount || parseFloat(amount) <= 0)) {
+      setInputError("Please enter a valid amount or use infinite approval");
+      return;
+    }
+    if (!lensAccountAddress || !ownerAddress) {
+      setInputError("Wallet not connected");
+      return;
+    }
+    if (chainId !== LENS_CHAIN_ID) {
+      setInputError(`Please switch to Lens Chain (ID: ${LENS_CHAIN_ID})`);
+      return;
+    }
+
+    try {
+      const amountBigInt = isInfinite ? maxUint256 : parseUnits(amount, decimals);
+
+      const txData = encodeFunctionData({
+        abi: ERC20_ABI,
+        functionName: "approve",
+        args: [spender as Address, amountBigInt],
+      });
+
+      console.log("Preparing approval via executeTransaction:", {
+        token: tokenAddress,
+        spender,
+        amount: isInfinite ? "MAX_UINT256" : amount,
+        txData,
+      });
+
+      writeContract({
+        address: lensAccountAddress,
+        abi: LENS_ACCOUNT_ABI,
+        functionName: "executeTransaction",
+        args: [tokenAddress, 0n, txData],
+        account: ownerAddress,
+        chainId: LENS_CHAIN_ID,
+      });
+    } catch (e) {
+      console.error("Transaction preparation failed:", e);
+      setInputError("Failed to prepare transaction");
+    }
+  };
+
+  // Form content without the button
+  const modalContent = (
+    <>
+      {/* Spender Input */}
+      <div>
+        <label htmlFor="spender" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Spender Address
+        </label>
+        <input
+          id="spender"
+          type="text"
+          value={spender}
+          onChange={(e) => setSpender(e.target.value.trim())}
+          placeholder="0x..."
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+        <p className="mt-1 text-xs text-gray-500">The address that will be allowed to spend your {tokenSymbol}</p>
+      </div>
+
+      {/* Amount Input */}
+      <div>
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Amount ({tokenSymbol})
+        </label>
+        <input
+          id="amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0.0"
+          min="0"
+          step="any"
+          disabled={isLoading || isInfinite}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+
+        {/* Infinite Approval Toggle */}
+        <div className="mt-3 flex items-center">
+          <input
+            id="infinite"
+            type="checkbox"
+            checked={isInfinite}
+            onChange={(e) => {
+              setIsInfinite(e.target.checked);
+              if (e.target.checked) setAmount("");
+            }}
+            disabled={isLoading}
+            className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+          />
+          <label htmlFor="infinite" className="ml-2 text-sm text-gray-700">
+            Infinite Approval
+          </label>
+          <span className="ml-1 text-xs text-gray-500">(Maximum possible amount)</span>
+        </div>
+      </div>
+
+      {/* Warning for Infinite Approval */}
+      {isInfinite && (
+        <div className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200">
+          ⚠️ Infinite approval grants unlimited spending permission to the spender address. Only use this with trusted contracts and platforms.
+        </div>
+      )}
+
+      {/* Error Display */}
+      {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
+    </>
+  );
+
+  // The action button
+  const modalActions = (
+    <button
+      onClick={handleApprove}
+      disabled={isLoading || isConfirmed || !spender || (!isInfinite && !amount)}
+      className="w-full px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {isLoading ? "Approving..." : isConfirmed ? "Approved!" : `Approve ${tokenSymbol}`}
+    </button>
+  );
+
+  return (
+    <BaseTxModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Approve ${tokenSymbol} Spending`}
+      isLoading={isLoading}
+      isSuccess={isConfirmed}
+      error={txError}
+      txHash={hash}
+      disableClose={isLoading}
+      content={modalContent}
+      actions={modalActions}
+    />
+  );
+}
+</file>
+
+<file path="src/components/modals/BaseTxModal.tsx">
+"use client";
+
+import React, { ReactNode, useEffect, useState } from "react";
+import { XMarkIcon, ExclamationTriangleIcon, CheckCircleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+import { type Hash } from "viem";
+
+interface BaseTxModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children?: ReactNode; // For backward compatibility
+  content?: ReactNode; // Form content
+  actions?: ReactNode; // Action buttons
+  isLoading: boolean;
+  isSuccess: boolean;
+  error: Error | null;
+  txHash?: Hash | null; // Optional transaction hash
+  disableClose?: boolean; // Optional: prevent closing during transaction
+}
+
+export function BaseTxModal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  content,
+  actions,
+  isLoading,
+  isSuccess,
+  error,
+  txHash,
+  disableClose = false,
+}: BaseTxModalProps) {
+  const [countdown, setCountdown] = useState(5);
+
+  // Auto-close after success
+  useEffect(() => {
+    if (isSuccess) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000); // 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, onClose]);
+
+  // Countdown effect
+  useEffect(() => {
+    if (isSuccess && countdown > 0) {
+      const interval = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [isSuccess, countdown]);
+
+  // Reset countdown when modal opens/closes
+  useEffect(() => {
+    setCountdown(5);
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleClose = () => {
+    if (!disableClose && !isLoading) {
+      onClose();
+    }
+  };
+
+  let statusMessage = null;
+  if (isLoading) {
+    statusMessage = (
+      <div className="flex items-center justify-center text-emerald-700 text-sm p-3 bg-emerald-50 rounded-lg">
+        <ArrowPathIcon className="w-4 h-4 mr-1.5 animate-spin" />
+        Processing transaction... Check your wallet.
+      </div>
+    );
+  } else if (isSuccess) {
+    statusMessage = (
+      <div className="flex items-center justify-center text-emerald-700 text-sm p-3 bg-emerald-50 rounded-lg">
+        <CheckCircleIcon className="w-5 h-5 mr-1.5" />
+        Transaction successful!
+        {txHash && (
+          <a
+            href={`https://explorer.lens.xyz/tx/${txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-1.5 underline hover:text-emerald-800 font-medium"
+          >
+            View on Explorer
+          </a>
+        )}
+        <span className="ml-2 text-gray-500">(Closing in {countdown}s)</span>
+      </div>
+    );
+  } else if (error) {
+    statusMessage = (
+      <div className="flex items-center justify-center text-red-700 text-sm p-3 bg-red-50 rounded-lg">
+        <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
+        Error: {error.message?.split("(")?.[0]?.trim() || "Unknown error"} {/* Show concise error with fallback */}
+      </div>
+    );
+  }
+
+  // Determine what to render in the content area
+  const contentToRender = content || children;
+  const actionsToRender = actions; // Actions from props or null
+
+  return (
+    <div className="fixed inset-0 backdrop-blur-md bg-black/60 flex items-center justify-center z-50 p-4" onClick={handleClose}>
+      <div className="bg-white p-8 rounded-2xl shadow-2xl relative max-w-xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={handleClose}
+          disabled={disableClose || isLoading}
+          className={`absolute top-4 right-4 p-1 rounded-full ${disableClose || isLoading ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:bg-gray-100 hover:text-gray-700"} transition-colors`}
+          aria-label="Close modal"
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
+
+        <h3 className="text-2xl font-semibold mb-6 text-gray-800 pr-8">{title}</h3>
+
+        {/* Modal Form Content */}
+        <div className="space-y-5 mb-5">{contentToRender}</div>
+
+        {/* Status Message Area */}
+        <div className="mb-5">{statusMessage}</div>
+
+        {/* Action Buttons */}
+        {actionsToRender && <div>{actionsToRender}</div>}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/modals/UnwrapModal.tsx">
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { parseUnits, formatUnits, encodeFunctionData, type Address } from "viem";
+import { BaseTxModal } from "./BaseTxModal";
+import { useLensAccount } from "@/contexts/LensAccountContext";
+import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, WGHO_TOKEN_ADDRESS, WGHO_ABI, lensChain } from "@/lib/constants";
+
+interface UnwrapModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  balance?: bigint; // Optional: WGHO balance for validation
+}
+
+export function UnwrapModal({ isOpen, onClose, balance }: UnwrapModalProps) {
+  const [amount, setAmount] = useState("");
+  const [inputError, setInputError] = useState<string | null>(null);
+
+  const { lensAccountAddress } = useLensAccount();
+  const { address: ownerAddress, chainId } = useAccount();
+  const { data: hash, error: writeError, isPending: isWritePending, writeContract, reset } = useWriteContract();
+
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({
+    hash,
+    chainId: LENS_CHAIN_ID,
+  });
+
+  const isLoading = isWritePending || isConfirming;
+  const txError = writeError || receiptError;
+
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setAmount("");
+      setInputError(null);
+      reset();
+    }
+  }, [isOpen, reset]);
+
+  const handleUnwrap = () => {
+    setInputError(null);
+
+    // Input validation
+    if (!amount || parseFloat(amount) <= 0) {
+      setInputError("Please enter a valid amount");
+      return;
+    }
+    if (!lensAccountAddress || !ownerAddress) {
+      setInputError("Wallet not connected");
+      return;
+    }
+    if (chainId !== LENS_CHAIN_ID) {
+      setInputError(`Please switch to Lens Chain (ID: ${LENS_CHAIN_ID})`);
+      return;
+    }
+
+    try {
+      const amountBigInt = parseUnits(amount, lensChain.nativeCurrency.decimals);
+
+      // Optional balance validation
+      if (balance !== undefined && amountBigInt > balance) {
+        setInputError("Insufficient WGHO balance");
+        return;
+      }
+
+      const txData = encodeFunctionData({
+        abi: WGHO_ABI,
+        functionName: "withdraw",
+        args: [amountBigInt],
+      });
+
+      console.log("Preparing unwrap via executeTransaction:", {
+        target: WGHO_TOKEN_ADDRESS,
+        value: "0",
+        amount: amountBigInt.toString(),
+        data: txData,
+      });
+
+      writeContract({
+        address: lensAccountAddress,
+        abi: LENS_ACCOUNT_ABI,
+        functionName: "executeTransaction",
+        args: [WGHO_TOKEN_ADDRESS as Address, 0n, txData],
+        account: ownerAddress,
+        chainId: LENS_CHAIN_ID,
+      });
+    } catch (e) {
+      console.error("Transaction preparation failed:", e);
+      setInputError("Failed to prepare transaction");
+    }
+  };
+
+  // Form content without the button
+  const modalContent = (
+    <>
+      {/* Amount Input */}
+      <div>
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Amount (WGHO)
+        </label>
+        <input
+          id="amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0.0"
+          min="0"
+          step="any"
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+        {balance !== undefined && (
+          <p className="text-xs text-gray-500 mt-1">Available: {formatUnits(balance, lensChain.nativeCurrency.decimals)} WGHO</p>
+        )}
+      </div>
+
+      {/* Information Box */}
+      <div className="text-sm text-gray-700 bg-slate-50 p-4 rounded-lg border border-slate-200">
+        Unwrapping converts your WGHO (Wrapped {lensChain.nativeCurrency.symbol}) back into native {lensChain.nativeCurrency.symbol}. This is useful
+        when you need to use the native token for gas fees or other native transactions.
+      </div>
+
+      {/* Error Display */}
+      {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
+    </>
+  );
+
+  // The action button
+  const modalActions = (
+    <button
+      onClick={handleUnwrap}
+      disabled={isLoading || isConfirmed || !amount}
+      className="w-full px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {isLoading ? "Unwrapping..." : isConfirmed ? "Unwrapped!" : "Unwrap WGHO"}
+    </button>
+  );
+
+  return (
+    <BaseTxModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Unwrap WGHO to ${lensChain.nativeCurrency.symbol}`}
+      isLoading={isLoading}
+      isSuccess={isConfirmed}
+      error={txError}
+      txHash={hash}
+      disableClose={isLoading}
+      content={modalContent}
+      actions={modalActions}
+    />
+  );
+}
+</file>
+
+<file path="src/components/modals/WrapModal.tsx">
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { parseUnits, formatUnits, encodeFunctionData, type Address } from "viem";
+import { BaseTxModal } from "./BaseTxModal";
+import { useLensAccount } from "@/contexts/LensAccountContext";
+import { LENS_ACCOUNT_ABI, LENS_CHAIN_ID, WGHO_TOKEN_ADDRESS, WGHO_ABI, lensChain } from "@/lib/constants";
+
+interface WrapModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  balance?: bigint; // Optional: native GHO balance for validation
+}
+
+export function WrapModal({ isOpen, onClose, balance }: WrapModalProps) {
+  const [amount, setAmount] = useState("");
+  const [inputError, setInputError] = useState<string | null>(null);
+
+  const { lensAccountAddress } = useLensAccount();
+  const { address: ownerAddress, chainId } = useAccount();
+  const { data: hash, error: writeError, isPending: isWritePending, writeContract, reset } = useWriteContract();
+
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({
+    hash,
+    chainId: LENS_CHAIN_ID,
+  });
+
+  const isLoading = isWritePending || isConfirming;
+  const txError = writeError || receiptError;
+
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setAmount("");
+      setInputError(null);
+      reset();
+    }
+  }, [isOpen, reset]);
+
+  const handleWrap = () => {
+    setInputError(null);
+
+    // Input validation
+    if (!amount || parseFloat(amount) <= 0) {
+      setInputError("Please enter a valid amount");
+      return;
+    }
+    if (!lensAccountAddress || !ownerAddress) {
+      setInputError("Wallet not connected");
+      return;
+    }
+    if (chainId !== LENS_CHAIN_ID) {
+      setInputError(`Please switch to Lens Chain (ID: ${LENS_CHAIN_ID})`);
+      return;
+    }
+
+    try {
+      const amountBigInt = parseUnits(amount, lensChain.nativeCurrency.decimals);
+
+      // Optional balance validation
+      if (balance !== undefined && amountBigInt > balance) {
+        setInputError("Insufficient GHO balance");
+        return;
+      }
+
+      // WGHO deposit() is called with value, no args needed
+      const txData = encodeFunctionData({
+        abi: WGHO_ABI,
+        functionName: "deposit",
+      });
+
+      console.log("Preparing wrap via executeTransaction:", {
+        target: WGHO_TOKEN_ADDRESS,
+        value: amountBigInt.toString(),
+        data: txData,
+      });
+
+      writeContract({
+        address: lensAccountAddress,
+        abi: LENS_ACCOUNT_ABI,
+        functionName: "executeTransaction",
+        args: [WGHO_TOKEN_ADDRESS as Address, amountBigInt, txData],
+        account: ownerAddress,
+        chainId: LENS_CHAIN_ID,
+      });
+    } catch (e) {
+      console.error("Transaction preparation failed:", e);
+      setInputError("Failed to prepare transaction");
+    }
+  };
+
+  // Form content without the button
+  const modalContent = (
+    <>
+      {/* Amount Input */}
+      <div>
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Amount ({lensChain.nativeCurrency.symbol})
+        </label>
+        <input
+          id="amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0.0"
+          min="0"
+          step="any"
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+        {balance !== undefined && (
+          <p className="text-xs text-gray-500 mt-1">
+            Available: {formatUnits(balance, lensChain.nativeCurrency.decimals)} {lensChain.nativeCurrency.symbol}
+          </p>
+        )}
+      </div>
+
+      {/* Information Box */}
+      <div className="text-sm text-gray-700 bg-slate-50 p-4 rounded-lg border border-slate-200">
+        Wrapping converts your native {lensChain.nativeCurrency.symbol} into WGHO (Wrapped {lensChain.nativeCurrency.symbol}), an ERC20 token that can
+        be used in DeFi applications. You can unwrap back to native {lensChain.nativeCurrency.symbol} at any time.
+      </div>
+
+      {/* Error Display */}
+      {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
+    </>
+  );
+
+  // The action button
+  const modalActions = (
+    <button
+      onClick={handleWrap}
+      disabled={isLoading || isConfirmed || !amount}
+      className="w-full px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {isLoading ? "Wrapping..." : isConfirmed ? "Wrapped!" : `Wrap ${lensChain.nativeCurrency.symbol}`}
+    </button>
+  );
+
+  return (
+    <BaseTxModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Wrap ${lensChain.nativeCurrency.symbol} to WGHO`}
+      isLoading={isLoading}
+      isSuccess={isConfirmed}
+      error={txError}
+      txHash={hash}
+      disableClose={isLoading}
+      content={modalContent}
+      actions={modalActions}
+    />
+  );
+}
+</file>
+
+<file path="src/app/providers.tsx">
+// src/app/providers.tsx
+"use client";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider } from "wagmi";
+import { ConnectKitProvider } from "connectkit";
+import { config } from "@/lib/wagmi";
+import React, { useState } from "react";
+import { LensAccountProvider } from "@/contexts/LensAccountContext";
+
+type Props = {
+  children: React.ReactNode;
+};
+
+export function Providers({ children }: Props) {
+  const [queryClient] = useState(() => new QueryClient());
+
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <ConnectKitProvider>
+          {/* Wrap with LensAccountProvider */}
+          <LensAccountProvider>
+            {/* Wrap with WalletConnectProvider */}
+            {children}
+          </LensAccountProvider>
+        </ConnectKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
+}
+</file>
+
 <file path="src/components/AccountTokensDisplay.tsx">
 // components/AccountTokensDisplay.tsx
 "use client";
@@ -2724,40 +2807,6 @@ export function AccountTokensDisplay() {
       {modalState.type === "wrap" && <WrapModal isOpen={true} onClose={closeModal} balance={modalState.balance} />}
       {modalState.type === "unwrap" && <UnwrapModal isOpen={true} onClose={closeModal} balance={modalState.balance} />}
     </div>
-  );
-}
-</file>
-
-<file path="src/app/providers.tsx">
-// src/app/providers.tsx
-"use client";
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider } from "wagmi";
-import { ConnectKitProvider } from "connectkit";
-import { config } from "@/lib/wagmi";
-import React, { useState } from "react";
-import { LensAccountProvider } from "@/contexts/LensAccountContext";
-
-type Props = {
-  children: React.ReactNode;
-};
-
-export function Providers({ children }: Props) {
-  const [queryClient] = useState(() => new QueryClient());
-
-  return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <ConnectKitProvider>
-          {/* Wrap with LensAccountProvider */}
-          <LensAccountProvider>
-            {/* Wrap with WalletConnectProvider */}
-            {children}
-          </LensAccountProvider>
-        </ConnectKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
   );
 }
 </file>
@@ -3397,230 +3446,6 @@ export function OwnerPanel({ ownerAddress }: OwnerPanelProps) {
 }
 </file>
 
-<file path="src/components/WcConnect.tsx">
-// src/components/WcConnect.tsx
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { useWalletConnect } from "@/contexts/WalletConnectProvider"; // Ensure correct path
-import Image from "next/image";
-
-// Default/Fallback Icon
-const FallbackIcon = () => <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">?</div>;
-
-// Helper function to resolve icon URL
-const resolveIconUrl = (iconPath: string | null | undefined, baseUrl: string | null | undefined): string | undefined => {
-  if (!iconPath) return undefined;
-
-  try {
-    // Handle absolute URLs
-    if (iconPath.startsWith("http://") || iconPath.startsWith("https://")) {
-      return iconPath;
-    }
-    // Handle root-relative paths if base URL exists
-    if (iconPath.startsWith("/") && baseUrl) {
-      const origin = new URL(baseUrl).origin;
-      return `${origin}${iconPath}`;
-    }
-    console.warn("Invalid icon URL format:", iconPath);
-    return undefined;
-  } catch (e) {
-    console.warn("Error resolving icon URL:", e);
-    return undefined;
-  }
-};
-
-// Icon component with error handling
-const DAppIcon = ({ iconUrl, name, size = 40 }: { iconUrl?: string; name: string; size?: number }) => {
-  const [hasError, setHasError] = useState(false);
-
-  if (!iconUrl || hasError) return <FallbackIcon />;
-
-  return (
-    <Image
-      src={iconUrl}
-      alt={`${name} icon`}
-      width={size}
-      height={size}
-      className="rounded-full"
-      unoptimized
-      onError={() => {
-        console.warn("Failed to load icon:", iconUrl);
-        setHasError(true);
-      }}
-    />
-  );
-};
-
-export function WcConnect() {
-  // Destructure states from the refactored provider, including isInitializing
-  const {
-    activeSessions,
-    pair,
-    disconnect,
-    isLoading, // Use the combined loading state
-    isPairing,
-    error,
-    isInitialized, // Use the service readiness flag
-    pendingProposal, // Get the pending proposal
-    approveSession, // Get approve action
-    rejectSession, // Get reject action
-    isInitializing, // <<<--- ADDED isInitializing HERE ---<<<
-  } = useWalletConnect();
-  const [uri, setUri] = useState("");
-
-  const activeSessionTopic = Object.keys(activeSessions)[0]; // Assuming only one session for MVP
-  const connectedSession = activeSessionTopic ? activeSessions[activeSessionTopic] : null;
-
-  // --- Add this useEffect ---
-  useEffect(() => {
-    // If there's no connected session (either initially or after disconnect),
-    // clear the URI input field.
-    if (!connectedSession) {
-      setUri("");
-    }
-  }, [connectedSession]); // Run this effect when connectedSession changes
-  // -------------------------
-
-  const handleConnect = () => {
-    if (!uri || !isInitialized || isLoading) return; // Check initialization and combined loading state
-    pair(uri);
-  };
-
-  const handleDisconnect = () => {
-    if (connectedSession && isInitialized && !isLoading) {
-      // Check initialization and combined loading state
-      disconnect(connectedSession.topic);
-    }
-  };
-
-  const handleApprove = () => {
-    if (pendingProposal && !isLoading) {
-      approveSession();
-    }
-  };
-
-  const handleReject = () => {
-    if (pendingProposal && !isLoading) {
-      rejectSession();
-    }
-  };
-
-  // Display loading states more granularly if needed, otherwise use `isLoading`
-  const connectButtonText = isPairing ? "Pairing..." : isLoading ? "Working..." : "Connect";
-  const disconnectButtonText = isLoading ? "Working..." : "Disconnect";
-  const approveButtonText = isLoading ? "Working..." : "Approve Session";
-  const rejectButtonText = isLoading ? "Working..." : "Reject Session";
-
-  // Resolve icon URLs
-  const connectedDAppIconUrl = connectedSession
-    ? resolveIconUrl(connectedSession.peer.metadata.icons?.[0] ?? undefined, connectedSession.peer.metadata.url ?? undefined)
-    : undefined;
-
-  const proposalIconUrl = pendingProposal
-    ? resolveIconUrl(pendingProposal.params.proposer.metadata.icons?.[0] ?? undefined, pendingProposal.params.proposer.metadata.url ?? undefined)
-    : undefined;
-
-  return (
-    // Remove border, adjust padding and background if needed (now inside a white card)
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-800">Connect to dApp</h3>
-
-      {/* --- Session Proposal Modal (Simplified Inline) --- */}
-      {pendingProposal && (
-        // Use softer warning style
-        <div className="p-4 border border-orange-200 bg-orange-50 rounded-lg space-y-3">
-          <p className="text-sm font-medium text-yellow-800">Connection Request from:</p>
-          <div className="flex items-center space-x-2">
-            <DAppIcon iconUrl={proposalIconUrl} name={pendingProposal.params.proposer.metadata.name} size={30} />
-            <span className="text-sm text-gray-700">{pendingProposal.params.proposer.metadata.name}</span>
-          </div>
-          {/* TODO: Display requested permissions details if needed */}
-          <div className="flex space-x-2 pt-2">
-            <button
-              onClick={handleApprove}
-              disabled={isLoading || !isInitialized}
-              className="flex-1 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50"
-            >
-              {approveButtonText}
-            </button>
-            <button
-              onClick={handleReject}
-              disabled={isLoading || !isInitialized}
-              className="flex-1 px-3 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
-            >
-              {rejectButtonText}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* --- Connected Session Display --- */}
-      {connectedSession && !pendingProposal && (
-        // Use softer success style
-        <div className="space-y-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-          {/* Display connected dApp info */}
-          <p className="text-green-800 font-medium">Connected to:</p>
-          <div className="flex items-center space-x-3">
-            <DAppIcon iconUrl={connectedDAppIconUrl} name={connectedSession.peer.metadata.name} size={40} />
-            <div>
-              <p className="text-sm font-semibold text-gray-900">{connectedSession.peer.metadata.name}</p>
-              <p className="text-xs text-gray-600 break-all">{connectedSession.peer.metadata.url}</p>
-            </div>
-          </div>
-          <p className="text-xs text-gray-500">
-            Topic: <span className="font-mono break-all">{connectedSession.topic}</span>
-          </p>
-          <button
-            onClick={handleDisconnect}
-            disabled={isLoading || !isInitialized} // Use combined loading state
-            className="w-full px-4 py-2 mt-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
-          >
-            {disconnectButtonText}
-          </button>
-        </div>
-      )}
-
-      {/* --- Pairing/Connection Form --- */}
-      {!connectedSession && !pendingProposal && (
-        <div className="space-y-2">
-          <label htmlFor="wc-uri" className="block text-sm font-medium text-gray-700">
-            Paste WalletConnect URI
-          </label>
-          <div className="flex space-x-2">
-            <input
-              id="wc-uri"
-              name="wc-uri"
-              type="text"
-              value={uri}
-              onChange={(e) => setUri(e.target.value)}
-              placeholder="wc:..."
-              className="flex-grow px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white sm:text-sm disabled:bg-gray-100 transition-colors"
-              disabled={isLoading || !isInitialized} // Use combined loading state
-            />
-            <button
-              onClick={handleConnect}
-              disabled={!uri || isLoading || !isInitialized} // Use combined loading state
-              className="px-5 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
-            >
-              {connectButtonText}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* --- Status/Error Messages --- */}
-      {error && !isLoading && <p className="text-red-600 text-sm mt-2">Error: {error}</p>}
-      {isPairing && <p className="text-emerald-600 text-sm mt-2">Pairing initiated, check dApp/wallet if needed...</p>}
-      {/* Check both flags here now */}
-      {!isInitialized && !isInitializing && !error && <p className="text-orange-600 text-sm mt-2">WalletConnect service not ready.</p>}
-      {/* And display initializing message correctly */}
-      {isInitializing && <p className="text-gray-500 text-sm mt-2">Initializing WalletConnect...</p>}
-    </div>
-  );
-}
-</file>
-
 <file path="src/services/walletConnectService.ts">
 // src/services/walletConnectService.ts
 import { WalletKit, IWalletKit, WalletKitTypes } from "@reown/walletkit";
@@ -3905,6 +3730,230 @@ export class WalletConnectService extends EventEmitter {
 }
 </file>
 
+<file path="src/components/WcConnect.tsx">
+// src/components/WcConnect.tsx
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useWalletConnect } from "@/contexts/WalletConnectProvider"; // Ensure correct path
+import Image from "next/image";
+
+// Default/Fallback Icon
+const FallbackIcon = () => <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">?</div>;
+
+// Helper function to resolve icon URL
+const resolveIconUrl = (iconPath: string | null | undefined, baseUrl: string | null | undefined): string | undefined => {
+  if (!iconPath) return undefined;
+
+  try {
+    // Handle absolute URLs
+    if (iconPath.startsWith("http://") || iconPath.startsWith("https://")) {
+      return iconPath;
+    }
+    // Handle root-relative paths if base URL exists
+    if (iconPath.startsWith("/") && baseUrl) {
+      const origin = new URL(baseUrl).origin;
+      return `${origin}${iconPath}`;
+    }
+    console.warn("Invalid icon URL format:", iconPath);
+    return undefined;
+  } catch (e) {
+    console.warn("Error resolving icon URL:", e);
+    return undefined;
+  }
+};
+
+// Icon component with error handling
+const DAppIcon = ({ iconUrl, name, size = 40 }: { iconUrl?: string; name: string; size?: number }) => {
+  const [hasError, setHasError] = useState(false);
+
+  if (!iconUrl || hasError) return <FallbackIcon />;
+
+  return (
+    <Image
+      src={iconUrl}
+      alt={`${name} icon`}
+      width={size}
+      height={size}
+      className="rounded-full"
+      unoptimized
+      onError={() => {
+        console.warn("Failed to load icon:", iconUrl);
+        setHasError(true);
+      }}
+    />
+  );
+};
+
+export function WcConnect() {
+  // Destructure states from the refactored provider, including isInitializing
+  const {
+    activeSessions,
+    pair,
+    disconnect,
+    isLoading, // Use the combined loading state
+    isPairing,
+    error,
+    isInitialized, // Use the service readiness flag
+    pendingProposal, // Get the pending proposal
+    approveSession, // Get approve action
+    rejectSession, // Get reject action
+    isInitializing, // <<<--- ADDED isInitializing HERE ---<<<
+  } = useWalletConnect();
+  const [uri, setUri] = useState("");
+
+  const activeSessionTopic = Object.keys(activeSessions)[0]; // Assuming only one session for MVP
+  const connectedSession = activeSessionTopic ? activeSessions[activeSessionTopic] : null;
+
+  // --- Add this useEffect ---
+  useEffect(() => {
+    // If there's no connected session (either initially or after disconnect),
+    // clear the URI input field.
+    if (!connectedSession) {
+      setUri("");
+    }
+  }, [connectedSession]); // Run this effect when connectedSession changes
+  // -------------------------
+
+  const handleConnect = () => {
+    if (!uri || !isInitialized || isLoading) return; // Check initialization and combined loading state
+    pair(uri);
+  };
+
+  const handleDisconnect = () => {
+    if (connectedSession && isInitialized && !isLoading) {
+      // Check initialization and combined loading state
+      disconnect(connectedSession.topic);
+    }
+  };
+
+  const handleApprove = () => {
+    if (pendingProposal && !isLoading) {
+      approveSession();
+    }
+  };
+
+  const handleReject = () => {
+    if (pendingProposal && !isLoading) {
+      rejectSession();
+    }
+  };
+
+  // Display loading states more granularly if needed, otherwise use `isLoading`
+  const connectButtonText = isPairing ? "Pairing..." : isLoading ? "Working..." : "Connect";
+  const disconnectButtonText = isLoading ? "Working..." : "Disconnect";
+  const approveButtonText = isLoading ? "Working..." : "Approve Session";
+  const rejectButtonText = isLoading ? "Working..." : "Reject Session";
+
+  // Resolve icon URLs
+  const connectedDAppIconUrl = connectedSession
+    ? resolveIconUrl(connectedSession.peer.metadata.icons?.[0] ?? undefined, connectedSession.peer.metadata.url ?? undefined)
+    : undefined;
+
+  const proposalIconUrl = pendingProposal
+    ? resolveIconUrl(pendingProposal.params.proposer.metadata.icons?.[0] ?? undefined, pendingProposal.params.proposer.metadata.url ?? undefined)
+    : undefined;
+
+  return (
+    // Remove border, adjust padding and background if needed (now inside a white card)
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-gray-800">Connect to dApp</h3>
+
+      {/* --- Session Proposal Modal (Simplified Inline) --- */}
+      {pendingProposal && (
+        // Use softer warning style
+        <div className="p-4 border border-orange-200 bg-orange-50 rounded-lg space-y-3">
+          <p className="text-sm font-medium text-yellow-800">Connection Request from:</p>
+          <div className="flex items-center space-x-2">
+            <DAppIcon iconUrl={proposalIconUrl} name={pendingProposal.params.proposer.metadata.name} size={30} />
+            <span className="text-sm text-gray-700">{pendingProposal.params.proposer.metadata.name}</span>
+          </div>
+          {/* TODO: Display requested permissions details if needed */}
+          <div className="flex space-x-2 pt-2">
+            <button
+              onClick={handleApprove}
+              disabled={isLoading || !isInitialized}
+              className="flex-1 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50"
+            >
+              {approveButtonText}
+            </button>
+            <button
+              onClick={handleReject}
+              disabled={isLoading || !isInitialized}
+              className="flex-1 px-3 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+            >
+              {rejectButtonText}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- Connected Session Display --- */}
+      {connectedSession && !pendingProposal && (
+        // Use softer success style
+        <div className="space-y-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+          {/* Display connected dApp info */}
+          <p className="text-green-800 font-medium">Connected to:</p>
+          <div className="flex items-center space-x-3">
+            <DAppIcon iconUrl={connectedDAppIconUrl} name={connectedSession.peer.metadata.name} size={40} />
+            <div>
+              <p className="text-sm font-semibold text-gray-900">{connectedSession.peer.metadata.name}</p>
+              <p className="text-xs text-gray-600 break-all">{connectedSession.peer.metadata.url}</p>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500">
+            Topic: <span className="font-mono break-all">{connectedSession.topic}</span>
+          </p>
+          <button
+            onClick={handleDisconnect}
+            disabled={isLoading || !isInitialized} // Use combined loading state
+            className="w-full px-4 py-2 mt-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
+          >
+            {disconnectButtonText}
+          </button>
+        </div>
+      )}
+
+      {/* --- Pairing/Connection Form --- */}
+      {!connectedSession && !pendingProposal && (
+        <div className="space-y-2">
+          <label htmlFor="wc-uri" className="block text-sm font-medium text-gray-700">
+            Paste WalletConnect URI
+          </label>
+          <div className="flex space-x-2">
+            <input
+              id="wc-uri"
+              name="wc-uri"
+              type="text"
+              value={uri}
+              onChange={(e) => setUri(e.target.value)}
+              placeholder="wc:..."
+              className="flex-grow px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white sm:text-sm disabled:bg-gray-100 transition-colors"
+              disabled={isLoading || !isInitialized} // Use combined loading state
+            />
+            <button
+              onClick={handleConnect}
+              disabled={!uri || isLoading || !isInitialized} // Use combined loading state
+              className="px-5 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
+            >
+              {connectButtonText}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- Status/Error Messages --- */}
+      {error && !isLoading && <p className="text-red-600 text-sm mt-2">Error: {error}</p>}
+      {isPairing && <p className="text-emerald-600 text-sm mt-2">Pairing initiated, check dApp/wallet if needed...</p>}
+      {/* Check both flags here now */}
+      {!isInitialized && !isInitializing && !error && <p className="text-orange-600 text-sm mt-2">WalletConnect service not ready.</p>}
+      {/* And display initializing message correctly */}
+      {isInitializing && <p className="text-gray-500 text-sm mt-2">Initializing WalletConnect...</p>}
+    </div>
+  );
+}
+</file>
+
 <file path="DEVELOPMENT_PLAN.md">
 **Version:** 1.0
 **Date:** 2025-04-19
@@ -4086,6 +4135,123 @@ We will follow an incremental development approach, building and verifying core 
 - Enhance error messages and user feedback.
 - Refine UI/UX, add loading states more granularly.
 - Mobile responsiveness.
+</file>
+
+<file path="src/lib/constants.ts">
+// lib/constants.ts
+import { defineChain, parseAbi } from "viem";
+
+export const LENS_CHAIN_ID = 232;
+
+export const lensChain = defineChain({
+  id: LENS_CHAIN_ID,
+  name: "Lens Chain",
+  nativeCurrency: { name: "GHO", symbol: "GHO", decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.lens.xyz"],
+    },
+  },
+  blockExplorers: {
+    default: { name: "Lens Explorer", url: "https://explorer.lens.xyz" },
+  },
+  testnet: false,
+});
+
+// --- Contract Addresses ---
+export const LENS_GLOBAL_NAMESPACE_ADDRESS = "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615";
+export const NATIVE_GHO_ADDRESS = "0x000000000000000000000000000000000000800A";
+export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
+export const BONSAI_TOKEN_ADDRESS = "0xB0588f9A9cADe7CD5f194a5fe77AcD6A58250f82";
+
+// --- ABIs ---
+export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
+  "function accountOf(string calldata name) view returns (address)",
+  "function usernameOf(address user) view returns (string)",
+  "error DoesNotExist()",
+]);
+
+export const LENS_ACCOUNT_ABI = parseAbi([
+  "function owner() view returns (address)",
+  "function executeTransaction(address target, uint256 value, bytes calldata data)",
+  "function transferOwnership(address newOwner)",
+]);
+
+// Standard ERC20 ABI including transfer and approve
+export const ERC20_ABI = parseAbi([
+  "function balanceOf(address owner) view returns (uint256)",
+  "function transfer(address to, uint256 amount) returns (bool)", // Needed for Send
+  "function approve(address spender, uint256 amount) returns (bool)", // Needed for Approve
+  "function allowance(address owner, address spender) view returns (uint256)", // Optional: useful for display
+  "function decimals() view returns (uint8)", // Optional: useful for parsing amounts
+  "event Transfer(address indexed from, address indexed to, uint256 value)",
+  "event Approval(address indexed owner, address indexed spender, uint256 value)",
+]);
+
+// Specific ABI for WGHO Wrap/Unwrap
+export const WGHO_ABI = parseAbi([
+  "function deposit() payable", // payable is key
+  "function withdraw(uint256 amount)",
+  "event Deposit(address indexed dst, uint256 wad)",
+  "event Withdrawal(address indexed src, uint256 wad)",
+]);
+
+// --- Local Storage Keys ---
+export const LOCAL_STORAGE_KEYS = {
+  LENS_ACCOUNT_ADDRESS: "lensSession:lensAccountAddress",
+  EXPECTED_OWNER_ADDRESS: "lensSession:expectedOwner",
+  LENS_USERNAME: "lensSession:username",
+};
+</file>
+
+<file path="package.json">
+{
+  "name": "lens-account-interface4",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prepare": "husky",
+    "generate-llms": "repomix --include \"*.*,src\" --ignore \"llms.txt\" -o llms.txt",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md,json}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@reown/walletkit": "^1.2.3",
+    "@tanstack/react-query": "^5.74.4",
+    "@walletconnect/core": "^2.20.0",
+    "@walletconnect/jsonrpc-utils": "^1.0.8",
+    "@walletconnect/utils": "^2.20.0",
+    "connectkit": "^1.9.0",
+    "next": "15.3.1",
+    "qrcode.react": "^4.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.27.2",
+    "wagmi": "^2.14.16"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/webpack": "^5.28.5",
+    "@walletconnect/types": "^2.20.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "husky": "^9.1.7",
+    "pino-pretty": "^13.0.0",
+    "prettier": "^3.5.3",
+    "repomix": "^0.3.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
 </file>
 
 <file path="src/components/DiscoveryForm.tsx">
@@ -4340,123 +4506,6 @@ export function DiscoveryForm({ onAccountDetailsFound, initialUsername = "", ini
       </div>
     </div>
   );
-}
-</file>
-
-<file path="src/lib/constants.ts">
-// lib/constants.ts
-import { defineChain, parseAbi } from "viem";
-
-export const LENS_CHAIN_ID = 232;
-
-export const lensChain = defineChain({
-  id: LENS_CHAIN_ID,
-  name: "Lens Chain",
-  nativeCurrency: { name: "GHO", symbol: "GHO", decimals: 18 },
-  rpcUrls: {
-    default: {
-      http: ["https://rpc.lens.xyz"],
-    },
-  },
-  blockExplorers: {
-    default: { name: "Lens Explorer", url: "https://explorer.lens.xyz" },
-  },
-  testnet: false,
-});
-
-// --- Contract Addresses ---
-export const LENS_GLOBAL_NAMESPACE_ADDRESS = "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615";
-export const NATIVE_GHO_ADDRESS = "0x000000000000000000000000000000000000800A";
-export const WGHO_TOKEN_ADDRESS = "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F";
-export const BONSAI_TOKEN_ADDRESS = "0xB0588f9A9cADe7CD5f194a5fe77AcD6A58250f82";
-
-// --- ABIs ---
-export const LENS_GLOBAL_NAMESPACE_ABI = parseAbi([
-  "function accountOf(string calldata name) view returns (address)",
-  "function usernameOf(address user) view returns (string)",
-  "error DoesNotExist()",
-]);
-
-export const LENS_ACCOUNT_ABI = parseAbi([
-  "function owner() view returns (address)",
-  "function executeTransaction(address target, uint256 value, bytes calldata data)",
-  "function transferOwnership(address newOwner)",
-]);
-
-// Standard ERC20 ABI including transfer and approve
-export const ERC20_ABI = parseAbi([
-  "function balanceOf(address owner) view returns (uint256)",
-  "function transfer(address to, uint256 amount) returns (bool)", // Needed for Send
-  "function approve(address spender, uint256 amount) returns (bool)", // Needed for Approve
-  "function allowance(address owner, address spender) view returns (uint256)", // Optional: useful for display
-  "function decimals() view returns (uint8)", // Optional: useful for parsing amounts
-  "event Transfer(address indexed from, address indexed to, uint256 value)",
-  "event Approval(address indexed owner, address indexed spender, uint256 value)",
-]);
-
-// Specific ABI for WGHO Wrap/Unwrap
-export const WGHO_ABI = parseAbi([
-  "function deposit() payable", // payable is key
-  "function withdraw(uint256 amount)",
-  "event Deposit(address indexed dst, uint256 wad)",
-  "event Withdrawal(address indexed src, uint256 wad)",
-]);
-
-// --- Local Storage Keys ---
-export const LOCAL_STORAGE_KEYS = {
-  LENS_ACCOUNT_ADDRESS: "lensSession:lensAccountAddress",
-  EXPECTED_OWNER_ADDRESS: "lensSession:expectedOwner",
-  LENS_USERNAME: "lensSession:username",
-};
-</file>
-
-<file path="package.json">
-{
-  "name": "lens-account-interface4",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "prepare": "husky",
-    "generate-llms": "repomix --include \"*.*,src\" --ignore \"llms.txt\" -o llms.txt",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md,json}\"",
-    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
-  },
-  "dependencies": {
-    "@heroicons/react": "^2.2.0",
-    "@reown/walletkit": "^1.2.3",
-    "@tanstack/react-query": "^5.74.4",
-    "@walletconnect/core": "^2.20.0",
-    "@walletconnect/jsonrpc-utils": "^1.0.8",
-    "@walletconnect/utils": "^2.20.0",
-    "connectkit": "^1.9.0",
-    "next": "15.3.1",
-    "qrcode.react": "^4.2.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "viem": "^2.27.2",
-    "wagmi": "^2.14.16"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/webpack": "^5.28.5",
-    "@walletconnect/types": "^2.20.0",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.1",
-    "husky": "^9.1.7",
-    "pino-pretty": "^13.0.0",
-    "prettier": "^3.5.3",
-    "repomix": "^0.3.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
 }
 </file>
 

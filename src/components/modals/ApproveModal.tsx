@@ -99,6 +99,86 @@ export function ApproveModal({ isOpen, onClose, tokenSymbol, tokenAddress, decim
     }
   };
 
+  // Form content without the button
+  const modalContent = (
+    <>
+      {/* Spender Input */}
+      <div>
+        <label htmlFor="spender" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Spender Address
+        </label>
+        <input
+          id="spender"
+          type="text"
+          value={spender}
+          onChange={(e) => setSpender(e.target.value.trim())}
+          placeholder="0x..."
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+        <p className="mt-1 text-xs text-gray-500">The address that will be allowed to spend your {tokenSymbol}</p>
+      </div>
+
+      {/* Amount Input */}
+      <div>
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Amount ({tokenSymbol})
+        </label>
+        <input
+          id="amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0.0"
+          min="0"
+          step="any"
+          disabled={isLoading || isInfinite}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+
+        {/* Infinite Approval Toggle */}
+        <div className="mt-3 flex items-center">
+          <input
+            id="infinite"
+            type="checkbox"
+            checked={isInfinite}
+            onChange={(e) => {
+              setIsInfinite(e.target.checked);
+              if (e.target.checked) setAmount("");
+            }}
+            disabled={isLoading}
+            className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+          />
+          <label htmlFor="infinite" className="ml-2 text-sm text-gray-700">
+            Infinite Approval
+          </label>
+          <span className="ml-1 text-xs text-gray-500">(Maximum possible amount)</span>
+        </div>
+      </div>
+
+      {/* Warning for Infinite Approval */}
+      {isInfinite && (
+        <div className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200">
+          ⚠️ Infinite approval grants unlimited spending permission to the spender address. Only use this with trusted contracts and platforms.
+        </div>
+      )}
+
+      {/* Error Display */}
+      {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
+    </>
+  );
+
+  // The action button
+  const modalActions = (
+    <button
+      onClick={handleApprove}
+      disabled={isLoading || isConfirmed || !spender || (!isInfinite && !amount)}
+      className="w-full px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {isLoading ? "Approving..." : isConfirmed ? "Approved!" : `Approve ${tokenSymbol}`}
+    </button>
+  );
+
   return (
     <BaseTxModal
       isOpen={isOpen}
@@ -109,81 +189,8 @@ export function ApproveModal({ isOpen, onClose, tokenSymbol, tokenAddress, decim
       error={txError}
       txHash={hash}
       disableClose={isLoading}
-    >
-      <div className="space-y-4">
-        {/* Spender Input */}
-        <div>
-          <label htmlFor="spender" className="block text-sm font-medium text-gray-700 mb-1">
-            Spender Address
-          </label>
-          <input
-            id="spender"
-            type="text"
-            value={spender}
-            onChange={(e) => setSpender(e.target.value.trim())}
-            placeholder="0x..."
-            disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
-          />
-          <p className="mt-1 text-xs text-gray-500">The address that will be allowed to spend your {tokenSymbol}</p>
-        </div>
-
-        {/* Amount Input */}
-        <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-            Amount ({tokenSymbol})
-          </label>
-          <input
-            id="amount"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.0"
-            min="0"
-            step="any"
-            disabled={isLoading || isInfinite}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
-          />
-
-          {/* Infinite Approval Toggle */}
-          <div className="mt-2 flex items-center">
-            <input
-              id="infinite"
-              type="checkbox"
-              checked={isInfinite}
-              onChange={(e) => {
-                setIsInfinite(e.target.checked);
-                if (e.target.checked) setAmount("");
-              }}
-              disabled={isLoading}
-              className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
-            />
-            <label htmlFor="infinite" className="ml-2 text-sm text-gray-700">
-              Infinite Approval
-            </label>
-            <span className="ml-1 text-xs text-gray-500">(Maximum possible amount)</span>
-          </div>
-        </div>
-
-        {/* Warning for Infinite Approval */}
-        {isInfinite && (
-          <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
-            ⚠️ Infinite approval grants unlimited spending permission to the spender address. Only use this with trusted contracts and platforms.
-          </div>
-        )}
-
-        {/* Error Display */}
-        {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
-
-        {/* Approve Button */}
-        <button
-          onClick={handleApprove}
-          disabled={isLoading || isConfirmed || !spender || (!isInfinite && !amount)}
-          className="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Approving..." : isConfirmed ? "Approved!" : `Approve ${tokenSymbol}`}
-        </button>
-      </div>
-    </BaseTxModal>
+      content={modalContent}
+      actions={modalActions}
+    />
   );
 }

@@ -95,6 +95,52 @@ export function UnwrapModal({ isOpen, onClose, balance }: UnwrapModalProps) {
     }
   };
 
+  // Form content without the button
+  const modalContent = (
+    <>
+      {/* Amount Input */}
+      <div>
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Amount (WGHO)
+        </label>
+        <input
+          id="amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0.0"
+          min="0"
+          step="any"
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition duration-150 disabled:bg-gray-100"
+        />
+        {balance !== undefined && (
+          <p className="text-xs text-gray-500 mt-1">Available: {formatUnits(balance, lensChain.nativeCurrency.decimals)} WGHO</p>
+        )}
+      </div>
+
+      {/* Information Box */}
+      <div className="text-sm text-gray-700 bg-slate-50 p-4 rounded-lg border border-slate-200">
+        Unwrapping converts your WGHO (Wrapped {lensChain.nativeCurrency.symbol}) back into native {lensChain.nativeCurrency.symbol}. This is useful
+        when you need to use the native token for gas fees or other native transactions.
+      </div>
+
+      {/* Error Display */}
+      {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
+    </>
+  );
+
+  // The action button
+  const modalActions = (
+    <button
+      onClick={handleUnwrap}
+      disabled={isLoading || isConfirmed || !amount}
+      className="w-full px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {isLoading ? "Unwrapping..." : isConfirmed ? "Unwrapped!" : "Unwrap WGHO"}
+    </button>
+  );
+
   return (
     <BaseTxModal
       isOpen={isOpen}
@@ -105,47 +151,8 @@ export function UnwrapModal({ isOpen, onClose, balance }: UnwrapModalProps) {
       error={txError}
       txHash={hash}
       disableClose={isLoading}
-    >
-      <div className="space-y-4">
-        {/* Amount Input */}
-        <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-            Amount (WGHO)
-          </label>
-          <input
-            id="amount"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.0"
-            min="0"
-            step="any"
-            disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
-          />
-          {balance !== undefined && (
-            <p className="text-xs text-gray-500 mt-1">Available: {formatUnits(balance, lensChain.nativeCurrency.decimals)} WGHO</p>
-          )}
-        </div>
-
-        {/* Information Box */}
-        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
-          Unwrapping converts your WGHO (Wrapped {lensChain.nativeCurrency.symbol}) back into native {lensChain.nativeCurrency.symbol}. This is useful
-          when you need to use the native token for gas fees or other native transactions.
-        </div>
-
-        {/* Error Display */}
-        {inputError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{inputError}</p>}
-
-        {/* Unwrap Button */}
-        <button
-          onClick={handleUnwrap}
-          disabled={isLoading || isConfirmed || !amount}
-          className="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Unwrapping..." : isConfirmed ? "Unwrapped!" : "Unwrap WGHO"}
-        </button>
-      </div>
-    </BaseTxModal>
+      content={modalContent}
+      actions={modalActions}
+    />
   );
 }
