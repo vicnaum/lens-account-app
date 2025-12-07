@@ -4357,56 +4357,6 @@ We will follow an incremental development approach, building and verifying core 
 - Mobile responsiveness.
 </file>
 
-<file path="package.json">
-{
-  "name": "lens-account-interface4",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "prepare": "husky",
-    "generate-llms": "repomix --include \"*.*,src\" --ignore \"llms.txt\" -o llms.txt",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md,json}\"",
-    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
-  },
-  "dependencies": {
-    "@heroicons/react": "^2.2.0",
-    "@reown/walletkit": "^1.2.3",
-    "@tanstack/react-query": "^5.74.4",
-    "@walletconnect/core": "^2.20.0",
-    "@walletconnect/jsonrpc-utils": "^1.0.8",
-    "@walletconnect/utils": "^2.20.0",
-    "connectkit": "^1.9.0",
-    "next": "15.3.6",
-    "qrcode.react": "^4.2.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "viem": "^2.27.2",
-    "wagmi": "^2.14.16"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/webpack": "^5.28.5",
-    "@walletconnect/types": "^2.20.0",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.1",
-    "husky": "^9.1.7",
-    "pino-pretty": "^13.0.0",
-    "prettier": "^3.5.3",
-    "repomix": "^0.3.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
-}
-</file>
-
 <file path="src/components/DiscoveryForm.tsx">
 // components/DiscoveryForm.tsx
 "use client";
@@ -5146,6 +5096,56 @@ export const LOCAL_STORAGE_KEYS = {
 };
 </file>
 
+<file path="package.json">
+{
+  "name": "lens-account-interface4",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prepare": "husky",
+    "generate-llms": "repomix --include \"*.*,src\" --ignore \"llms.txt\" -o llms.txt",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md,json}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md,json}\""
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@reown/walletkit": "^1.2.3",
+    "@tanstack/react-query": "^5.74.4",
+    "@walletconnect/core": "^2.20.0",
+    "@walletconnect/jsonrpc-utils": "^1.0.8",
+    "@walletconnect/utils": "^2.20.0",
+    "connectkit": "^1.9.0",
+    "next": "15.3.6",
+    "qrcode.react": "^4.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.27.2",
+    "wagmi": "^2.14.16"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/webpack": "^5.28.5",
+    "@walletconnect/types": "^2.20.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "husky": "^9.1.7",
+    "pino-pretty": "^13.0.0",
+    "prettier": "^3.5.3",
+    "repomix": "^0.3.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+</file>
+
 <file path="src/app/page.tsx">
 // src/app/page.tsx
 "use client";
@@ -5425,7 +5425,7 @@ export default function Home() {
         <a href="https://fkng.social" target="_blank" rel="noopener noreferrer" className="block text-gray-500 hover:text-gray-600 transition-colors">
           <img src="/FKNG.SOCIAL.svg" alt="FKNG.SOCIAL" className="h-5 w-auto" />
         </a>
-        <p className="font-sans text-[11px] font-light text-gray-500">JOIN THE FKNG REVOLUTION</p>
+        <p className="font-sans text-[11px] font-light text-gray-500">JOIN THE FKNG REVOLUTION!</p>
       </div>
     </main>
   );
