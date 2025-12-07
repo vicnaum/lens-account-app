@@ -5425,7 +5425,7 @@ export default function Home() {
         <a href="https://fkng.social" target="_blank" rel="noopener noreferrer" className="block text-gray-500 hover:text-gray-600 transition-colors">
           <img src="/FKNG.SOCIAL.svg" alt="FKNG.SOCIAL" className="h-5 w-auto" />
         </a>
-        <p className="font-sans text-[11px] font-light text-gray-500">JOIN THE FKNG REVOLUTION!</p>
+        <p className="font-sans text-[11px] font-light text-gray-500">JOIN THE FKNG REVOLUTION</p>
       </div>
     </main>
   );
